@@ -110,3 +110,154 @@ assertThat(text, equalTo(originalString));
 ```
 
 #### Java InputStream to Byte Array
+
+##### 1. Convert using Plain Java
+
+```java
+InputStream initialStream = new ByteArrayInputStream(new byte[]{0, 1, 2});
+
+byte[] targetArray = new byte[initialStream.available()];
+initialStream.read(targetArray);
+```
+
+In the case of a buffered stream
+
+```java
+InputStream is = new ByteArrayInputStream(new byte[]{0, 1, 2});
+
+ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+int nRead;
+byte[] data = new byte[1024];
+while ((nRead = is.read(data, 0, data.length)) != -1) {
+    buffer.write(data, 0, nRead);
+}
+
+buffer.flush();
+byte[] byteArray = buffer.toByteArray();
+```
+
+##### 2. Convert using Guava
+
+```java
+InputStream initialStream = ByteSource
+    .wrap(new byte[]{0, 1, 2})
+    .openStream();
+
+byte[] targetArray = ByteStreams.toByteArray(initialStream);
+```
+
+##### 3. Convert using Commons IO
+
+```java
+ByteArrayInputStream initialStream = new ByteArrayInputStream(new byte[]{1, 2, 3});
+
+byte[] targetArray = IOUtils.toByteArray(initialStream);
+```
+
+#### Write an InputStream to a File
+
+##### 1. Convert using plain Java
+
+```java
+InputStream initialStream = new FileInputStream(new File("src/test/resources/sample.txt"));
+byte[] buffer = new byte[initialStream.available()];
+initialStream.read(buffer);
+
+File targetFile = new File("src/test/resources/targetFile.tmp");
+OutputStream outputStream = new FileOutputStream(targetFile);
+outputStream.write(buffer);
+```
+
+with buffer
+
+```java
+InputStream initialStream = new FileInputStream(new File("src/test/resources/sample.txt"));
+File targetFile = new File("src/test/resources/targetFile.tmp");
+OutputStream outputStream = new FileOutputStream(targetFile);
+
+byte[] buffer = new byte[8 * 1024];
+int bytesRead;
+while ((bytesRead = initialStream.read(buffer)) != -1) {
+    outputStream.write(buffer, 0, bytesRead);
+}
+
+IOUtils.closeQuietly(initialStream);
+IOUtils.closeQuietly(outputStream);
+```
+
+use java8
+
+```java
+InputStream initialStream = new FileInputStream(new File("src/test/resources/sample.txt"));
+File targetFile = new File("src/test/resources/targetFile.tmp");
+
+Files.copy(
+        initialStream,
+        targetFile.toPath(),
+        StandardCopyOption.REPLACE_EXISTING);
+
+IOUtils.closeQuietly(initialStream);
+```
+
+##### 2. Convert using Guava
+
+```java
+InputStream initialStream = new FileInputStream(new File("src/test/resources/sample.txt"));
+byte[] buffer = new byte[initialStream.available()];
+initialStream.read(buffer);
+
+File targetFile = new File("src/test/resources/targetFile.tmp");
+com.google.common.io.Files.write(buffer, targetFile);
+```
+
+##### 3. Convert using Commons IO
+
+```java
+InputStream initialStream = new FileInputStream(new File("src/test/resources/sample.txt"));
+File targetFie = new File("src/test/resources/targetFile.tmp");
+
+FileUtils.copyInputStreamToFile(initialStream, targetFie);
+```
+
+#### InputStream to Reader
+
+##### With Java
+
+```java
+InputStream initialStream = new ByteArrayInputStream("With Java".getBytes());
+
+Reader targetReader = new InputStreamReader(initialStream);
+
+targetReader.close();
+```
+
+##### With Guava
+
+```java
+InputStream initialStream = ByteSource
+    .wrap("With Guava".getBytes())
+    .openStream();
+
+byte[] buffer = ByteStreams.toByteArray(initialStream);
+Reader targetReader = CharSource
+    .wrap(new String(buffer))
+    .openStream();
+targetReader.close();
+```
+
+##### With Commons IO
+
+```java
+InputStream initialStream = IOUtils.toInputStream("With Commons IO");
+
+byte[] buffer = IOUtils.toByteArray(initialStream);
+Reader targetReader = new CharSequenceReader(new String(buffer));
+
+targetReader.close();
+```
+
+### To InputStream
+
+#### Java String to InputStream
+
+
