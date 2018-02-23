@@ -260,4 +260,109 @@ targetReader.close();
 
 #### Java String to InputStream
 
+##### 1. Convert with Plain Java
 
+```java
+String initialString = "With Java";
+InputStream targetStream = 
+    new ByteArrayInputStream(initialString.getBytes(Charset.forName("utf-8")));
+```
+
+> Note that the `getBytes()` method encodes this String using the platform’s default charset so to avoid undesirable behavior you can use `getBytes(Charset charset)` and **control the encoding process**.
+
+##### 2. Convert with Guava
+
+```java
+String initialString = "With Guava";
+InputStream targetStream = 
+    new ReaderInputStream(CharSource.wrap(initialString).openStream(), Charset.forName("utf-8"));
+```
+
+##### 3. Convert with Commons IO
+
+```java
+String initialString="With Commons IO";
+InputStream targetStream=IOUtils.toInputStream(initialString);
+```
+
+#### Java Byte Array to InputStream
+
+##### 1. Convert using Java
+
+```java
+byte[] initArray = {0, 1, 2, 3};
+InputStream targetStream =
+        new ByteArrayInputStream(initArray);
+```
+
+##### 2. Convert using Guava
+
+```java
+byte[] initArray = {0, 1, 2, 3};
+InputStream targetStream = ByteSource.wrap(initArray).openStream();
+```
+
+#### Convert File to InputStream
+
+##### 1. Convert using Java
+
+```java
+File initFile=new File("src/test/resources/sample.txt");
+InputStream targetStream=new FileInputStream(initFile);
+```
+
+##### 2. Convert using Guava
+
+```java
+File initFile=new File("src/test/resources/sample.txt");
+InputStream targetStream=com.google.common.io.Files.asByteSource(initFile).openStream();
+```
+
+##### 3. Convert using Commons IO
+
+```java
+File initFile=new File("src/test/resources/sample.txt");
+InputStream targetStream=FileUtils.openInputStream(initFile);
+```        
+
+#### Reader to InputStream
+
+##### 1. With Java
+
+```java
+Reader initReader = new StringReader("With Java");
+
+char[] charBuffer = new char[8 * 1024];
+StringBuilder builder = new StringBuilder();
+int numCharsRead;
+while ((numCharsRead = initReader.read(charBuffer, 0, charBuffer.length)) != -1) {
+    builder.append(charBuffer, 0, numCharsRead);
+}
+
+InputStream targetStream = new ByteArrayInputStream(
+        builder.toString().getBytes(StandardCharsets.UTF_8));
+
+initReader.close();
+targetStream.close();
+```
+
+##### 2. With Guava
+
+```java
+Reader initReader = new StringReader("With Guava");
+InputStream targetStream =
+        new ByteArrayInputStream(CharStreams.toString(initReader).getBytes(Charsets.UTF_8));
+
+initReader.close();
+targetStream.close();
+```
+
+##### 3. With Commons IO
+
+```java
+Reader initReader = new StringReader("With Commons IO");
+InputStream targetStream =
+        IOUtils.toInputStream(IOUtils.toString(initReader), StandardCharsets.UTF_8);
+initReader.close();
+targetStream.close();
+```
