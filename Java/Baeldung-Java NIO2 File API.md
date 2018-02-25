@@ -161,3 +161,22 @@ assertEquals("..\\..", p2_rel_p1.toString());
 ```
 
 #### Introduction to the Java NIO Selector
+
+1. Creating a Selector
+
+```java
+Selector selector = Selector.open();
+```
+
+2. Registering Selectable Channels
+
+```java
+channel.configureBlocking(false);
+SelectionKey key = channel.register(selector, SelectionKey.OP_READ);
+```
+
+有四种不同事件:  
+* `SelectionKey.OP_CONNECT` - 当客户端试图连接服务端
+* `SelectionKey.OP_ACCEPT` - 当服务端接收客户端连接
+* `SelectionKey.OP_READ` - 当服务端准备读取 `channel`
+* `SelectionKey.OP_WRITE` - 当服务端准备写入 `channel`
