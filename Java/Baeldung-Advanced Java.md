@@ -48,3 +48,45 @@ InetAddress broadCastAddress = address.getBroadcast();
 assertEquals("127.0.0.1", localAddress.getHostAddress());
 assertEquals("127.255.255.255", broadCastAddress.getHostAddress());
 ```
+
+### #16进制和ASCII互转
+
+#### ASCII To Hex
+
+```java
+private  String asciiToHex(String asciiStr) {
+    char[] chars = asciiStr.toCharArray();
+    StringBuilder hex = new StringBuilder();
+    for (char ch : chars) {
+        hex.append(Integer.toHexString((int) ch));
+    }
+
+    return hex.toString();
+}
+```
+
+#### Hex To ASCII
+
+```java
+public  String hexToAscii(String hexStr) {
+    StringBuilder output = new StringBuilder("");
+
+    for (int i = 0; i < hexStr.length(); i += 2) {
+        String str = hexStr.substring(i, i + 2);
+        output.append((char) Integer.parseInt(str, 16));
+    }
+
+    return output.toString();
+}
+```
+
+### #截图
+
+```java
+Rectangle rec = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
+Robot robot = new Robot();
+BufferedImage img = robot.createScreenCapture(rec);
+ImageIO.write(img, "jpg", new File("src/test/resources/test.jpg "));
+```
+
+### #UDP
