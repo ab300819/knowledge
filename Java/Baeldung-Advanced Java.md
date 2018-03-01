@@ -201,4 +201,28 @@ public class EchoUDPTest {
 
 ### #获取运行中方法的名称
 
+* 使用 `getEnclosingMethod()`
+```java
+String methodName = new Object() {
+}
+        .getClass()
+        .getEnclosingMethod()
+        .getName();
+assertEquals("giveObject", methodName);
+```
 
+* 使用 `Throwable` Stack Trace
+```java
+StackTraceElement[] stackTrace = new Throwable().getStackTrace();
+assertEquals("usingThrowableStackTrace", stackTrace[0].getMethodName());
+```
+
+* 使用 `Thread` Stack Trace
+```java
+StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+assertEquals("usingThreadStackTrace", stackTrace[1].getMethodName());
+```
+
+### #[How to Find all Getters Returning Null](http://www.baeldung.com/java-getters-returning-null)
+
+### #
