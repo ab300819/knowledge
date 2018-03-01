@@ -90,3 +90,115 @@ ImageIO.write(img, "jpg", new File("src/test/resources/test.jpg "));
 ```
 
 ### #UDP
+
+UDP 分为两大类：
+* `DatagramPacket` - 将数据字节填充到UDP包
+* `DatagramSocket` - 发送包
+
+服务端
+```java
+public class EchoServerUDP extends Thread {
+
+    private DatagramSocket socket;
+    private boolean running;
+    private byte[] buf = new byte[256];
+
+    public EchoServerUDP() throws SocketException {
+        socket = new DatagramSocket(4445);
+    }
+
+    @Override
+    public void run() {
+        running = true;
+        while (running) {
+            DatagramPacket packet = null;
+            packet = new DatagramPacket(buf, buf.length);
+
+            try {
+                socket.receive(packet);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            InetAddress address = packet.getAddress();
+            int port = packet.getPort();
+            packet = new DatagramPacket(buf, buf.length, address, port);
+            String received = new String(packet.getData(), 0, packet.getLength());
+
+            if (received.equals("end")) {
+                running = false;
+                continue;
+            }
+            try {
+                socket.send(packet);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        socket.close();
+    }
+}
+```
+
+客户端
+```java
+public class EchoClientUDP {
+
+    private DatagramSocket socket;
+    private InetAddress address;
+
+    private byte[] buf;
+
+    public EchoClientUDP() throws SocketException, UnknownHostException {
+        socket = new DatagramSocket();
+        address = InetAddress.getByName("localhost");
+    }
+
+    public String sendEcho(String msg) throws IOException {
+        buf = msg.getBytes();
+        DatagramPacket packet = new DatagramPacket(buf, buf.length, address, 4445);
+        socket.send(packet);
+        packet = new DatagramPacket(buf, buf.length);
+        socket.receive(packet);
+        String received = new String(packet.getData(), 0, packet.getLength());
+        return received;
+    }
+
+    public void close() {
+        socket.close();
+    }
+
+}
+```
+
+测试
+```java
+public class EchoUDPTest {
+
+    EchoClientUDP client;
+
+    @Before
+    public void setUp() throws Exception {
+        new EchoServerUDP().start();
+        client = new EchoClientUDP();
+    }
+
+    @Test
+    public void sendAndReceivePacket() throws Exception {
+        String echo = client.sendEcho("hello server");
+        assertEquals("hello server", echo);
+        echo = client.sendEcho("server is working");
+        assertFalse(echo.equals("hello server"));
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        client.sendEcho("end");
+        client.close();
+    }
+}
+```
+
+### #获取运行中方法的名称
+
+
