@@ -227,4 +227,80 @@ assertEquals("usingThreadStackTrace", stackTrace[1].getMethodName());
 
 ### #[Changing Annotation Parameters At Runtime](http://www.baeldung.com/java-reflection-change-annotation-params)
 
+### #合并 Java `Stream`
 
+#### 1. Using Plain Java
+
+```java
+// 合并两个流
+Stream<Integer> stream1 = Stream.of(1, 2, 3);
+Stream<Integer> stream2 = Stream.of(4, 5, 6);
+Stream<Integer> resultStream = Stream.concat(stream1, stream2);
+assertEquals(Arrays.asList(1, 2, 3, 4, 5, 6)
+        , resultStream.collect(Collectors.toList()));
+
+// 合并多个流
+Stream<Integer> stream1 = Stream.of(1, 3, 5);
+Stream<Integer> stream2 = Stream.of(2, 4, 6);
+Stream<Integer> stream3 = Stream.of(18, 15, 36);
+Stream<Integer> stream4 = Stream.of(99);
+Stream<Integer> resultStream = Stream
+        .of(stream1, stream2, stream3, stream4)
+        .flatMap(i -> i);
+assertEquals(Arrays.asList(1, 3, 5, 2, 4, 6, 18, 15, 36, 99), resultStream.collect(Collectors.toList()));
+```
+
+#### 2. Using StreamEx
+
+```java
+// 合并多个流
+Stream<Integer> resultingStream = StreamEx.of(stream1)
+    .append(stream2)
+    .append(stream3)
+    .append(stream4);
+
+// 在元素前添加元素
+Stream<String> stream1 = Stream.of("foo", "bar");
+Stream<String> openingBracketStream = Stream.of("[");
+Stream<String> closingBracketStream = Stream.of("]");
+
+Stream<String> resultingStream = StreamEx.of(stream1)
+    .append(closingBracketStream)
+    .prepend(openingBracketStream);
+
+assertEquals(
+  Arrays.asList("[", "foo", "bar", "]"),
+  resultingStream.collect(Collectors.toList()));
+```
+
+#### 3. Using jOOλ
+
+```java
+// 合并多个流
+Stream<Integer> seq1 = Stream.of(1, 3, 5);
+Stream<Integer> seq2 = Stream.of(2, 4, 6);
+
+Stream<Integer> resultingSeq = Seq.ofType(seq1, Integer.class)
+    .append(seq2);
+
+assertEquals(
+    Arrays.asList(1, 3, 5, 2, 4, 6),
+    resultingSeq.collect(Collectors.toList()));
+
+// 在元素前添加元素
+Stream<String> seq = Stream.of("foo", "bar");
+Stream<String> openingBracketSeq = Stream.of("[");
+Stream<String> closingBracketSeq = Stream.of("]");
+
+Stream<String> resultingStream = Seq.ofType(seq, String.class)
+    .append(closingBracketSeq)
+    .prepend(openingBracketSeq);
+
+Assert.assertEquals(
+    Arrays.asList("[", "foo", "bar", "]"),
+    resultingStream.collect(Collectors.toList()));
+```
+
+### #[The Difference Between `map()` and `flatMap()`](http://www.baeldung.com/java-difference-map-and-flatmap)
+
+### #
