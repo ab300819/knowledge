@@ -227,4 +227,29 @@ assertEquals("usingThreadStackTrace", stackTrace[1].getMethodName());
 
 ### #[Changing Annotation Parameters At Runtime](http://www.baeldung.com/java-reflection-change-annotation-params)
 
+### #将字符串转化为字符流
+
+* 使用 `chars()`
+
+```java
+String testString = "String";
+Stream<Character> characterStream = testString
+        .chars()
+        .mapToObj(c -> (char) c);
+```
+
+* 使用 `codePoints()`
+
+```java
+String testString = "String";
+Stream<Character> characterStream = testString
+        .codePoints()
+        .mapToObj(c -> (char) c);
+```
+
+### #获得两个日期之间的所有日期
+
+
+
+
 
