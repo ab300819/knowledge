@@ -227,6 +227,98 @@ assertEquals("usingThreadStackTrace", stackTrace[1].getMethodName());
 
 ### #[Changing Annotation Parameters At Runtime](http://www.baeldung.com/java-reflection-change-annotation-params)
 
+* 注解
+```java
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Greeter {
+    String greet() default "";
+}
+```
+
+* 测试类
+```java
+@Greeter(greet = "Good morning")
+public class Greetings {
+}
+```
+
+* 封装方法
+```java
+public class DynamicGreeter implements Greeter {
+
+    private String greet;
+
+    public DynamicGreeter(String greet) {
+        this.greet = greet;
+    }
+
+    @Override
+    public Class<? extends Annotation> annotationType() {
+        return DynamicGreeter.class;
+    }
+
+    @Override
+    public String greet() {
+        return greet;
+    }
+}
+```
+
+* 运行时更改注解值
+```java
+public class GreetingAnnotation {
+
+    private static final String ANNOTATION_METHOD = "annotationData";
+    private static final String ANNOTATION_FIELDS = "declaredAnnotations";
+    private static final String ANNOTATIONS = "annotations";
+
+    public static void main(String... args) {
+        Greeter greetings = Greetings.class.getAnnotation(Greeter.class);
+        System.err.println("Hello there, " + greetings.greet() + " !!");
+
+        Greeter targetValue = new DynamicGreeter("Good evening");
+        alterAnnotationValueJDK8(Greetings.class, Greeter.class, targetValue);
+//        alterAnnotationValueJDK7(Greetings.class, Greeter.class, targetValue);
+
+        greetings = Greetings.class.getAnnotation(Greeter.class);
+        System.err.println("Hello there, " + greetings.greet() + " !!");
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void alterAnnotationValueJDK8(Class<?> targetClass, Class<? extends Annotation> targetAnnotation, Annotation targetValue) {
+        try {
+            Method method = Class.class.getDeclaredMethod(ANNOTATION_METHOD, null);
+            method.setAccessible(true);
+
+            Object annotationData = method.invoke(targetClass);
+
+            Field annotations = annotationData.getClass().getDeclaredField(ANNOTATIONS);
+            annotations.setAccessible(true);
+
+            Map<Class<? extends Annotation>, Annotation> map = (Map<Class<? extends Annotation>, Annotation>) annotations.get(annotationData);
+            map.put(targetAnnotation, targetValue);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void alterAnnotationValueJDK7(Class<?> targetClass, Class<? extends Annotation> targetAnnotation, Annotation targetValue) {
+        try {
+            Field annotations = Class.class.getDeclaredField(ANNOTATIONS);
+            annotations.setAccessible(true);
+
+            Map<Class<? extends Annotation>, Annotation> map = (Map<Class<? extends Annotation>, Annotation>) annotations.get(targetClass);
+            System.out.println(map);
+            map.put(targetAnnotation, targetValue);
+            System.out.println(map);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
 ### #合并 Java `Stream`
 
 #### 1. Using Plain Java
@@ -303,4 +395,26 @@ Assert.assertEquals(
 
 ### #[The Difference Between `map()` and `flatMap()`](http://www.baeldung.com/java-difference-map-and-flatmap)
 
-### #
+### #获取 `Stream` 中的最后一个元素
+
+### #将字符串转化为字符流
+
+* 使用 `chars()`
+
+```java
+String testString = "String";
+Stream<Character> characterStream = testString
+        .chars()
+        .mapToObj(c -> (char) c);
+```
+
+* 使用 `codePoints()`
+
+```java
+String testString = "String";
+Stream<Character> characterStream = testString
+        .codePoints()
+        .mapToObj(c -> (char) c);
+```
+
+### #获得两个日期之间的所有日期
