@@ -51,8 +51,7 @@ assertEquals("127.255.255.255", broadCastAddress.getHostAddress());
 
 ### #16进制和ASCII互转
 
-#### ASCII To Hex
-
+* ASCII To Hex
 ```java
 private  String asciiToHex(String asciiStr) {
     char[] chars = asciiStr.toCharArray();
@@ -65,8 +64,7 @@ private  String asciiToHex(String asciiStr) {
 }
 ```
 
-#### Hex To ASCII
-
+* Hex To ASCII
 ```java
 public  String hexToAscii(String hexStr) {
     StringBuilder output = new StringBuilder("");
@@ -397,6 +395,42 @@ Assert.assertEquals(
 
 ### #获取 `Stream` 中的最后一个元素
 
+* 使用 `reduce()`
+```java
+List<String> valueList = new ArrayList<>();
+valueList.add("Joe");
+valueList.add("Think");
+valueList.add("Test");
+valueList.add("Hong");
+valueList.add("Kong");
+
+Stream<String> stream = valueList.stream();
+String result = stream
+        .reduce((first, second) -> second)
+        .orElse(null);
+```
+
+* 使用 `skip()` (可能会影响性能)
+```java
+List<String> valueList = new ArrayList<>();
+valueList.add("Joe");
+valueList.add("Think");
+valueList.add("Test");
+valueList.add("Hong");
+valueList.add("Kong");
+
+long count = valueList.stream().count();
+Stream<String> stream = valueList.stream();
+
+String result = stream.skip(count - 1).findFirst().get();
+```
+
+* 获取无限流最后一个元素
+```java
+Stream<Integer> stream = Stream.iterate(0, i -> i + 1);
+stream.reduce((first, second) -> second).orElse(null);
+```
+
 ### #将字符串转化为字符流
 
 * 使用 `chars()`
@@ -418,3 +452,44 @@ Stream<Character> characterStream = testString
 ```
 
 ### #获得两个日期之间的所有日期
+
+* Using Java 7
+```java
+public List<Date> getDatesBetweenUsingJava7(Date startDate, Date endDate) {
+
+    List<Date> datesInRange = new ArrayList<>();
+    Calendar startCalendar = new GregorianCalendar();
+    startCalendar.setTime(startDate);
+    Calendar endCalendar = new GregorianCalendar();
+    endCalendar.setTime(endDate);
+
+    while (startCalendar.before(endCalendar)) {
+        Date result = startCalendar.getTime();
+        datesInRange.add(result);
+        startCalendar.add(Calendar.DATE, 1);
+    }
+    return datesInRange;
+```
+
+* Using Java 8
+```java
+public List<LocalDate> getDatesBetweenUsingJava8(LocalDate startDate, LocalDate endDate) {
+    long numOfDayBetween = ChronoUnit.DAYS.between(startDate, endDate);
+    return IntStream.iterate(0, i -> i + 1)
+            .limit(numOfDayBetween)
+            .mapToObj(i -> startDate.plusDays(i))
+            .collect(Collectors.toList());
+}
+```
+
+* Using Java 9
+```java
+public List<LocalDate> getDatesBetweenUsingJava9(LocalDate startDate, LocalDate endDate) {
+  
+    return startDate
+            .datesUntil(endDate)
+            .collect(Collectors.toList());
+}
+```
+
+### #[Guide to Escaping Characters in Java RegExps](http://www.baeldung.com/java-regexp-escape-char)
