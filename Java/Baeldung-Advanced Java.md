@@ -573,3 +573,167 @@ Integer result = (Integer) maxProtectMethod.invoke(operationsInstance, 2, 4);
 
 ### #`DelayQueue`
 
+#### 1. 使用 `DelayQueue`
+
+* Implementing Delayed for Elements in the DelayQueue  
+```java
+public class DelayObject implements Delayed {
+
+    private String data;
+    private long startTime;
+
+    public DelayObject(String data, long startTime) {
+        this.data = data;
+        this.startTime = System.currentTimeMillis() + startTime;
+    }
+
+    @Override
+    public long getDelay(TimeUnit unit) {
+        long diff = startTime - System.currentTimeMillis();
+        return unit.convert(diff, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public int compareTo(Delayed o) {
+        return Ints.saturatedCast(this.startTime - ((DelayObject) o).startTime);
+    }
+
+    @Override
+    public String toString() {
+        return "DelayObject{" +
+                "data='" + data + '\'' +
+                ", startTime=" + startTime +
+                '}';
+    }
+}
+```
+* Producer
+```java
+public class DelayQueueProducer implements Runnable {
+
+    private BlockingQueue<DelayObject> queue;
+    private Integer numberOfElementToProduce;
+    private Integer delayOfEachProduceMessageMilliseconds;
+
+    public DelayQueueProducer(BlockingQueue<DelayObject> queue, Integer numberOfElementToProduce, Integer delayOfEachProduceMessageMilliseconds) {
+        this.queue = queue;
+        this.numberOfElementToProduce = numberOfElementToProduce;
+        this.delayOfEachProduceMessageMilliseconds = delayOfEachProduceMessageMilliseconds;
+    }
+
+    @Override
+    public void run() {
+        for (int i = 0; i < numberOfElementToProduce; i++) {
+            DelayObject object = new DelayObject(
+                    UUID.randomUUID().toString(),
+                    delayOfEachProduceMessageMilliseconds);
+            System.out.println("Put Object:" + object);
+            try {
+                queue.put(object);
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+}
+```
+
+* Consumer
+```java
+public class DelayQueueConsumer implements Runnable {
+
+    private BlockingQueue<DelayObject> queue;
+    private Integer numberOfElementsToTake;
+    public AtomicInteger numberOfConsumedElements = new AtomicInteger();
+
+    public DelayQueueConsumer(BlockingQueue<DelayObject> queue, Integer numberOfElementsToTake) {
+        this.queue = queue;
+        this.numberOfElementsToTake = numberOfElementsToTake;
+    }
+
+    @Override
+    public void run() {
+        for (int i = 0; i < numberOfElementsToTake; i++) {
+            try {
+                DelayObject object = queue.take();
+                numberOfConsumedElements.incrementAndGet();
+                System.out.println("Consumer take:" + object);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+```
+
+* Test
+```java
+@Test
+public void givenDelayQueueProduceConsumer() throws InterruptedException {
+
+    ExecutorService executor = Executors.newFixedThreadPool(2);
+
+    BlockingQueue<DelayObject> queue = new DelayQueue<>();
+    int numberOfElementsToProduce = 2;
+    int delayOfEachProducedMessageMilliseconds = 500;
+
+    DelayQueueConsumer consumer = new DelayQueueConsumer(queue, numberOfElementsToProduce);
+    DelayQueueProducer producer = new DelayQueueProducer(queue, numberOfElementsToProduce, delayOfEachProducedMessageMilliseconds);
+
+    executor.submit(producer);
+    executor.submit(consumer);
+
+    executor.awaitTermination(5,TimeUnit.SECONDS);
+    executor.shutdown();
+
+    assertEquals(consumer.numberOfConsumedElements.get(),numberOfElementsToProduce);
+}
+```
+
+#### 2. 在给定时间不能消费的元素
+
+```java
+int numberOfElementsToProduce = 1;
+int delayOfEachProducedMessageMilliseconds = 10000;
+DelayQueueConsumer consumer = new DelayQueueConsumer(queue, numberOfElementsToProduce);
+DelayQueueProducer producer = new DelayQueueProducer(queue, numberOfElementsToProduce, delayOfEachProducedMessageMilliseconds);
+
+executor.submit(producer);
+executor.submit(consumer);
+ 
+executor.awaitTermination(5, TimeUnit.SECONDS);
+executor.shutdown();
+assertEquals(consumer.numberOfConsumedElements.get(), 0);
+```
+
+#### 3. 产生立即失效的元素
+
+```java
+int numberOfElementsToProduce = 1;
+int delayOfEachProducedMessageMilliseconds = -1000;
+DelayQueueConsumer consumer = new DelayQueueConsumer(queue, numberOfElementsToProduce);
+DelayQueueProducer producer = new DelayQueueProducer(queue, numberOfElementsToProduce, delayOfEachProducedMessageMilliseconds);
+
+executor.submit(producer);
+executor.submit(consumer);
+ 
+executor.awaitTermination(1, TimeUnit.SECONDS);
+executor.shutdown();
+assertEquals(consumer.numberOfConsumedElements.get(), 1);
+```
+
+### #` CopyOnWriteArrayList`
+
+```java
+CopyOnWriteArrayList<Integer> numbers = new CopyOnWriteArrayList<>(new Integer[]{1, 3, 5, 8});
+Iterator<Integer> iterator = numbers.iterator();
+numbers.add(10);
+
+// 当创建迭代器的时，获取的是创建迭代器时数据的快照
+List<Integer> result = new LinkedList<>();
+iterator.forEachRemaining(result::add);
+System.out.println(result);
+```
+
