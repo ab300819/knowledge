@@ -726,6 +726,8 @@ assertEquals(consumer.numberOfConsumedElements.get(), 1);
 
 ### #` CopyOnWriteArrayList`
 
+#### 1. 创建与迭代
+
 ```java
 CopyOnWriteArrayList<Integer> numbers = new CopyOnWriteArrayList<>(new Integer[]{1, 3, 5, 8});
 Iterator<Integer> iterator = numbers.iterator();
@@ -737,3 +739,45 @@ iterator.forEachRemaining(result::add);
 System.out.println(result);
 ```
 
+#### 2. 不允许在迭代时移除元素
+
+```java
+@Test(expected = UnsupportedOperationException.class)
+public void whenIterateOver() {
+    CopyOnWriteArrayList<Integer> numbers = new CopyOnWriteArrayList<>(new Integer[]{1, 2, 3, 4});
+
+    Iterator<Integer> iterator = numbers.iterator();
+    while (iterator.hasNext()) {
+        iterator.remove();
+    }
+```
+
+### #[动态代理](http://www.baeldung.com/java-dynamic-proxies)
+
+### #[Using Java MappedByteBuffer](http://www.baeldung.com/java-mapped-byte-buffer)
+
+### #[LongAdder and LongAccumulator in Java](http://www.baeldung.com/java-longadder-and-longaccumulator)
+
+### #[Guide to the ConcurrentSkipListMap](http://www.baeldung.com/java-concurrent-skip-list-map)
+
+### #[Guide to the Java TransferQueue](http://www.baeldung.com/java-transfer-queue)
+
+### #[A Guide to Java SynchronousQueue](http://www.baeldung.com/java-synchronous-queue)
+
+### #[Guide to sun.misc.Unsafe](http://www.baeldung.com/java-unsafe)
+
+### #[An Introduction to ThreadLocal in Java](http://www.baeldung.com/java-threadlocal)
+
+### #[Strategy Pattern](http://www.baeldung.com/java-strategy-pattern)
+
+### #[Weak Hashmap](http://www.baeldung.com/java-weakhashmap)
+
+### #[Blocking Queue](http://www.baeldung.com/java-blocking-queue)
+
+### #[Priority Blocking Queue](http://www.baeldung.com/java-priority-blocking-queue)
+
+### #[`ConcurrentMap`](http://www.baeldung.com/java-concurrent-map)
+
+* `ConcurrentHashMap`
+
+### #[`Future`](http://www.baeldung.com/java-future)
