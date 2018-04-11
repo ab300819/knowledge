@@ -1,1 +1,1 @@
-# leetcode 解题记录
+# leetcode solution
