@@ -7,7 +7,7 @@
 * Language
     * [Java](Java/README.md)
     * [Python](Python/README.md)
-    * [JavaScript]()
+    * [JavaScript](JavaScript/README.md)
     * [C++]()
     * [C#]()
     * [Kotlin]()
