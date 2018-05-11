@@ -157,3 +157,10 @@ GROUP BY vend_ id WITH ROLLUP;
 * `HAVING` 支持所有 `WHERE` 操作符
 * 唯一的差别是 `WHERE` 过滤行，而 `HAVING` 过滤分组
 * `WHERE` 在数据分组前进行过滤，`HAVING` 在数据分组后进行过滤
+
+### #九、全文搜索
+
+1. `FULLTEXT(列)` 启动全文搜索（在导入数据时，先不开开启，导完数据后开启）
+2. `Match()` 指定被搜索的列， `Against()` 指定要使用的搜索表达式
+3. 使用查询扩展 `WHERE Match(note_ text) Against('anvils' WITH QUERY EXPANSION)`
+4. 使用 `IN BOOLEAN MODE` 来进行布尔文本搜索
