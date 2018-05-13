@@ -164,3 +164,99 @@ GROUP BY vend_ id WITH ROLLUP;
 2. `Match()` 指定被搜索的列， `Against()` 指定要使用的搜索表达式
 3. 使用查询扩展 `WHERE Match(note_ text) Against('anvils' WITH QUERY EXPANSION)`
 4. 使用 `IN BOOLEAN MODE` 来进行布尔文本搜索
+
+**操作符**
+
+布尔操作符  |   说明
+--- |   ---
+`+` |   包含，词必须存在 
+`-` |   排除，词必须不出现 
+`>` |   包含，而且增加等级值 
+`<` |   包含，且减少等级值 
+`()`    |   把词组成子表达式（允许这些子表达式作为一个组被包含、排除、排列等）
+`~` |   取消一个词的排序值 
+`*` |   词尾的通配符 
+`""`    |   定义一个短语（与单个词的列表不一样，它匹配整个短语以便包含或排除这个短语）
+
+**例子**
+
+```sql
+# 搜索匹配包含词 rabbit 和 bait 的行
+
+SELECT note_text 
+FROM productnotes 
+WHERE Match(note_text) Against('+rabbit +bait"' IN BOOLEAN MODE); 
+```
+
+```sql
+# 没有指定操作符，这个搜匹配包含 rabbit 和 bait 中的至少一个词的行
+
+SELECT note_text 
+FROM productnotes 
+WHERE Match(note_text) Against('rabbit bait' IN BOOLEAN MODE);
+```
+
+```sql
+# 搜索匹配短语 rabbit bait 而不是匹配两个词 rabbit 和 bait
+
+SELECT note_text 
+FROM productnotes 
+WHERE Match(note_text) Against('"rabbit bait"' IN BOOLEAN MODE);
+```
+
+```sql
+# 匹配 rabbit 和 carrot， 增加前者的等级， 降低后者的等级
+
+SELECT note_text 
+FROM productnotes 
+WHERE Match(note_text) Against('>rabbit <carrot' IN BOOLEAN MODE);
+```
+
+```sql
+# 搜索匹配词 safe 和 combination， 降低后者的等级
+
+SELECT note_text 
+FROM productnotes 
+WHERE Match(note_text) Against('+safe +(<combination)' IN BOOLEAN MODE);
+```
+
+### #十、更新表
+
+1. 添加列
+
+```sql
+ALTER TABLE blogs ADD column_9 INT NULL;
+```
+
+2. 指定位置添加列
+
+```sql
+ALTER TABLE blogs ADD column_9 INT NULL;
+ALTER TABLE blogs
+    MODIFY COLUMN column_9 INT AFTER user_name;
+```
+
+3. 重命名列
+
+```sql
+ALTER TABLE blogs CHANGE user_name user VARCHAR(50) NOT NULL;
+```
+
+4. 删除列
+
+```sql
+ALTER TABLE blogs DROP user_name;
+```
+
+5. 重命名表
+
+```sql
+ALTER TABLE blogs RENAME TO `blogs_1`;
+```
+
+### #十一、视图
+
+* 创建视图 `CREATE VIEW`
+* 使用 `SHOW CREATE VIEW viewname` 来查看创建视图的语句
+* 使用 `DROP VIEW viewname` 来删除视图
+* 更新视图，可以先用 `DROP` 再用 `CREATE` ,也可以直接用 `CREATE OR REPLACE VIEW`
