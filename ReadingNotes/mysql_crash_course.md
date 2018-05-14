@@ -260,3 +260,76 @@ ALTER TABLE blogs RENAME TO `blogs_1`;
 * 使用 `SHOW CREATE VIEW viewname` 来查看创建视图的语句
 * 使用 `DROP VIEW viewname` 来删除视图
 * 更新视图，可以先用 `DROP` 再用 `CREATE` ,也可以直接用 `CREATE OR REPLACE VIEW`
+
+### #十二、安全管理
+
+1. 创建用户账号
+
+```sql
+CREATE USER 用户名 IDENTIFIED BY 'p@$$ w0rd';
+```
+
+2. 重命名用户
+
+```sql
+RENAME USER 用户名 TO 用户名_1;
+```
+
+3. 删除用户账户
+
+```sql
+DROP USER 用户名
+```
+
+4. 查看用户权限
+
+```sql
+SHOW GRANTS FOR 用户名;
+```
+
+5. 赋予权限
+
+```sql
+# 数据库 crashcourse 所有表
+GRANT SELECT ON crashcourse.* TO 用户名;
+```
+
+一次授予多种权限
+
+```sql
+GRANT SELECT,INSERT ON crashcourse.* TO 用户名;
+```
+
+6. 撤销权限
+
+```sql
+REVOKE SELECT ON crashcourse.* FROM beforta;
+```
+
+7. 更改密码
+
+```sql
+SET PASSWORD FOR 用户名 = Password('n3w p@$$w0rd');
+```
+
+不指定用户名时，更新当前登陆用户的口令
+
+```sql
+SET PASSWORD = Password('n3w p@$$w0rd');
+```
+
+### #十三、数据库维护
+
+**##备份数据**
+
+* `mysqldump` 转储所有数据库内容到某个外部文件
+* `mysqlhotcopy` 从一个数据库复制所有数据（并非所有数据库引擎支持）
+* 使用 `BACKUP TABLE` 或 `SELECT INTO OUTFILE` 转储数据到某个外部文件，要先创建文件，否则会报错；使用 `RESTORE TABLE` 来复原
+
+> 使用 `FLUSH TABLES` 来使所有数据保存到磁盘
+
+**##数据库维护**
+
+* `ANALYZE TABLE 表名` 来检查表键是否正确
+* `CHECK TABLE`
+* `REPAIR TABLE` 不应该经常用
