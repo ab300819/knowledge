@@ -105,3 +105,27 @@ Spring提供了自动代理机制，让容器为我们自动生成代理。在�
 * 基于Bean配置名规则的自动代理创建器：允许为一组特定配置名的Bean自动创建代理实例的代理创建器，实现类为 `BeanNameAutoProxyCreator`
 * 基于 **Advisor** 匹配机制的自动代理创建器：它会对容器中所有的 **Advisor** 进行扫描，自动将这些切面应用到匹配的Bean中（即为目标Bean创建代理实例），实现类为 `DefaultAdvisorAutoProxyCreator`
 * 基于Bean中 `AspjectJ` 注解标签的自动代理创建器：为包含 `AspectJ` 注解的Bean自动创建代理实例，它的实现类是 `AnnotationAwareAspectJAutoProxyCreator` ，该类是Spring 2.0的新增类。
+
+## Spring AOP 使用
+
+```java
+public interface Performance {
+
+    void perform();
+
+}
+```
+
+### 切点
+
+### 切面
+
+#### #使用注解
+
+注解    |   通知
+--- |   ---
+`@After`    |   通知方法会在目标方法返回或抛出异常后调用 
+`@AfterReturning`   |   通知方法会在目标方法返回后调用 
+`@AfterThrowing`    |   通知方法会在目标方法抛出异常后调用 
+`@Around`   |   通知方法会将目标方法封装起来 
+`@Before`   |   通知方法会在目标方法调用之前执行
