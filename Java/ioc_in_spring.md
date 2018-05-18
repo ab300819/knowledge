@@ -227,13 +227,7 @@ public class LoginUserDao {
 }   
 ```
 
-* `@Component` 标注一个普通的 `Spring Bean` 类（可以指定 `Bean` 名称，未指定时默认为小写字母开头的类名）
 
-* `@Controller` 标注一个控制器类
-
-* `@Service` 标注一个业务逻辑类
-
-* `@Repository` 标注一个DAO类
 
 ### 三、 Java类配置
 
@@ -257,4 +251,45 @@ public class Configure {
 ApplicationContext ac = new AnnotationConfigApplicationContext();
 Hello hello = ac.getBean(Hello.class);
 hello.sayHello();
+```
+
+---
+
+## 装配 Bean
+
+### Spring Bean 配置方案
+
+* 在 *XML* 中进行显式配置
+* 在 *Java* 中进行显式配置
+* 隐式的 *Bean* 发现机制和自动装配
+
+### #自动化装配 *Bean*
+
+* 组件扫描
+* 自动装配
+
+#### ##创建可发现 *Bean* 并自动扫描
+
+* `@Component` 标注一个普通的 Spring Bean 类（可以指定 *Bean* 名称，未指定时默认为小写字母开头的类名）
+* `@Controller` 标注一个控制器类
+* `@Service` 标注一个业务逻辑类
+* `@Repository` 标注一个DAO类
+
+**在 Java 中配置自动扫描**
+
+```java
+@Configuration 
+// @ComponentScan("soundsystem")
+// @ComponentScan(basePackages="soundsystem")
+// @ComponentScan(basePackages={"soundsystem", "video"})
+@ComponentScan 
+public class BeanConfig {
+
+}
+```
+
+**在 XML 中配置自动扫描**
+
+```xml
+<context:component-scan base-package="soundsystem" />
 ```
