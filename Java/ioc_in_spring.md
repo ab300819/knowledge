@@ -271,6 +271,7 @@ hello.sayHello();
 #### ##创建可发现 *Bean* 并自动扫描
 
 * `@Component` 标注一个普通的 Spring Bean 类（可以指定 *Bean* 名称，未指定时默认为小写字母开头的类名）
+> `@Named('bean名称')` 是 Java 依赖注入规范提供的注解，有一些细微的差异，但是大多数场景可以相互替换。但是 `@Component` 语义更明确
 * `@Controller` 标注一个控制器类
 * `@Service` 标注一个业务逻辑类
 * `@Repository` 标注一个DAO类
@@ -279,17 +280,28 @@ hello.sayHello();
 
 ```java
 @Configuration 
-// @ComponentScan("soundsystem")
-// @ComponentScan(basePackages="soundsystem")
-// @ComponentScan(basePackages={"soundsystem", "video"})
 @ComponentScan 
 public class BeanConfig {
 
 }
 ```
 
+* `@ComponentScan("soundsystem")`
+* `@ComponentScan(basePackages="soundsystem")`
+* `@ComponentScan(basePackages={"soundsystem", "video"})`
+* `@ComponentScan(basePackageClasses={CDPlayer.class, DVDPlayer.class})` 这些类所在的包将会作为组件扫描的基础包
+
 **在 XML 中配置自动扫描**
 
 ```xml
 <context:component-scan base-package="soundsystem" />
 ```
+
+#### ##实现自动装配
+
+* 使用 `@Autowired` 进行自动装配
+* 使用 `@Autowired(required = false)` 在没有匹配的 bean 的时候，会使这个 bean 处于未装配状态
+* `@Inject` 属于 Java 依赖注入规范，也能用来自动装配；和 `@Autowired` 有一些细微的区别，但是大多数场景可以互换使用
+
+### #通过 Java 代码装配 *Bean*
+
