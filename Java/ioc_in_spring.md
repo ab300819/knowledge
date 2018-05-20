@@ -570,7 +570,19 @@ public class TestConfig {
 
 * 在 `web.xm` 中配置默认 *profile*
 ```xml
+<servlet>
+    <init-param>
+        <param-name>spring.profiles.default</param-name>
+        <param-value>dev</param-value>
+    </init-param>
+</servlet>
 
+<context-param>
+    <param-name>spring.profiles.default</param-name>
+    <param-value>dev</param-value>
+</context-param>
 ```
 
 * 在单元测试中，使用 `@ActiveProfiles("dev")` 激活环境
+
+### #2.2 条件化的 *Bean*
