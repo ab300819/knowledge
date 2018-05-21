@@ -772,4 +772,16 @@ public Notepad notepad() {
 <bean id="notepad" class="com.myapp.Notepad" scope="prototype"/>
 ```
 
-**使用回话和请求作用域**
+**使用会话和请求作用域**
+
+```java
+@Component 
+@Scope(value = WebApplicationContext.SCOPE_SESSION, 
+        proxyMode= ScopedProxyMode. INTERFACES) 
+public ShoppingCart cart() { ... }
+```
+
+`WebApplicationContext.SCOPE_SESSION` 会告诉 Spring 为 web 应用中的每个会话创建一个 `ShoppingCart`，会创建多个 `ShoppingCart` *Bean* 实例，但是对于每个会话只有一个实例，相当于对于当前会话是单例的。<br>
+
+设置 `proxyMode` 不会将实际的 `ShoppingCart` *Bean* 注入到目标中，而是注入到 `ShoppingCart` *Bean* 代理中，该代理对外暴露与 `ShoppingCart` 相同的方法。<br>
+
