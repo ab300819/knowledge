@@ -586,3 +586,190 @@ public class TestConfig {
 * 在单元测试中，使用 `@ActiveProfiles("dev")` 激活环境
 
 ### #2.2 条件化的 *Bean*
+
+使用 `@Conditional` 注解，根据计算结果，如果是 `true` 则实例化 *Bean*，如果是 `false`，则忽略<br>
+
+```java
+@Bean
+@Conditional(MagicExistsCondition.class)
+public MagicBean magicBean() {
+    return new MagicBean();
+}
+```
+
+`@Conditional` 接受实现 `Condition` 接口的类作为参数；`Condition` 接口只有一个 `matches` 方法<br>
+
+```java
+public class MagicExistsCondition implements Condition {
+
+    @Override
+    public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+        Environment env = context.getEnvironment();
+        return env.containsProperty("magic");
+    }
+
+}
+```
+
+`ConditionContext` 接口内容
+
+```java
+public interface ConditionContext {
+
+	BeanDefinitionRegistry getRegistry();
+
+	ConfigurableListableBeanFactory getBeanFactory();
+
+	Environment getEnvironment();
+
+	ResourceLoader getResourceLoader();
+
+    ClassLoader getClassLoader();
+
+}
+```
+
+参数    |   作用
+--- |   ---
+`BeanDefinitionRegistry`  |   检查 *Bean* 定义
+`ConfigurableListableBeanFactory`  |    检查是 *Bean* 是否存在，甚至探查 *Bean* 属性 
+`Environment`  |    检查环境变量是否存在以及它的值 
+`ResourceLoader`  |   加载的资源
+`ClassLoader`  |   加载并检查类是否存在
+
+`AnnotatedTypeMetadata` 接口内容
+
+```java
+public interface AnnotatedTypeMetadata {
+    boolean isAnnotated(String var1);
+
+    @Nullable
+    Map<String, Object> getAnnotationAttributes(String var1);
+
+    @Nullable
+    Map<String, Object> getAnnotationAttributes(String var1, boolean var2);
+
+    @Nullable
+    MultiValueMap<String, Object> getAllAnnotationAttributes(String var1);
+
+    @Nullable
+    MultiValueMap<String, Object> getAllAnnotationAttributes(String var1, boolean var2);
+}
+```
+
+### #2.3 处理自动装配的歧义
+
+#### ##2.3.1 标记首选的 *Bean*
+
+```java
+@Component 
+@Primary 
+public class IceCream implements Dessert { 
+    ... 
+}
+```
+
+```java
+@Bean 
+@Primary 
+public Dessert iceCream() { 
+    return new IceCream(); 
+}
+```
+
+```xml
+<bean id="iceCream" class="com.desserteater.IceCream" primary="true"/>
+```
+
+#### ##2.3.2 限定自动装配的 *Bean*
+
+`@Qualifier` 注解是使用限定符的主要方式，可以与 `@Autowired` 和 `@Inject` 协同使用，在注入时指定的 *Bean*
+
+```java
+@Autowired 
+@Qualifier("iceCream") 
+public void setDessert( Dessert dessert) { 
+    this. dessert = dessert; 
+}
+```
+
+**创建自定义限定符**
+
+```java
+@Component 
+@Qualifier("cold") 
+public class IceCream implements Dessert { 
+    ... 
+}
+```
+
+```java
+@Bean 
+@Qualifier("cold") 
+public Dessert iceCream() { 
+    return new IceCream(); 
+}
+```
+
+**创建自定义限定符注解**
+
+```java
+@Target({
+        ElementType.CONSTRUCTOR,
+        ElementType.FIELD,
+        ElementType.METHOD,
+        ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Qualifier
+public @interface Code {
+}
+```
+
+使用自定义注解
+
+```java
+@Component 
+@Cold 
+@Creamy 
+public class IceCream implements Dessert { ... }
+```
+
+```java
+@Autowired 
+@Cold 
+@Creamy 
+public void setDessert( Dessert dessert) { 
+    this. dessert = dessert; 
+}
+```
+
+### #2.4 *Bean 的作用域*
+
+Spring 作用域：
+
+* 单例（`Singleton`）：在整个应用中，只创建 `Bean` 的一个实例（默认）。
+* 原型（`Prototype`）：每次注入或者通过 Spring 应用上下文获取的时候， 都会创建一个新的 `Bean` 实例。
+* 会话（`Session`）：在 Web 应用中，为每个会话创建一个 `Bean` 实例。 
+* 请求（`Rquest`）：在 Web 应用中，为每个请求创建一个 `Bean` 实例。
+
+用法
+
+```java
+@Component 
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE) 
+public class Notepad { ... }
+```
+
+```java
+@Bean 
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE) 
+public Notepad notepad() { 
+    return new Notepad(); 
+}
+```
+
+```xml
+<bean id="notepad" class="com.myapp.Notepad" scope="prototype"/>
+```
+
+**使用回话和请求作用域**
