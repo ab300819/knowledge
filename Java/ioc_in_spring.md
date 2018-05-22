@@ -1,259 +1,10 @@
 # Spring IoC
 
-## 依赖注入三种方式
-
-###  **一、属性注入**
-
-1. xml 配置方式
-
-```java
-public class HelloWorld {
-
-    private String message;
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public void printMessage() {
-        System.out.println(message);
-    }
-}
-```
-
-配置文件
-
-```XML
-<bean id="helloWorld" class="com.erercise.test.HelloWorld">
-    <property name="message" value="Hello World!"/>
-</bean>
-```
-
-2. 注解方式
-
-```java
-public class HelloWorld {
-
-    @Value("Test Hello World!")
-    private String message;
-
-    public void printMessage() {
-        System.out.println(message);
-    }
-}
-```
-
-注解文件
-```java
-@Configuration
-public class AppConfig {
-
-    @Bean
-    public HelloWorld helloWorld() {
-        return new HelloWorld();
-    }
-}
-```
-
-### 二、接口注入
-
-1. xml 配置方式
-
-```java
-public interface Axel {
-    String chop();
-}
-
-public class StoneAxel implements Axel {
-
-    @Override
-    public String chop() {
-        return "这斧头好难用！";
-    }
-}
-```
-
-```java
-public interface Person {
-    void useAxel();
-}
-
-public class Chinese implements Person {
-
-    private Axel axel;
-
-    public void setAxel(Axel axel) {
-        this.axel = axel;
-    }
-    
-    @Override
-    public void useAxel() {
-        System.out.println(axel.chop());
-    }
-}
-```
-
-配置文件
-```xml
-<bean id="chinese" class="com.erercise.test.Chinese">
-    <property name="axel" ref="stoneAxel"/>
-</bean>
-<bean id="stoneAxel" class="com.erercise.test.StoneAxel">
-
-</bean>
-```
-
-2. 注解方式
-
-```java
-public interface Axel {
-    String chop();
-}
-
-public class StoneAxel implements Axel {
-    public String chop() {
-        return "这斧头好难用！";
-    }
-}
-
-public interface Person {
-    void useAxel();
-}
-
-public class Chinese implements Person {
-
-    @Autowired
-    private Axel axel;
-    
-    @Override
-    public void useAxel() {
-        System.out.println(axel.chop());
-    }
-}
-```
-
-注解文件
-
-```java
-@Configuration
-public class AppConfig {
-
-    @Bean
-    public HelloWorld helloWorld() {
-        return new HelloWorld();
-    }
-
-    @Bean
-    public Chinese chinese() {
-        return new Chinese();
-    }
-
-    @Bean
-    public StoneAxel stoneAxel() {
-        return new StoneAxel();
-    }
-}
-```
-
-### 三、构造方法注入
-
-1. xml 配置方式
-
-```java
-public class Chinese implements Person {
-
-    private Axel axel;
-
-    public Chinese(Axel axel) {
-        this.axel = axel;
-    }
-
-    @Override
-    public void useAxel() {
-        System.out.println(axel.chop());
-    }
-}
-```
-
-配置文件 
-
-```xml
-<bean id="chinese" class="com.erercise.test.Chinese">
-    <constructor-arg ref="stoneAxel"/>
-</bean>
-```
-
-## `Spring Bbean` 配置三种方式
-
-### 一、 xml 配置
-
-1. `bean` 配置
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
-    
-    <bean id="hello" class="Hello"/>
-
-</beans>
-```
-
-2. `main` 方法
-```java
-ApplicationContext ac = new ClassPathXmlApplicationContext("spring-config.xml");
-Hello hello = (Hello) ac.getBean("hello");
-hello.sayHello();
-```
-
-### 二、 基于注解配置
-
-```java
-@Scope("prototype")   
-@Lazy(true)   
-@Component("loginUserDao")   
-public class LoginUserDao {   
-
-    // 用于设置初始化方法   
-    @PostConstruct  
-    public void myInit() {   
-
-    }   
-
-    // 用于设置销毁方法   
-    @PreDestroy  
-    public void myDestroy() {   
-    }   
-}   
-```
-
-
-
-### 三、 Java类配置
-
-1. 配置类
-
-```java
-@Configuration
-public class Configure {
-
-    @Bean
-    public Hello hello() {
-        return new Hello();
-    }
-
-}
-```
-
-2. `main` 方法
-
-```java
-ApplicationContext ac = new AnnotationConfigApplicationContext();
-Hello hello = ac.getBean(Hello.class);
-hello.sayHello();
-```
-
----
+Spring 三种ApplicationContext
+
+* `AnnotationConfigApplicationContext` 通过注解配置来加载 Spring 上下文，使用方式：`ApplicationContext c = new AnnotationConfigApplicationContext(ContextConfig.class);`
+* `ClassPathXmlApplicationContext` 通过 XML 加载 Spring 上下文方式：`ApplicationContext ctx = new ClassPathXmlApplicationContext("applicationContext.xml");`
+* `FileSystemXmlApplicationContext` 和 `ClassPathXmlApplicationContext` 非常类似，只是这里的配置文件可以位于整个文件系统中任意位置
 
 ## 一、装配 Bean
 
@@ -743,7 +494,7 @@ public void setDessert( Dessert dessert) {
 }
 ```
 
-### #2.4 *Bean 的作用域*
+### #2.4 *Bean* 的作用域
 
 Spring 作用域：
 
@@ -781,7 +532,145 @@ public Notepad notepad() {
 public ShoppingCart cart() { ... }
 ```
 
+```java
+@Component 
+public class StoreService { 
+
+    @Autowired 
+    public void setShoppingCart(ShoppingCart shoppingCart) { 
+        this. shoppingCart = shoppingCart; 
+    } 
+
+}
+```
+
 `WebApplicationContext.SCOPE_SESSION` 会告诉 Spring 为 web 应用中的每个会话创建一个 `ShoppingCart`，会创建多个 `ShoppingCart` *Bean* 实例，但是对于每个会话只有一个实例，相当于对于当前会话是单例的。<br>
+
+`StoreService` *Bean* 是一个单例的 *Bean*，会在 Spring 应用上下文加载的时候创建，在它创建时，Spring 会尝试将 `ShoppingCart` 注入，但是 `ShoppingCart` *Bean* 是会话作用域，此时并不存在，直到用户进入系统，创建会话，才有 `StoreService` 实例。<br>
+
+而且系统会存在多个 `ShoppingCart`，每个用户一个。 并不想让 Spring 注入某个固定的 `ShoppingCart` 实例到 `StoreService` 中。只希望使用的 `ShoppingCart` 实例恰好是当前会话所对应的那一个。<br>
 
 设置 `proxyMode` 不会将实际的 `ShoppingCart` *Bean* 注入到目标中，而是注入到 `ShoppingCart` *Bean* 代理中，该代理对外暴露与 `ShoppingCart` 相同的方法。<br>
 
+如果 `ShoppingCart` 是一个具体类，就必须使用 *CGLib* 来生成基于类的代理；需要将 `proxyMode` 设置为 `ScopedProxyMode.TARGET_CLASS`。<br>
+
+**在 XML 中声明作用域代理**
+
+```xml
+<bean id="cart" class="com.myapp.ShoppingCart" scope="session">
+    <aop:scoped-proxy/> 
+</bean>
+```
+
+默认情况下，它会使用 CGLib 创建目标类的代理。 但是也可以将 `proxy-target-class` 属性设置为 `false`， 进而要求它生成基于接口的代理
+
+### #2.5 运行时值注入
+
+#### ##2.5.1 注入外部值
+
+```java
+@Configuration
+@PropertySource("classpath:app.properties")
+public class ExpressiveConfig {
+
+    @Autowired
+    Environment env;
+
+    public BlankDisc disk() {
+        return new BlankDisc(env.getProperty("disc.title"), env.getProperty("disc.artist"));
+    }
+
+}
+```
+
+**Spring 的 Environment**
+
+`Environment` 的 `getProperty()` 有四种重载形式
+
+* `String getProperty(String key)`
+* `String getProperty(String key, String defaultValue)` 当目标值不存在时 `defaultValue` 为默认值
+* `T getProperty(String key, Class< T> type)`
+* `T getProperty(String key, Class< T> type, T defaultValue)`
+
+使用 `getRequiredProperty()` 目标属性必须存在，不能为空
+
+* `containsProperty()` 判断属性是否存在
+* `getPropertyAsClass()` 将属性解析为类，例：`Class<CompactDisc> cdClass = env.getPropertyAsClass("disc.class", CompactDisc.class);`
+
+**解析属性占位符**
+
+使用 `${...}` 包装属性名称
+
+在 XML 配置文件中
+
+```xml
+<bean id="blankDisc" class="com.exercise.test.jms.BlankDisc" c:artist="${disc.title}" c:title="${disc.artist}"/>
+```
+
+在 JavaConfig 中
+
+```java
+public class BlankDisc {
+
+    private String title;
+    private String artist;
+
+    public BlankDisc(@Value("${disc.artist}") String title, @Value("${disc.title}") String artist) {
+        this.title = title;
+        this.artist = artist;
+    }
+}
+```
+
+要使用占位符，需要配置 `PropertySourcesPlaceholderConfigurer` *Bean*
+
+```java
+@Bean 
+public static PropertySourcesPlaceholderConfigurer placeholderConfigurer() { 
+    return new PropertySourcesPlaceholderConfigurer(); 
+}
+```
+
+```xml
+<context:property-placeholder/>
+```
+
+#### ##2.5.2 使用 Spring 表达式语言进行装配
+
+使用 Spring 表达式语言（Spring Expression Language， SpEL），需将表达式放入 `#{...}` 中；
+
+**表示字面值**
+
+* `#{3.14159}` 浮点值
+* `#{9.87E4}` 科学记数法
+* `#{'Hello'}` 字符串
+* `#{false}` 布尔值
+
+**引用 *Bean*、属性和方法**
+
+* `#{sgtPeppers}` *Bean* id
+* `#{sgtPeppers.artist}` *Bean* 属性
+* `#{artistSelector.selectArtist()}` *Bean* 方法
+
+**表达式使用类型**
+
+* `#{T(System).currentTimeMillis()}`
+* `#{T(java.lang.Math).PI}`
+
+**计算正则表达式**
+
+`#{admin.email matches '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.com'}`
+
+**计算集合**
+
+* `#{jukebox.songs[4].title}` 其中 `jukebox` 为 *Bean* ID 
+* `#{jukebox.songs[T(java.lang.Math).random()*jukebox.songs.size()].title}` 随机选择
+
+使用查询运算符（`.?[]`），例：`#{jukebox.songs.?[artist eq 'Aerosmith']}` 得到 Aerosmith 所有歌曲<br>
+
+`.^[]` 和 `.$[]`，用来在集合中查询第一个匹配项和最后一个匹配项<br>
+
+`.![]` 投影运算符，会从集合的每个成员中选择特定的属性放到另外一个集合中
+
+* `#{jukebox.songs.![title]}` 将 `title` 属性投影到一个新的 `String` 类型的集合中
+* `#{jukebox.songs.?[artist eq 'Aerosmith'].![title]}` 获得 Aerosmith 所有歌曲的名称列表

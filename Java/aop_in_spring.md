@@ -2,17 +2,17 @@
 
 **这种在运行时，动态地将代码切入到类的指定方法、指定位置上的编程思想就是面向切面的编程**
 
-## Spring AOP 原理总结
+## 一、Spring AOP 原理总结
 
 ### #动态代理
 
-* **JDK动态代理**：只能为接口创建动态代理实例，而不能针对类 。
+* **JDK 动态代理**：只能为接口创建动态代理实例，而不能针对类 。
 * **CGLib（Code Generation Library）动态代理**：可以为任何类创建织入横切逻辑代理对象，主要是对指定的类生成一个子类，覆盖其中的方法，因为是继承，所以该类或方法最好不要声明成 `final`。
 
 ### #原理对比
 
 * **JDK动态代理**：JDK动态代理技术。通过需要代理的目标类的 `getClass().getInterfaces()` 方法获取到接口信息（这里实际上是使用了Java反射技术。 `getClass()` 和 `getInterfaces()` 函数都在Class类中，Class对象描述的是一个正在运行期间的Java对象的类和接口信息），通过读取这些代理接口信息生成一个实现了代理接口的动态代理Class（动态生成代理类的字节码），然后通过反射机制获得动态代理类的构造函数，并利用该构造函数生成该Class的实例对象（`InvokeHandler` 作为构造函数的入参传递进去），在调用具体方法前调用 `InvokeHandler` 来处理。
-* **CGLib动态代理**：字节码技术。利用asm开源包，把代理对象类的class文件加载进来，通过修改其字节码生成子类来处理。采用非常底层的字节码技术，为一个类创建子类，并在子类中采用方法拦截的技术拦截所有父类方法的调用，并顺势织入横切逻辑。 
+* **CGLib动态代理**：字节码技术。利用 asm 开源包，把代理对象类的 class 文件加载进来，通过修改其字节码生成子类来处理。采用非常底层的字节码技术，为一个类创建子类，并在子类中采用方法拦截的技术拦截所有父类方法的调用，并顺势织入横切逻辑。 
 
 ### #AOP 术语
 
@@ -42,9 +42,9 @@
 
 ### #AOP 的动态代理
 
-Spring AOP 基于XML配置的AOP和基于@AspcetJ注解的AOP，这两种方法虽然在配置切面时的表现方式不同，但底层都是使用动态代理技术（JDK代理或CGLib代理）
+Spring AOP 基于 XML 配置的 AOP 和基于 `@AspcetJ` 注解的 AOP，这两种方法虽然在配置切面时的表现方式不同，但底层都是使用动态代理技术（JDK 代理或 CGLib 代理）。
 
-**Spring可以继承AspcetJ，但AspcetJ本身并不属于Spring AOP的范畴**
+**Spring 可以继承 AspcetJ，但 AspcetJ 本身并不属于 Spring AOP 的范畴**
 
 * **AspectJ**
 
@@ -57,44 +57,16 @@ AspectJ 在编译时“自动”编译得到了一个新类，这个新类增强
 Spring 允许使用 AspectJ Annotation 用于定义方面（Aspect）、切入点（Pointcut）和增强处理（Advice），Spring 框架则可识别并根据这些 Annotation 来生成 AOP 代理。Spring 只是使用了和 AspectJ 5 一样的注解，但并没有使用 AspectJ 的编译器或者织入器（Weaver），底层依然使用的是 Spring AOP，依然是在运行时动态生成 AOP 代理，并不依赖于 AspectJ 的编译器或者织入器。<br>
 简单地说，Spring 依然采用运行时生成动态代理的方式来增强目标对象，所以它不需要增加额外的编译，也不需要 AspectJ 的织入器支持；而 AspectJ 在采用编译时增强，所以 AspectJ 需要使用自己的编译器来编译 Java 文件，还需要织入器。
 
-### #AOP 的使用
-
-##**@AspectJ的使用**
-
-如果不打算使用 Spring 的 XML Schema 配置方式，则应该在 Spring 配置文件中增加如下片段来启用 `@AspectJ` 支持：
-
-```xml
-<!-- 启动 @AspectJ 支持 -->
-<bean class="org.springframework.aop.aspectj.annotation.AnnotationAwareAspectJAutoProxyCreator"/>
-```
-
-上面配置文件中的 `AnnotationAwareAspectJAutoProxyCreator` 是一个 Bean 后处理器（`BeanPostProcessor`），该 Bean 后处理器将会为容器中 Bean 生成 AOP 动态代理。 
-
-
-使用 `@Aspect` 标注一个 Java 类，该 Java 类将会作为方面 Bean（也是可以被Spring容器管理的Bean），如下面代码片段所示： 
-
-```java
-// 使用 @Aspect 定义一个方面类
-@Aspect 
-public class LogAspect {
-
-    // 定义该类的其他内容
-    ... 
-}
-```
-
-当我们使用 `@Aspect` 来修饰一个 Java 类之后，Spring 将不会把该 Bean 当成组件 Bean 处理，因此负责自动增强的后处理 Bean 将会略过该 Bean，不会对该 Bean 进行任何增强处理。开发时无须担心使用 `@Aspect` 定义的方面类被增强处理，当 Spring 容器检测到某个 Bean 类使用了 `@Aspect` 标注之后，Spring 容器不会对该 Bean 类进行增强。
-
 ##**CGLib代理与JDK动态代理**
 
-1. 如果目标对象实现了接口，默认情况下会采用JDK的动态代理实现AOP 
-2. 如果目标对象实现了接口，可以强制使用CGLIB实现AOP 
-3. 如果目标对象没有实现了接口，必须采用CGLIB库，spring会自动在JDK动态代理和CGLIB之间转换
+1. 如果目标对象实现了接口，默认情况下会采用 JDK 的动态代理实现 AOP 
+2. 如果目标对象实现了接口，可以强制使用 CGLIB 实现 AOP 
+3. 如果目标对象没有实现了接口，必须采用 CGLIB 库，Spring 会自动在 JDK 动态代理和 CGLIB 之间转换
 
 ##**如何强制使用CGLIB实现AOP**
 
 1. 添加CGLIB库
-2. 在spring配置文件中加入 `<aop:aspectj-autoproxy proxy-target-class="true"/>`
+2. 在 Spring 配置文件中加入 `<aop:aspectj-autoproxy proxy-target-class="true"/>`
 
 ##**AOP自动代理原理**
 
@@ -106,7 +78,9 @@ Spring提供了自动代理机制，让容器为我们自动生成代理。在�
 * 基于 **Advisor** 匹配机制的自动代理创建器：它会对容器中所有的 **Advisor** 进行扫描，自动将这些切面应用到匹配的Bean中（即为目标Bean创建代理实例），实现类为 `DefaultAdvisorAutoProxyCreator`
 * 基于Bean中 `AspjectJ` 注解标签的自动代理创建器：为包含 `AspectJ` 注解的Bean自动创建代理实例，它的实现类是 `AnnotationAwareAspectJAutoProxyCreator` ，该类是Spring 2.0的新增类。
 
-## Spring AOP 使用
+## 二、Spring AOP 的使用
+
+### #2.1 切点
 
 ```java
 public interface Performance {
@@ -116,11 +90,19 @@ public interface Performance {
 }
 ```
 
-### 切点
+* `execution(* com.exercise.demo.aspect.component.Performance.perform(..))` 执行方法时触发
+* `execution(* com.exercise.demo.aspect.component.Performance.perform(int ))&&args(test)` 传入参数
+* `execution(* com.exercise.demo.aspect.component.Performance.perform()) && within(com.exercise.demo.aspect.component.*)` 并且 `com.exercise.demo.aspect.component` 任意类方法被调用时
 
-### 切面
+**再切点中选择*Bean***
 
-#### #使用注解
+`execution(* com.exercise.demo.aspect.component.Performance.perform()) && bean('test')`
+
+在执行 `Performance` 的 `perform()` 方法时应用通知，但限定 *Bean* 的 ID 为 test
+
+### #2.2 使用注解创建切面
+
+#### ##2.2.1 定义切面
 
 注解    |   通知
 --- |   ---
@@ -129,3 +111,210 @@ public interface Performance {
 `@AfterThrowing`    |   通知方法会在目标方法抛出异常后调用 
 `@Around`   |   通知方法会将目标方法封装起来 
 `@Before`   |   通知方法会在目标方法调用之前执行
+
+```java
+@Aspect
+@Component
+public class AspectConfig {
+
+    private static Logger logger = LoggerFactory.getLogger(AspectConfig.class);
+
+    @Before("execution(* com.exercise.demo.aspect.component.Animal.walk(int ))&&args(test)")
+    public void silenceCellPhone(int test) {
+        logger.debug("test 开始是" + test);
+        logger.debug("Silencing cell phone");
+    }
+
+    @Before("execution(* com.exercise.demo.aspect.component.Animal.walk())")
+    public void takeSeats() {
+        logger.debug("Take seats");
+    }
+}
+```
+
+对于频繁使用的切点，可以通过 `@Pointcut` 注解，定义一次，然后每次需要的时候引用它
+
+```java
+@Aspect
+@Component
+public class AspectConfig {
+
+    private static Logger logger = LoggerFactory.getLogger(AspectConfig.class);
+
+    @Pointcut("execution(* com.exercise.demo.aspect.component.Performance.perform(..))")
+    public void performance() {}
+
+    @Before("performance()")
+    public void silenceCellPhone() {
+        logger.debug("Silencing cell phone");
+    }
+}
+```
+
+`performance()` 方法的实际内容并不重要，在这里它实际上应该是空的。其实该方法本身只是一个标识，供 `@Pointcut` 注解依附。<br>
+
+上述配置是在 Spring Boot 中配置，如果使用 JavaConfig 配置
+
+```java
+@Configuration
+@EnableAspectJAutoProxy
+@ComponentScan
+public class TotalConfig {
+
+    @Bean
+    public AspectConfig aspectConfig() {
+        return new AspectConfig();
+    }
+
+}
+```
+
+使用 XML 配置
+
+```xml
+<context:component-scan base-package="com.exercise.demo.aspect.component"/>
+<aop:aspectj-autoproxy/>
+<bean class="com.exercise.demo.aspect.config.AspectConfig"/>
+```
+
+#### ##2.2.2 创建环绕通知
+
+```java
+@Aspect
+@Component
+public class AspectConfig {
+
+    private static Logger logger = LoggerFactory.getLogger(AspectConfig.class);
+
+    @Pointcut("execution(* com.exercise.demo.aspect.component.Performance.perform(..))")
+    public void performance() {
+        logger.debug("定义总切点");
+    }
+
+    /**
+     * 创建环绕通知
+     *
+     * @param jp
+     * @throws Throwable
+     */
+    @Around("performance()")
+    public void watchPerformance(ProceedingJoinPoint jp) throws Throwable {
+
+        logger.debug("Silencing cell phones");
+        logger.debug("Taking seats");
+        jp.proceed();
+        logger.debug("CLAP CLAP CLAP!!!");
+    }
+```
+
+#### ##2.2.3 处理通知中参数
+
+```java
+@Aspect
+@Component
+public class AspectConfig {
+
+    private static Logger logger = LoggerFactory.getLogger(AspectConfig.class);
+
+    @Before("execution(* com.exercise.demo.aspect.component.Animal.walk(int )) && args(test)")
+    public void silenceCellPhone(int test) {
+        logger.debug("test 开始是" + test);
+        logger.debug("Silencing cell phone");
+    }
+}
+```
+
+#### ##2.2.4 通过注解引入新功能
+
+```java
+@DeclareParents(
+        value = "com.exercise.demo.aspect.component.Person+",
+        defaultImpl = FoodImpl.class)
+public static Food food;
+```
+
+`@DeclareParents` 注解由三部分组成： 
+* `value` 属性指定了哪种类型的 *Bean* 要引入该接口。在本例中，也就是所有实现 `Person` 的类型。（标记符后面的 `+` 表示是 `Person` 的所有子类型，而不是 `Person` 本身。） 
+* `defaultImpl` 属性指定了为引入功能提供实现的类。在这里，我们指定的是 `FoodImpl` 提供实现。 
+public static Food food;
+* `@DeclareParents` 注解所标注的静态属性指明了要引入了接口。在这里，我们所引入的是 `Food` 接口。
+
+### #2.3 在 XML 中声明切面
+
+JavaConfig 配置
+
+```java
+@Aspect
+@Component
+public class AspectConfig {
+
+    private static Logger logger = LoggerFactory.getLogger(AspectConfig.class);
+
+    @Before("execution(* com.exercise.demo.aspect.component.Animal.walk(int ))&&args(test)")
+    public void silenceCellPhone(int test) {
+        logger.debug("test 开始是" + test);
+        logger.debug("Silencing cell phone");
+    }
+
+    @Before("execution(* com.exercise.demo.aspect.component.Animal.walk())")
+    public void takeSeats() {
+        logger.debug("Take seats");
+    }
+
+    @Pointcut("execution(* com.exercise.demo.aspect.component.Performance.perform(..))")
+    public void performance() {
+        logger.debug("定义总切点");
+    }
+
+    /**
+     * 创建环绕通知
+     *
+     * @param jp
+     * @throws Throwable
+     */
+    @Around("performance()")
+    public void watchPerformance(ProceedingJoinPoint jp) throws Throwable {
+
+        logger.debug("Silencing cell phones");
+        logger.debug("Taking seats");
+        jp.proceed();
+        logger.debug("CLAP CLAP CLAP!!!");
+    }
+
+    /**
+     * 引入新功能
+     */
+    @DeclareParents(
+            value = "com.exercise.demo.aspect.component.Person+",
+            defaultImpl = FoodImpl.class)
+    public static Food food;
+
+}
+```
+
+对应 XML 配置
+
+```xml
+<bean id="aspectConfig" class="com.exercise.test.aspect.config.AspectConfig"/>
+
+<aop:config>
+    <aop:aspect ref="aspectConfig">
+        <!--前后通知-->
+        <aop:before pointcut="execution(* com.exercise.test.aspect.component.Animal.walk())"
+                    method="silenceCellPhone"/>
+        <aop:before method="takeSeats"
+                    pointcut="execution(* com.exercise.test.aspect.component.Animal.walk())"/>
+
+        <!--环绕通知-->
+        <aop:pointcut id="performance"
+                      expression="execution(* com.exercise.test.aspect.component.Performance.perform())"/>
+        <aop:around method="watchPerformance"
+                    pointcut-ref="performance"/>
+
+        <!--添加新功能-->
+        <aop:declare-parents types-matching="com.exercise.test.aspect.component.Person+"
+                                implement-interface="com.exercise.test.aspect.component.Food"
+                                default-impl="com.exercise.test.aspect.component.FoodImpl"/>
+    </aop:aspect>
+</aop:config>
+```
