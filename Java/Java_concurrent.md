@@ -2,11 +2,172 @@
 
 **JUC**
 
+Java 并发包 `java.util.concurrnt`
+
 **AQS**
+
+抽象类 ` AbstractQueuedSynchronizer`
 
 **CAS**
 
-## Java 中锁分类
+CAS（Compare and swap）比较和替换是设计并发算法时用到的一种技术。简单来说，比较和替换是使用一个期望值和一个变量的当前值进行比较，如果当前变量的值与我们期望的值相等，就使用一个新值替换当前变量的值。
+
+## 线程间通信
+
+* 面向字节： `PipedOutputStream、` `PipedInputStream`
+* 面向字符: `PipedWriter`、 `PipedReader`
+
+```java
+public class WriteData {
+
+	public void writeMethod(PipedOutputStream out) {
+		try {
+			System.out.println("write :");
+			for (int i = 0; i < 300; i++) {
+				String outData = "" + (i + 1);
+				out.write(outData.getBytes());
+				System.out.print(outData);
+			}
+			System.out.println();
+			out.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+}
+```
+
+```java
+public class ReadData {
+
+	public void readMethod(PipedInputStream input) {
+		try {
+			System.out.println("read  :");
+			byte[] byteArray = new byte[20];
+			int readLength = input.read(byteArray);
+			while (readLength != -1) {
+				String newData = new String(byteArray, 0, readLength);
+				System.out.print(newData);
+				readLength = input.read(byteArray);
+			}
+			System.out.println();
+			input.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+}
+```
+
+```java
+public class ThreadWrite extends Thread {
+
+	private WriteData write;
+	private PipedOutputStream out;
+
+	public ThreadWrite(WriteData write, PipedOutputStream out) {
+		super();
+		this.write = write;
+		this.out = out;
+	}
+
+	@Override
+	public void run() {
+		write.writeMethod(out);
+	}
+
+}
+```
+
+```java
+public class ThreadRead extends Thread {
+
+	private ReadData read;
+	private PipedInputStream input;
+
+	public ThreadRead(ReadData read, PipedInputStream input) {
+		super();
+		this.read = read;
+		this.input = input;
+	}
+
+	@Override
+	public void run() {
+		read.readMethod(input);
+	}
+}
+```
+
+```java
+public class Run {
+
+	public static void main(String[] args) {
+
+		try {
+			WriteData writeData = new WriteData();
+			ReadData readData = new ReadData();
+
+			PipedInputStream inputStream = new PipedInputStream();
+			PipedOutputStream outputStream = new PipedOutputStream();
+
+			// inputStream.connect(outputStream);
+			outputStream.connect(inputStream);
+
+			ThreadRead threadRead = new ThreadRead(readData, inputStream);
+			threadRead.start();
+
+			Thread.sleep(2000);
+
+			ThreadWrite threadWrite = new ThreadWrite(writeData, outputStream);
+			threadWrite.start();
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+}
+```
+
+## Lock 接口
+
+`Lock` 接口有三个实现类：
+
+* `ReentrantLock`
+* `ReentrantReadWriteLock.ReadLock`
+* `ReentrantReadWriteLock.WriteLock`
+
+使用方式 
+
+```java
+Lock lock = new ReentrantLock();
+lock.lock();
+try{
+
+}finally{
+    lock.unlock();
+}
+```
+
+> 最好不要把获取锁的过程写在try语句块中，因为如果在获取锁时发生了异常，异常抛出的同时也会导致锁无法被释放。
+
+**ReentrantReadWriteLock**
+
+`ReentrantReadWriteLock` 是一个读写锁：
+* 在 **读** 取数据的时候，可以 **多个线程同时进入到到临界区**(被锁定的区域)
+* 在 **写** 数据的时候，无论是读线程还是写线程都是 **互斥** 的
+
+一般来说：我们大多数都是读取数据得多，修改数据得少。所以这个读写锁在这种场景下就很有用了！
+
+总结：
+
+* `ReentrantReadWriteLock` 和 `ReentrantLock` 都支持公平和非公平模式，公平模式下会去看FIFO队列线程是否是在队头，而非公平模式下是没有的；
+* `ReentrantReadWriteLock` 是一个读写锁，如果读的线程比写的线程要多很多的话，那可以考虑使用它。它使用 `state` *的变量 **高16位是读锁，低16位是写锁**
+* 写锁可以降级为读锁，读锁不能升级为写锁
+* 写锁是互斥的，读锁是共享的。
+
+## 锁分类
 
 ### #公平锁/非公平锁
 
@@ -96,12 +257,332 @@ public class SpinLock {
 
 使用了 *CAS* 原子操作，`lock` 函数将 `current` 设置为当前线程，并且预测原来的值为空。`unlock` 函数将 `current` 设置为 `null`，并且预测值为当前线程。<br>
 当有第二个线程调用 `lock` 操作时由于 `current` 值不为空，导致循环一直被执行，直至第一个线程调用 `unlock` 函数将 `current` 设置为 `null`，第二个线程才能进入临界区。<br>
-由于自旋锁只是将当前线程不停地执行循环体，不进行线程状态的改变，所以响应速度更快。但当线程数不停增加时，性能下降明显，因为每个线程都需要执行，占用CPU时间。如果线程竞争不激烈，并且保持锁的时间段。适合使用自旋锁。
+由于自旋锁只是将当前线程不停地执行循环体，不进行线程状态的改变，所以响应速度更快。但当线程数不停增加时，性能下降明显，因为每个线程都需要执行，占用CPU时间。如果线程竞争不激烈，并且保持锁的时间段。适合使用自旋锁。<br>
+
+自旋锁衍生出三种: *Ticket Spin Lock*、*CLH Spin Lock*、*MCS Spin Lock*
+
+**Ticket Spin Lock**
+
+为了解决 *Spin Lock* 中随机不公平的问题, 使用排队自旋锁。<br>
+线程想要竞争某个锁，需要先领一张 `ticket`，然后监听 `flag`，发现 `flag` 被更新为手上的 `ticket` 的值了，才能去占领锁。<br>
+
+```java
+public class TicketSpinlock {
+    private AtomicInteger ticket = new AtomicInteger();
+    private AtomicInteger flag = new AtomicInteger();
+    private static final ThreadLocal<Integer> LOCAL = new ThreadLocal<Integer>();
+
+    public void lock() {
+        int myTicket = ticket.getAndIncrement();    //发号必须是一个原子操作，不能多个线程拿到同一个ticket
+        LOCAL.set(myTicket)
+        while (myTicket != flag.get()) {
+        }
+    }
+    // 只有持有锁的才能释放锁
+    public void unlock() {
+        int next = LOCAL.get() + 1;
+        flag.compareAndSet(ticket, next);
+    }
+}
+```
+
+每次都要查询 `flag`，影响性能（必须要到主内存读取，并阻止其他cpu修改）
+
+**CLH Spin Lock**
+
+*CLH* （Craig, Landin, and Hagersten）减少了缓存一致性带来的开销。<br>
+*CLH* 和 *MCS* 是两种类型相似的公平锁，采用链表的相似进行排序
+
+```java
+public class CLHSpinLock {
+
+    public static class CLHNode {
+        private volatile boolean isLocked = true;
+    }
+
+    @SuppressWarnings("unused")
+    private volatile CLHNode tail;
+    private static final ThreadLocal<CLHNode> LOCAL = new ThreadLocal<>();
+    private static final AtomicReferenceFieldUpdater<CLHSpinLock, CLHNode> UPDATER =
+            AtomicReferenceFieldUpdater.newUpdater(CLHSpinLock.class, CLHNode.class, "tail");
+
+    public void lock() {
+        CLHNode node = new CLHNode();
+        LOCAL.set(node);
+        CLHNode preNode = UPDATER.getAndSet(this, node);
+        if (preNode != null) {
+            while (preNode.isLocked) {
+            }
+            preNode = null;
+            LOCAL.set(node);
+        }
+    }
+
+    public void unlock() {
+        CLHNode node = LOCAL.get();
+        if (!UPDATER.compareAndSet(this, node, null)) {
+            node.isLocked = false;
+        }
+        node = null;
+    }
+}
+```
+
+*CLH* 锁的变种被应用于 *JUC* 包下的 `AbstractQueuedSynchronizer`<br>
+*CLH* 是不停的查询前驱变量， 导致不适合在 NUMA 架构下使用（在这种结构下，每个线程分布在不同的物理内存区域）
+
+*MCS Spin Lock*
+
+*CLH* 是在前驱节点的 `locked` 域上自旋，*MCS* 是在自己节点上的 `locked` 域上自旋。不存在 CLH* 的问题。<br>
+实现思路：前驱节点在释放锁之后，会主动将后继节点的 `locked`域更新。<br>
+也就是把多次对远端内存的监听 + 一次对本地内存的更新，简化成了多次对本地内存的监听 + 一次对远端内存的更新。
+
+```java
+public class MCSSpinLock {
+
+    public static class MCSNode {
+        volatile MCSNode next;
+        volatile boolean isLocked = true;
+    }
+
+    private static final ThreadLocal<MCSNode> NODE = new ThreadLocal<>();
+    @SuppressWarnings("unused")
+    private volatile MCSNode queue;
+    private static final AtomicReferenceFieldUpdater<MCSSpinLock, MCSNode> UPDATER = AtomicReferenceFieldUpdater.newUpdater(MCSSpinLock.class,
+            MCSNode.class, "queue");
+
+    public void lock() {
+        MCSNode currentNode = new MCSNode();
+        NODE.set(currentNode);
+        MCSNode preNode = UPDATER.getAndSet(this, currentNode);
+        if (preNode != null) {
+            preNode.next = currentNode;
+            while (currentNode.isLocked) {
+
+            }
+        }
+    }
+
+    public void unlock() {
+        MCSNode currentNode = NODE.get();
+        if (currentNode.next == null) {
+            if (UPDATER.compareAndSet(this, currentNode, null)) {
+
+            } else {
+                while (currentNode.next == null) {
+                }
+            }
+        } else {
+            currentNode.next.isLocked = false;
+            currentNode.next = null;
+        }
+    }
+}
+
+```
+
+*CLH* 的队列是隐式的队列，没有真实的后继结点属性。<br>
+*MCS* 的队列是显式的队列，有真实的后继结点属性。
 
 ### #阻塞锁
+
+```java
+public class CLHLock2 {
+
+    public static class CLHNode {
+        private volatile Thread isLocked;
+    }
+
+    @SuppressWarnings("unused")
+    private volatile CLHNode tail;
+    private static final ThreadLocal<CLHNode> LOCAL = new ThreadLocal<>();
+    private static final AtomicReferenceFieldUpdater<CLHLock2, CLHNode> UPDATER = AtomicReferenceFieldUpdater.newUpdater(CLHLock2.class,
+            CLHNode.class, "tail");
+
+    public void lock() {
+        CLHNode node = new CLHNode();
+        LOCAL.set(node);
+        CLHNode preNode = UPDATER.getAndSet(this, node);
+        if (preNode != null) {
+            preNode.isLocked = Thread.currentThread();
+            LockSupport.park(this);
+            preNode = null;
+            LOCAL.set(node);
+        }
+    }
+
+    public void unlock() {
+        CLHNode node = LOCAL.get();
+        if (!UPDATER.compareAndSet(this, node, null)) {
+            System.out.println("unlock\t" + node.isLocked.getName());
+            LockSupport.unpark(node.isLocked);
+        }
+        node = null;
+    }
+}
+```
+
+改变自 *CLH* 锁，使用 `LockSupport.unpark()` 的阻塞锁；<br>
+阻塞锁的优势在于，阻塞的线程不会占用cpu时间， 不会导致 CPu占用率过高，但进入时间以及恢复时间都要比自旋锁略慢。<br>
+在竞争激烈的情况下 阻塞锁的性能要明显高于 自旋锁。<br>
+理想的情况则是; 在线程竞争不激烈的情况下，使用自旋锁，竞争激烈的情况下使用，阻塞锁。<br>
+
 ### #对象锁
-### #线程锁
+
+1. 类锁：在代码中的方法上加了 `static` 和 `synchronized` 的锁，或者 `synchronized(xxx.class) `的代码段；
+2. 对象锁：在代码中的方法上加了`synchronized` 的锁，或者 `synchronized(this)` 的代码段； 
+3. 私有锁：在类内部声明一个私有属性如 `private Object lock`，在需要加锁的代码段 `synchronized(lock)`；
+4. 对一个全局对象或者类加锁时，对该类的所有对象都起作用；
+
+对一个全局对象加锁
+
+```java
+public class MySynchronized extends Thread{
+    private int val;
+    
+    private static Object lock = new Object();
+    
+    public MySynchronized(int v){
+        val = v;
+    }
+    
+    public void printVal(int v){
+        synchronized (lock){
+            while (true){
+                System.out.println(v);
+            }
+        }
+    }
+    
+    public void run(){
+        printVal(val);
+    }
+}
+```
+
+对整个类加锁
+
+```java
+public class MySynchronized extends Thread{
+    private int val;
+    
+    public MySynchronized(int v){
+        val = v;
+    }
+    
+    public void printVal(int v){
+        synchronized (MySynchronized.class){
+            while (true){
+                System.out.println(v);
+            }
+        }
+    }
+    
+    public void run(){
+        printVal(val);
+    }
+}
+```
+
+> 非静态方法:
+> 给对象加锁(可以理解为给这个对象的内存上锁,注意 只是这块内存,其他同类对象都会有各自的内存锁),这时候
+> 在其他一个以上线程中执行该对象的这个同步方法(注意:是该对象)就会产生互斥
+>
+> 静态方法: 
+> 相当于在类上加锁(*.class 位于代码区,静态方法位于静态区域,这个类产生的对象公用这个静态方法,所以这块
+> 内存，N个对象来竞争), 这时候,只要是这个类产生的对象,在调用这个静态方法时都会产生互斥
+
 ### #锁粗化
+
+对于相邻的几个同步块，如果这些同步块使用的是同一个锁实例，那么JIT编译器会将这些同步块合并为一个大同步块，从而避免了一个线程反复申请、释放同一个锁所导致的开销。然而，锁粗化可能导致一个线程持续持有一个锁的时间变长，从而使得同步在该锁之上的其他线程在申请锁时的等待时间变长。
+
 ### #锁消除
+
+在动态编译同步块的时候，JIT 编译器可以借助一种被称为逃逸分析（Escape Analysis）的技术来判断同步块所使用的锁对象是否只能够被一个线程访问而没有被发布到其他线程。如果同步块所使用的锁对象通过这种分析被证实只能够被一个线程访问，那么JIT编译器在编译这个同步块的时候并不生成 `synchronized` 所表示的锁的申请与释放对应的机器码，而仅生成原临界区代码对应的机器码，这就造成了被动态编译的字节码就像是不包含monitorenter（申请锁）和monitorexit（释放锁）这两个字节码指令一样，即消除了锁的使用。这种编译器优化就被称为锁消除（Lock Elision），它使得特定情况下我们可以完全消除锁的开销。
+
 ### #锁膨胀
+
+如果一系列的连续操作都对同一个对象反复加锁和解锁，甚至加锁操作是出现在循环体中的，那即使没有线程竞争，频繁地进行互斥同步操作也会导致不必要的性能损耗。 如果虚拟机探测到有这样一串零碎的操作都对同一个对象加锁，将会把加锁同步的范围扩展（膨胀）到整个操作序列的外部（由多次加锁编程只加锁一次）。
+
 ### #信号量
+
+`Semaphore` 是用来保护一个或者多个共享资源的访问，`Semaphore` 内部维护了一个计数器，其值为可以访问的共享资源的个数。一个线程要访问共享资源，先获得信号量，如果信号量的计数器值大于1，意味着有共享资源可以访问，则使其计数器值减去1，再访问共享资源。<br>
+
+```java
+public class ResourceManage {  
+    private final Semaphore semaphore ;  
+    private boolean resourceArray[];  
+    private final ReentrantLock lock;  
+    public ResourceManage() {  
+        this.resourceArray = new boolean[10];//存放厕所状态  
+        this.semaphore = new Semaphore(10,true);//控制10个共享资源的使用，使用先进先出的公平模式进行共享;公平模式的信号量，先来的先获得信号量  
+        this.lock = new ReentrantLock(true);//公平模式的锁，先来的先选  
+        for(int i=0 ;i<10; i++){  
+            resourceArray[i] = true;//初始化为资源可用的情况  
+        }  
+    }  
+    public void useResource(int userId){ 
+		semaphore.acquire(); 
+        try{  
+            //semaphore.acquire();  
+            int id = getResourceId();//占到一个坑  
+            System.out.print("userId:"+userId+"正在使用资源，资源id:"+id+"\n");  
+            Thread.sleep(100);//do something，相当于于使用资源  
+            resourceArray[id] = true;//退出这个坑  
+        }catch (InterruptedException e){  
+            e.printStackTrace();  
+        }finally {  
+            semaphore.release();//释放信号量，计数器加1  
+        }  
+    }  
+    private int getResourceId(){  
+        int id = -1; 
+		lock.lock();
+        try {  
+            //lock.lock();//虽然使用了锁控制同步，但由于只是简单的一个数组遍历，效率还是很高的，所以基本不影响性能。  
+            for(int i=0; i<10; i++){  
+                if(resourceArray[i]){  
+                    resourceArray[i] = false;  
+                    id = i;  
+                    break;  
+                }  
+            }  
+        }catch (Exception e){  
+            e.printStackTrace();  
+        }finally {  
+            lock.unlock();  
+        }  
+        return id;  
+    }  
+}  
+public class ResourceUser implements Runnable{  
+    private ResourceManage resourceManage;  
+    private int userId;  
+    public ResourceUser(ResourceManage resourceManage, int userId) {  
+        this.resourceManage = resourceManage;  
+        this.userId = userId;  
+    }  
+    public void run(){  
+        System.out.print("userId:"+userId+"准备使用资源...\n");  
+        resourceManage.useResource(userId);  
+        System.out.print("userId:"+userId+"使用资源完毕...\n");  
+    }  
+
+    public static void main(String[] args){  
+        ResourceManage resourceManage = new ResourceManage();  
+        Thread[] threads = new Thread[100];  
+        for (int i = 0; i < 100; i++) {  
+            Thread thread = new Thread(new ResourceUser(resourceManage,i));//创建多个资源使用者  
+            threads[i] = thread;  
+        }  
+        for(int i = 0; i < 100; i++){  
+            Thread thread = threads[i];  
+            try {  
+                thread.start();//启动线程  
+            }catch (Exception e){  
+                e.printStackTrace();  
+            }  
+        }  
+    }  
+}
+```
