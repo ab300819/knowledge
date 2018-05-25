@@ -130,7 +130,7 @@ public class Run {
 }
 ```
 
-## Lock 接口
+## `Lock` 接口
 
 `Lock` 接口有三个实现类：
 
@@ -166,6 +166,291 @@ try{
 * `ReentrantReadWriteLock` 是一个读写锁，如果读的线程比写的线程要多很多的话，那可以考虑使用它。它使用 `state` *的变量 **高16位是读锁，低16位是写锁**
 * 写锁可以降级为读锁，读锁不能升级为写锁
 * 写锁是互斥的，读锁是共享的。
+
+## `Condition` 接口
+
+`Condition` 接口的常见方法
+
+方法名称    |   描述
+--- |   ---
+`void await()`  |   相当于 `Object` 类的 `wait` 方法
+`boolean await(long time,TimeUnit unit)`    |   相当于 `Object` 类的 `wait(long timeout)` 方法
+`void signal()` |   相当于 `Object` 类的 `notify` 方法
+`void signalAll()`  |   相当于 `Object` 类的 `notifyAll` 方法
+
+`Condition` 将 `Object` 监视器方法（`wait`、`notify` 和 `notifyAll`）分解成截然不同的对象，以便通过将这些对象与任意 `Lock` 实现组合使用，为每个对象提供多个等待 set（wait-set）。其中，`Lock` 替代了 `synchronized` 方法和语句的使用，`Condition` 替代了 `Object` 监视器方法的使用。 
+
+
+1. 使用单个 `Condition` 实例实现等待/通知机制：
+
+```java
+public class UseSingleConditionWaitNotify {
+
+	public static void main(String[] args) throws InterruptedException {
+
+		MyService service = new MyService();
+
+		ThreadA a = new ThreadA(service);
+		a.start();
+
+		Thread.sleep(3000);
+
+		service.signal();
+
+	}
+
+	static public class MyService {
+
+		private Lock lock = new ReentrantLock();
+		public Condition condition = lock.newCondition();
+
+		public void await() {
+			lock.lock();
+			try {
+				System.out.println(" await时间为" + System.currentTimeMillis());
+				condition.await();
+				System.out.println("这是condition.await()方法之后的语句，condition.signal()方法之后我才被执行");
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} finally {
+				lock.unlock();
+			}
+		}
+
+		public void signal() throws InterruptedException {
+			lock.lock();
+			try {				
+				System.out.println("signal时间为" + System.currentTimeMillis());
+				condition.signal();
+				Thread.sleep(3000);
+				System.out.println("这是condition.signal()方法之后的语句");
+			} finally {
+				lock.unlock();
+			}
+		}
+	}
+
+	static public class ThreadA extends Thread {
+
+		private MyService service;
+
+		public ThreadA(MyService service) {
+			super();
+			this.service = service;
+		}
+
+		@Override
+		public void run() {
+			service.await();
+		}
+	}
+}
+```
+
+2. 使用多个 `Condition` 实例实现等待/通知机制：
+
+```java
+public class UseMoreConditionWaitNotify {
+	public static void main(String[] args) throws InterruptedException {
+
+		MyserviceMoreCondition service = new MyserviceMoreCondition();
+
+		ThreadA a = new ThreadA(service);
+		a.setName("A");
+		a.start();
+
+		ThreadB b = new ThreadB(service);
+		b.setName("B");
+		b.start();
+
+		Thread.sleep(3000);
+
+		service.signalAll_A();
+
+	}
+	static public class ThreadA extends Thread {
+
+		private MyserviceMoreCondition service;
+
+		public ThreadA(MyserviceMoreCondition service) {
+			super();
+			this.service = service;
+		}
+
+		@Override
+		public void run() {
+			service.awaitA();
+		}
+	}
+	static public class ThreadB extends Thread {
+
+		private MyserviceMoreCondition service;
+
+		public ThreadB(MyserviceMoreCondition service) {
+			super();
+			this.service = service;
+		}
+
+		@Override
+		public void run() {
+			service.awaitB();
+		}
+	}
+}
+```
+
+```java
+public class MyserviceMoreCondition {
+
+	private Lock lock = new ReentrantLock();
+	public Condition conditionA = lock.newCondition();
+	public Condition conditionB = lock.newCondition();
+
+	public void awaitA() {
+		lock.lock();
+		try {
+			System.out.println("begin awaitA时间为" + System.currentTimeMillis()
+					+ " ThreadName=" + Thread.currentThread().getName());
+			conditionA.await();
+			System.out.println("  end awaitA时间为" + System.currentTimeMillis()
+					+ " ThreadName=" + Thread.currentThread().getName());
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} finally {
+			lock.unlock();
+		}
+	}
+
+	public void awaitB() {
+		lock.lock();
+		try {			
+			System.out.println("begin awaitB时间为" + System.currentTimeMillis()
+					+ " ThreadName=" + Thread.currentThread().getName());
+			conditionB.await();
+			System.out.println("  end awaitB时间为" + System.currentTimeMillis()
+					+ " ThreadName=" + Thread.currentThread().getName());
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} finally {
+			lock.unlock();
+		}
+	}
+
+	public void signalAll_A() {
+		lock.lock();
+		try {			
+			System.out.println("  signalAll_A时间为" + System.currentTimeMillis()
+					+ " ThreadName=" + Thread.currentThread().getName());
+			conditionA.signalAll();
+		} finally {
+			lock.unlock();
+		}
+	}
+
+	public void signalAll_B() {
+		lock.lock();
+		try {		
+			System.out.println("  signalAll_B时间为" + System.currentTimeMillis()
+					+ " ThreadName=" + Thread.currentThread().getName());
+			conditionB.signalAll();
+		} finally {
+			lock.unlock();
+		}
+	}
+}
+```
+
+3. 使用 `Condition` 实现顺序执行
+
+```java
+public class ConditionSeqExec {
+
+	volatile private static int nextPrintWho = 1;
+	private static ReentrantLock lock = new ReentrantLock();
+	final private static Condition conditionA = lock.newCondition();
+	final private static Condition conditionB = lock.newCondition();
+	final private static Condition conditionC = lock.newCondition();
+
+	public static void main(String[] args) {
+
+		Thread threadA = new Thread() {
+			public void run() {
+				try {
+					lock.lock();
+					while (nextPrintWho != 1) {
+						conditionA.await();
+					}
+					for (int i = 0; i < 3; i++) {
+						System.out.println("ThreadA " + (i + 1));
+					}
+					nextPrintWho = 2;
+					//通知conditionB实例的线程运行
+					conditionB.signalAll();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				} finally {
+					lock.unlock();
+				}
+			}
+		};
+
+		Thread threadB = new Thread() {
+			public void run() {
+				try {
+					lock.lock();
+					while (nextPrintWho != 2) {
+						conditionB.await();
+					}
+					for (int i = 0; i < 3; i++) {
+						System.out.println("ThreadB " + (i + 1));
+					}
+					nextPrintWho = 3;
+					//通知conditionC实例的线程运行
+					conditionC.signalAll();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				} finally {
+					lock.unlock();
+				}
+			}
+		};
+
+		Thread threadC = new Thread() {
+			public void run() {
+				try {
+					lock.lock();
+					while (nextPrintWho != 3) {
+						conditionC.await();
+					}
+					for (int i = 0; i < 3; i++) {
+						System.out.println("ThreadC " + (i + 1));
+					}
+					nextPrintWho = 1;
+					//通知conditionA实例的线程运行
+					conditionA.signalAll();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				} finally {
+					lock.unlock();
+				}
+			}
+		};
+		Thread[] aArray = new Thread[5];
+		Thread[] bArray = new Thread[5];
+		Thread[] cArray = new Thread[5];
+
+		for (int i = 0; i < 5; i++) {
+			aArray[i] = new Thread(threadA);
+			bArray[i] = new Thread(threadB);
+			cArray[i] = new Thread(threadC);
+
+			aArray[i].start();
+			bArray[i].start();
+			cArray[i].start();
+		}
+	}
+}
+```
 
 ## 锁分类
 
