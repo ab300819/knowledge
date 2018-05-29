@@ -1,6 +1,6 @@
 # Spring IoC
 
-Spring 三种ApplicationContext
+**Spring 三种ApplicationContext**
 
 * `AnnotationConfigApplicationContext` 通过注解配置来加载 Spring 上下文，使用方式：`ApplicationContext c = new AnnotationConfigApplicationContext(ContextConfig.class);`
 * `ClassPathXmlApplicationContext` 通过 XML 加载 Spring 上下文方式：`ApplicationContext ctx = new ClassPathXmlApplicationContext("applicationContext.xml");`
