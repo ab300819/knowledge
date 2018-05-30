@@ -333,20 +333,80 @@ private void readObjectNoData() throws ObjectStreamException;
 
 ![image](../resources/java_io_operate.svg)
 
+**1） 输入字节流 `InputStream`**
 
+* `ByteArrayInputStream`、`StringBufferInputStream`、`FileInputStream` 是三种基本的介质流，它们分别从 `Byte` 数组、`StringBuffer` 和本地文件中读取数据。
+* `PipedInputStream` 是从与其它线程共用的管道中读取数据。`PipedInputStream` 的一个实例要和 `PipedOutputStream` 的一个实例共同使用，共同完成管道的读取写入操作。主要用于线程操作。
+* `DataInputStream` 将基础数据类型读取出来
+* `ObjectInputStream` 和所有 `FilterInputStream` 的子类都是装饰流（装饰器模式的主角）。
+
+**2）输出字节流 `OutputStream`**
+
+* `ByteArrayOutputStream`、`FileOutputStream` 是两种基本的介质流，它们分别向 `Byte` 数组和本地文件中写入数据。
+* `PipedOutputStream` 是向与其它线程共用的管道中写入数据。
+* `DataOutputStream` 将基础数据类型写入到文件中
+* `ObjectOutputStream` 和所有 `FilterOutputStream` 的子类都是装饰流。
 
 ### 操作方式（对照）
 
 ![image](../resources/java_io_stream.svg)
 
+**1）字符输入流 `Reader`**
 
+* `FileReader`、`CharReader`、`StringReader` 是三种基本的介质流，它们分在本地文件、`Char` 数组、`String` 中读取数据。
+* `PipedReader` 是从与其它线程共用的管道中读取数据
+* `BufferedReader`  加缓冲功能，避免频繁读写硬盘
+* `InputStreamReader` 是一个连接字节流和字符流的桥梁，它将字节流转变为字符流。
+
+**2）字符输出流 `Writer`**
+
+* `StringWriter` 向 `String` 中写入数据。
+* `CharArrayWriter` 实现一个可用作字符输入流的字符缓冲区
+* `PipedWriter` 是向与其它线程共用的管道中写入数据
+* `BufferedWriter`  增加缓冲功能，避免频繁读写硬盘。
+* `PrintWriter` 和 `PrintStream` 将对象的格式表示打印到文本输出流。 极其类似，功能和使用也非常相似
+* `OutputStreamWriter` 是 `OutputStream` 到 `Writer` 转换的桥梁，它的子类 `FileWriter` 其实就是一个实现此功能的具体类（具体可以研究一SourceCode）。功能和使用和 `OutputStream` 极其类似，后面会有它们的对应图。
 
 ## Java IO 操作对象
 
 ![image](../resources/java_io_object.svg)
 
+除文件操作、管道操作和数组操作之外，都是处理流
 
+**`Buffered`缓冲流（处理流）** 带缓冲区的处理流，缓冲区的作用的主要目的是：避免每次和硬盘打交道，提高数据访问的效率。
 
+* `BufferedInputStream`
+* `BufferedOutputStream`
+* `BufferedReader`
+* `BufferedWriter`
+
+**转化流（处理流）**
+
+* `InputStreamReader` 把字节转化成字符；
+* `OutputStreamWriter` 把字节转化成字符
+
+**基本类型数据流（处理流）：用于操作基本数据类型值**
+
+因为平时若是我们输出一个8个字节的long类型或4个字节的float类型，那怎么办呢？可以一个字节一个字节输出，也可以把转换成字符串输出，但是这样转换费时间，若是直接输出该多好啊，因此这个数据流就解决了我们输出数据类型的困难。数据流可以直接输出float类型或long类型，提高了数据读写的效率。
+
+* `DataInputStream`
+* `DataOutputStream`
+
+**打印流（处理流）**
+
+* `PrintStream`
+* `PrintWriter`
+
+**对象流（处理流）**
+
+把封装的对象直接输出，而不是一个个在转换成字符串再输出
+
+* `ObjectInputStream` 对象反序列化
+* `ObjectOutputStream` 对象序列化
+
+**合并流（处理流）**
+
+`SequenceInputStream` 可以认为是一个工具类，将两个或者多个输入流当成一个输入流依次读取。
 
 > 参考：<br>
 > [Java IO，硬骨头也能变软](https://zhuanlan.zhihu.com/p/28286559)
