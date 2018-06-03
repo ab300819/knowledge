@@ -38,6 +38,8 @@ Java NIO 有三部分组成：
 ```java
 FileInputStream fileStream = new FileInputStream(new File("test.txt"));
 FileChannel fileChannel = fileStream.getChannel();
+// jdk 1.7 以上
+// FileChannel.open(Paths.get("test.txt"), StandardOpenOption.WRITE);
 
 ByteBuffer buf = ByteBuffer.allocate(1024);
 
@@ -46,6 +48,7 @@ while (fileChannel.read(buf) != -1) {
     while (buf.hasRemaining()) {
 
         System.out.println(buf.get());
+
     }
 
     buf.clear();
@@ -67,11 +70,15 @@ System.out.println(buf.capacity());
 
 ### `Buffer`属性
 
-* `capacity`
-* `position`
-* `limit`
+* `capacity` 缓冲区能够容纳的数据元素的最大数量。
+* `position` 缓冲区里的数据的总数，代表了当前缓冲区中一共有多少数据。
+* `limit` 下一个要被读或写的元素的位置。
 
 ![](../resources/buffers-modes.png)
+
+```
+0 <= mark <= position <= limit <= capacity
+```
 
 ### 其他方法
 
