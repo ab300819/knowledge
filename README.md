@@ -16,6 +16,8 @@
 
 * Framework
 
+* [Design Pattern](DesignPattern/README.md)
+
 * Application
     * [Android]()
     
