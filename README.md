@@ -1,6 +1,6 @@
-# 📓学习、工作笔记本及积累
+# 学习、工作笔记本及积累
 
-## 📲Language
+## 🖖 Language
 
 * [Java](Java/README.md)
 * [Python](Python/README.md)
@@ -11,20 +11,23 @@
 * [TypeScript]()
 * [Go]()
 
-## Framework
+## ✈️ Framework
 
-## [Design Pattern](DesignPattern/README.md)
+## 🛠️ [Design Pattern](DesignPattern/README.md)
 
-## Application
-    * [Android]()
+## 👩‍🚀 Application
     
-## 💻System
-    * [Linux](Linux/README.md)
-        * [鸟哥私房菜笔记和备忘](Linux/linux_note/README.md)
+* [Android]()
+    
+## 💻 System
 
-## NetWork
+* [Linux](Linux/README.md)
+    * [鸟哥私房菜笔记和备忘](Linux/linux_note/README.md)
 
-## biAlgorithm
-    * [leetcode solution](leetcode/README.md)
+## ☁️ NetWork
 
-## 🤖AI
+## ✏️ Algorithm
+    
+* [leetcode solution](leetcode/README.md)
+
+## 👽 AI
