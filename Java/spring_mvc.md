@@ -101,13 +101,18 @@ public final void init() throws ServletException {
     }
 
     // Set bean properties from init parameters.
+    // 将 Servlet 中配置的参数封装到pvs中，requiredProperties为必须参数，如果没有将报异常
     PropertyValues pvs = new ServletConfigPropertyValues(getServletConfig(), this.requiredProperties);
     if (!pvs.isEmpty()) {
         try {
             BeanWrapper bw = PropertyAccessorFactory.forBeanPropertyAccess(this);
             ResourceLoader resourceLoader = new ServletContextResourceLoader(getServletContext());
             bw.registerCustomEditor(Resource.class, new ResourceEditor(resourceLoader, getEnvironment()));
+
+            // bw 代表 DispatcherServlet
             initBeanWrapper(bw);
+
+            // 将配置的初始化值设置到 DispatcherServlet
             bw.setPropertyValues(pvs, true);
         }
         catch (BeansException ex) {
@@ -127,3 +132,49 @@ public final void init() throws ServletException {
 }
 ```
 
+其中 `BeanWrapper` 是 Spring 提供，用来操作 JavaBean 属性的工具。
+
+```java
+Person person = new Person();
+BeanWrapper bw = PropertyAccessorFactory.forBeanPropertyAccess(person);
+bw.setPropertyValue("name", "李四");
+bw.setPropertyValue("age", 12);
+System.out.println(person.toString());  // [name:李四 , age:12]
+
+PropertyValue value = new PropertyValue("name", "张三");
+bw.setPropertyValue(value);
+System.out.println(person.toString());  //[name:张三 , age:12]
+```
+
+### 3.3 `FrameworkServlet`
+
+从 `HttpServletBean` 可知，`FrameworkServlet` 的初始化方法是 `initServletBean()`。
+
+`initServletBean()` 方法核心代码只有两句：
+
+```java
+this.webApplicationContext = initWebApplicationContext();   //用于初始化 WebApplicationContext
+initFrameworkServlet(); // 用于初始化 FrameworkServlet
+```
+
+`initFrameworkServlet()` 是模板方法，子类可以覆盖后可以做一些初始化工作，但是这里并没有用到。`FrameworkServlet` 在构建过程中主要作用就是初始化 `webApplicationContext`。
+
+`initWebApplicationContext()` 主要做了三件事：
+
+1. 获取 Spring 的根容器 `rootContext`；
+
+```java
+WebApplicationContext rootContext = WebApplicationContextUtils.getWebApplicationContext(getServletContext());
+```
+
+2. 设置 `webApplicationContext` 并根据情况调用 `onRefresh` 方法；
+
+3. 将 `webApplicationContext` 设置到 `ServletContext`
+
+```java
+// 将 ApplicationContext 保存到 ServletContext 中
+String attrName = getServletContextAttributeName();
+getServletContext().setAttribute(attrName, wac);
+```
+
+#### 3.3.1 获取 Spring 的根容器 `rootContext`
