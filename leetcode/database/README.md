@@ -1,6 +1,6 @@
 # LeetCode Database
 
-#   |   Title   |   Difficulty
+`#`   |   Title   |   Difficulty
 --- |   --- |   ---
 175 |   [Combine Two Tables](175.Combine_Two_Tables.md)  |   Easy
 176 |   [Second Highest Salary](176.Second_Highest_Salary.md)   |   Easy
