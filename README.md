@@ -28,6 +28,6 @@
 
 ## ✏️ Algorithm
     
-* [leetcode solution](leetcode/README.md)
+* [LeetCode Solution](leetcode/README.md)
 
 ## 👽 AI
