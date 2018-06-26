@@ -2,6 +2,8 @@
 
 ## `Servlet` 结构示意图
 
+![image](../resources/htttp_servlet.svg)
+
 ## `Servlet` 接口
 
 ```java
@@ -43,7 +45,7 @@ public interface Servlet {
 
 `init` 方法被调用时会接收到一个 `ServletConfig` 类型的参数，是容器传入的。`ServletConfig` 是 `Servlet` 的配置，在 `web.xml` 中定义 `Servlet` 时，通过 `<init-param>` 配置的参数就是通过 `ServletConfig` 保存的。
 
-Tomcat 中
+Tomcat 中 `Servlet` 的 `init` 方法实在 `org.apache.catalina.core.StandardWrapper` 中的 `initServlet` 方法中调用， `ServletConfig` 传入的是 `StandardWrapper`（里面封装着 `Servlet` ）自身的门面类 `StandardWrapperFacade`。`StandardWrapper` 本身就包含配置项，然而 `StandardWrapper` 并不是所有内容都是和 `Config` 相关的，所有用其门面类。
 
 ```java
 public interface ServletConfig {
