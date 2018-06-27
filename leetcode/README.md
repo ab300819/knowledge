@@ -2,6 +2,8 @@
 
 `#`   |   Title   |   Difficulty
 --- |   --- |   ---
+1   |   [Two Sum](1.Two_Sum.md) |   Easy
+7   |   [Reverse Integer](7.Reverse_Integer.md) |   Easy
 175 |   [Combine Two Tables](database/175.Combine_Two_Tables.md)  |   Easy
 176 |   [Second Highest Salary](database/176.Second_Highest_Salary.md)   |   Easy
 177 |   [Nth Highest Salary](database/177.Nth_Highest_Salary.md)  |   Medium	

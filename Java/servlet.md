@@ -69,5 +69,17 @@ public interface ServletConfig {
 
 ## `GenericServlet`
 
+`GenericServlet` 是 `Servlet` 的默认实现，主要做了三件事：
+1. 实现 `ServletConfig` 接口，可以直接调用 `ServletConfig` 里面的方法；
+2. 提供无参的 `init` 方法；
+3. 提供 `log` 方法。
+
+> `GenericServlet` 与具体协议无关
+
+## `HttpServlet`
+
+
+
+
 
 
