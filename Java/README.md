@@ -14,15 +14,31 @@
 
 ## JVM 虚拟机
 
-* [带着问题去看]()
+### [带着问题去看](jvm_interview.md)
+### [Java 内存区域与内存溢出异常](jvm_memory.md)
+### [垃圾收集器与内存分配策略](jvm_gc.md)
+### [虚拟机性能监控与故障处理工具](jvm_monitor.md)
+### []()
+### []()
 
-* [一些零碎知识点]
+> **主要参考** <br>
+> 《深入理解Java虚拟机：JVM高级特性与最佳实践》（第2版）
 
 ## Spring
 
+### [Spring IoC](ioc_in_spring.md)
+### [Spring AOP](aop_in_spring.md)
+
+> **主要参考** <br>
+> 《Spring 实战》
+
 ## Spring MVC
 
-## 一些片段
+### [Servlet]()
+### [Tomcat]()
+### [Spring MVC]()
 
-[MyBatis Generator](Mybatis_Generator_配置文件.md)
-[Spring 配置文件]()
+## 杂项
+
+### [MyBatis Generator](Mybatis_Generator_配置文件.md)
+### [Spring 配置文件]()

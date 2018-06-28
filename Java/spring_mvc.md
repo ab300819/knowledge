@@ -178,3 +178,18 @@ getServletContext().setAttribute(attrName, wac);
 ```
 
 #### 3.3.1 获取 Spring 的根容器 `rootContext`
+
+
+默认情况下 Spring 会通过 `ServletContext` 来获取，默认根容器的 key 为 `org.springframework.web.context.WebApplicationContext.ROOT` 定义在 `org.springframework.web.context.WebApplicationContext` 中。
+
+```java
+String ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE = WebApplicationContext.class.getName() + ".ROOT";
+```
+
+获取根容器只需要调用 `servletContext.getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE)`
+
+#### 3.3.2 设置 `webApplicationContext` 并根据情况调用 `onRefresh` 方法
+
+设置 `webApplicationContext` 有三种方式
+
+第一种方式是在构造方法中传递 `webApplicationContext` 参数
