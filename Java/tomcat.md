@@ -23,3 +23,4 @@ Tomcat 里的 Server 由 `org.apache.catalina.startup.Catalina` 来管理，`Cat
 Tomcat 的入口 `main` 方法在 `org. pache.catalina.startup.Bootstrap` 中。 `Bootstrap` 的作用类似一个 `CatalinaAdaptor`， 具体处理过程还是使用`Catalina` 来完成的， 这么做的好处是可以把启动的入口和具体的管理类分开，从而可以很方便地创建出多种启动方式，每种启动方式只需要写一个相应的 `CatalinaAdaptor`就可以了。
 
 ## Bootstrap 启动过程
+

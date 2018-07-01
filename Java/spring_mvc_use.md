@@ -19,5 +19,65 @@ get request -> FrameworkServlet(service) -> 判断是不是 patch 请求：不�
 在 `FrameworkServlet` 中会统一调用  `processRequest` 方法处理各种请求。
 
 ```java
+protected final void processRequest(HttpServletRequest request, HttpServletResponse response)
+		throws ServletException, IOException {
 
+	long startTime = System.currentTimeMillis();
+	Throwable failureCause = null;
+
+    // 获取 LocaleContextHolder 中原来保存的 LocaleContext
+    LocaleContext previousLocaleContext = LocaleContextHolder.getLocaleContext();
+    // 获取当前请求的 LocaleContext
+	LocaleContext localeContext = buildLocaleContext(request);
+
+    // 获取 RequestContextHolder 中原来保存的 RequestAttributes
+    RequestAttributes previousAttributes = RequestContextHolder.getRequestAttributes();
+    // 获取当前请求的 ServletRequestAttributes
+	ServletRequestAttributes requestAttributes = buildRequestAttributes(request, response, previousAttributes);
+
+	WebAsyncManager asyncManager = WebAsyncUtils.getAsyncManager(request);
+	asyncManager.registerCallableInterceptor(FrameworkServlet.class.getName(), new RequestBindingInterceptor());
+
+    // 将当前请求的 LocaleContext 和 ServletRequestAttributes 设置到 LocaleContextHolder 和 RequestContextHolder
+	initContextHolders(request, localeContext, requestAttributes);
+
+	try {
+        // 实际入口
+		doService(request, response);
+	}
+	catch (ServletException | IOException ex) {
+		failureCause = ex;
+		throw ex;
+	}
+	catch (Throwable ex) {
+		failureCause = ex;
+		throw new NestedServletException("Request processing failed", ex);
+	}
+
+	finally {
+        // 恢复原来的 LocaleContext 和 ServletRequestAttributes 到 LocaleContextHolder 和 RequestContextHolder 中
+		resetContextHolders(request, previousLocaleContext, previousAttributes);
+		if (requestAttributes != null) {
+			requestAttributes.requestCompleted();
+		}
+
+		if (logger.isDebugEnabled()) {
+			if (failureCause != null) {
+				this.logger.debug("Could not complete request", failureCause);
+			}
+			else {
+				if (asyncManager.isConcurrentHandlingStarted()) {
+					logger.debug("Leaving response open for concurrent processing");
+				}
+				else {
+					this.logger.debug("Successfully completed request");
+				}
+			}
+		}
+
+        //发布 ServletRequestHandledEvent 消息
+		publishRequestHandledEvent(request, response, startTime, failureCause);
+	}
+}
 ```
+
