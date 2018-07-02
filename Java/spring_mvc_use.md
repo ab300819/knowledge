@@ -61,23 +61,73 @@ protected final void processRequest(HttpServletRequest request, HttpServletRespo
 			requestAttributes.requestCompleted();
 		}
 
-		if (logger.isDebugEnabled()) {
-			if (failureCause != null) {
-				this.logger.debug("Could not complete request", failureCause);
-			}
-			else {
-				if (asyncManager.isConcurrentHandlingStarted()) {
-					logger.debug("Leaving response open for concurrent processing");
-				}
-				else {
-					this.logger.debug("Successfully completed request");
-				}
-			}
-		}
+		// 省略日志代码
 
         //发布 ServletRequestHandledEvent 消息
 		publishRequestHandledEvent(request, response, startTime, failureCause);
 	}
 }
 ```
+
+`doService` 是一个模板方法，具体在 `DispatcherServlet` 中实现。
+
+`processRequest` 主要做两件事：
+1. 对 `LocaleContext` 和 `RequestAttributes` 的设置及恢复；
+2. 处理完后发布了 `ServletRequestHandledEvent` 消息。
+
+`LocaleContext` 包含本地化信息 `Locale`。
+
+`RequestAttributes` 是 Spring 的一个接口，通过它可以 `get/set/removeAttribute`，根据 `SCOPE_REQUEST/SCOPE_SESSION` 参数判断操作 `request` 还是 `session`，这里使用的是 `ServletRequestAttributes`。
+
+`LocaleContextHolder` 是一个 `abstract` 类，里面方法都是  `static` 的，可以直接调用，而且既没有父类也没有子类，也就是不能实例化，只能调用定义的 `static` 方法。**也是一种 `abstract` 使用方式**。
+
+```java
+public abstract class LocaleContextHolder {
+
+	private static final ThreadLocal<LocaleContext> localeContextHolder =
+			new NamedThreadLocal<>("LocaleContext");
+
+	private static final ThreadLocal<LocaleContext> inheritableLocaleContextHolder =
+			new NamedInheritableThreadLocal<>("LocaleContext");
+
+    ...
+}
+```
+
+`publishRequestHandledEvent` 用于发布消息，在其内部发布了一个 `ServletRequestHandledEvent` 消息。
+
+```java
+private void publishRequestHandledEvent(HttpServletRequest request, HttpServletResponse response,
+		long startTime, @Nullable Throwable failureCause) {
+
+    // publishEvents 可以在配置 Servlet 时设置，默认为 true
+	if (this.publishEvents && this.webApplicationContext != null) {
+		// 无论请求是否执行都会发布消息
+		long processingTime = System.currentTimeMillis() - startTime;
+		this.webApplicationContext.publishEvent(
+				new ServletRequestHandledEvent(this,
+						request.getRequestURI(), request.getRemoteAddr(),
+						request.getMethod(), getServletConfig().getServletName(),
+						WebUtils.getSessionId(request), getUsernameForRequest(request),
+						processingTime, failureCause, response.getStatus()));
+	}
+}
+```
+
+可以通过监听这个事件来处理一些事情，如记录日志
+
+```java
+@Component 
+public class ServletRequestHandledEventListener implements ApplicationListener<ServletRequestHandledEvent> { 
+
+    final static Logger logger = LoggerFactory.getLogger("RequestProcessLog"); 
+
+    @Override 
+    public void onApplicationEvent(ServletRequestHandledEvent event) { 
+        logger.info(event.getDescription()); 
+    } 
+}
+```
+
+## `DispatcherServlet`
 
