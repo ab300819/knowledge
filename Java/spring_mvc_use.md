@@ -131,3 +131,66 @@ public class ServletRequestHandledEventListener implements ApplicationListener<S
 
 ## `DispatcherServlet`
 
+```java
+@Override
+protected void doService(HttpServletRequest request, HttpServletResponse response) throwsException {
+    
+    // 省略日志代码
+
+	// Keep a snapshot of the request attributes in case of an include,
+    // to be able to restore the original attributes after the include.
+    // 当 include 请求时对 request attributes 做个快照
+    // 处理完之后会对其还原
+	Map<String, Object> attributesSnapshot = null;
+	if (WebUtils.isIncludeRequest(request)) {
+		attributesSnapshot = new HashMap<>();
+		Enumeration<?> attrNames = request.getAttributeNames();
+		while (attrNames.hasMoreElements()) {
+			String attrName = (String) attrNames.nextElement();
+			if (this.cleanupAfterInclude || attrName.startsWith(DEFAULT_STRATEGIES_PREFIX)) {
+				attributesSnapshot.put(attrName, request.getAttribute(attrName));
+			}
+		}
+	}
+
+	// Make framework objects available to handlers and view objects.
+	request.setAttribute(WEB_APPLICATION_CONTEXT_ATTRIBUTE, getWebApplicationContext());
+	request.setAttribute(LOCALE_RESOLVER_ATTRIBUTE, this.localeResolver);
+	request.setAttribute(THEME_RESOLVER_ATTRIBUTE, this.themeResolver);
+	request.setAttribute(THEME_SOURCE_ATTRIBUTE, getThemeSource());
+
+	if (this.flashMapManager != null) {
+		FlashMap inputFlashMap = this.flashMapManager.retrieveAndUpdate(request, response);
+		if (inputFlashMap != null) {
+			request.setAttribute(INPUT_FLASH_MAP_ATTRIBUTE, Collections.unmodifiableMa(inputFlashMap));
+		}
+		request.setAttribute(OUTPUT_FLASH_MAP_ATTRIBUTE, new FlashMap());
+		request.setAttribute(FLASH_MAP_MANAGER_ATTRIBUTE, this.flashMapManager);
+	}
+
+	try {
+		doDispatch(request, response);
+	}
+	finally {
+		if (!WebAsyncUtils.getAsyncManager(request).isConcurrentHandlingStarted()) {
+			// Restore the original attribute snapshot, in case of an include.
+			if (attributesSnapshot != null) {
+				restoreAttributesAfterInclude(request, attributesSnapshot);
+			}
+		}
+	}
+}
+```
+
+对 `request` 设置属性时，有4个属性 `WebApplicationContext`、`LocaleResolver`、`ThemeResolver`和`ThemeSource`。后面三个属性都和 `FlashMap` 相关，主要用于 redirect 转发时参数的传递。在 redirect 之前将需要传递的参数写入 `OUTPUT_FLASH_MAP_ATTRIBUTE`。
+
+```java
+((FlashMap)((ServletRequestAttributes)(RequestContextHolder.getRequestAttributes()))
+    .getRequest()
+    .getAttribute(DispatcherServlet.OUTPUT_FLASH_MAP_ATTRIBUTE))
+        .put("name", "张三 丰");
+```
+
+Spring 还提供了更加简单的操作方法，在 handler 方法的参数中定义 `RedirectAttributes` 类型变量，然后把需要保存的属性设置到里面就行。`RedirectAttributes` 有两种设置参数的方法 `addAttribute(key,value)` 和 `addFlashAttribute(key,value)` ，第一种方式会拼接到 url 中，第二种就是使用 `FlashMap` 保存的。
+
+## `doDispatch`
