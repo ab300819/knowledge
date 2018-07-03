@@ -193,4 +193,135 @@ protected void doService(HttpServletRequest request, HttpServletResponse respons
 
 Spring 还提供了更加简单的操作方法，在 handler 方法的参数中定义 `RedirectAttributes` 类型变量，然后把需要保存的属性设置到里面就行。`RedirectAttributes` 有两种设置参数的方法 `addAttribute(key,value)` 和 `addFlashAttribute(key,value)` ，第一种方式会拼接到 url 中，第二种就是使用 `FlashMap` 保存的。
 
+`inputFlashMap` 用于保存上次请求中转发过来的属性，`outputFlashMap` 用于保存请求需要转发的属性，`FlashManager` 用于管理它们。
+
 ## `doDispatch`
+
+`doDispatch` 核心代码只有4句：
+1. 根据 `request` 找到 `Handler`；
+2. 根据 `Handler` 找到 `HandlerAdapter`；
+3. 用 `HandlerAdapter` 处理 `Handler`；
+4. 调用 `processDispatchResult` 方法处理上面处理之后的结果。
+
+```java
+mappedHandler = getHandler(processedRequest);
+HandlerAdapter ha = getHandlerAdapter(mappedHandler.getHandler());
+mv = ha.handle(processedRequest, response, mappedHandler.getHandler());
+processDispatchResult(processedRequest, response, mappedHandler, mv, dispatchException);
+```
+
+* `Handler` <br>
+代表处理器，对应 `Controller` 层，它的具体表现形式有很多，可以是类，也可以是方法。例如，标注了 `@RequestMapping` 的所有方法都可以看成一个 `Handler`。只要可以实际处理请求就可以是`Handler`。
+
+* `HandlerMapping` <br>
+用来查找 `Handler`
+
+* `HandlerAdapter` <br>
+是一个适配器，使用 `Handler` 去处理请求
+
+```java
+protected void doDispatch(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    HttpServletRequest processedRequest = request;
+    HandlerExecutionChain mappedHandler = null;
+    boolean multipartRequestParsed = false;
+
+    WebAsyncManager asyncManager = WebAsyncUtils.getAsyncManager(request);
+
+    try {
+        ModelAndView mv = null;
+        Exception dispatchException = null;
+
+        try {
+            // 检查是不是上传请求
+            processedRequest = checkMultipart(request);
+            multipartRequestParsed = (processedRequest != request);
+
+            // 根据 request 找到对应的 handler
+            mappedHandler = getHandler(processedRequest);
+            if (mappedHandler == null) {
+                noHandlerFound(processedRequest, response);
+                return;
+            }
+
+            // 根据 handler 找到对应的 handler adapter
+            HandlerAdapter ha = getHandlerAdapter(mappedHandler.getHandler());
+
+            // Process last-modified header, if supported by the handler.
+            String method = request.getMethod();
+            boolean isGet = "GET".equals(method);
+            if (isGet || "HEAD".equals(method)) {
+                long lastModified = ha.getLastModified(request, mappedHandler.getHandler());
+                
+                // 省略日志代码
+
+                if (new ServletWebRequest(request, response).checkNotModified(lastModified) && isGet) {
+                    return;
+                }
+            }
+
+            // 执行相应 Interceptor 的 PreHandle
+            if (!mappedHandler.applyPreHandle(processedRequest, response)) {
+                return;
+            }
+
+            // 实际执行的 handler.
+            mv = ha.handle(processedRequest, response, mappedHandler.getHandler());
+
+            // 如果需要异步处理，直接返回
+            if (asyncManager.isConcurrentHandlingStarted()) {
+                return;
+            }
+
+            // 当 view 为空时，根据 request 设置默认 view
+            applyDefaultViewName(processedRequest, mv);
+
+            // 执行相应 Interceptor 的 PostHandle
+            mappedHandler.applyPostHandle(processedRequest, response, mv);
+        }
+        catch (Exception ex) {
+            dispatchException = ex;
+        }
+        catch (Throwable err) {
+            // As of 4.3, we're processing Errors thrown from handler methods as well,
+            // making them available for @ExceptionHandler methods and other scenarios.
+            dispatchException = new NestedServletException("Handler dispatch failed", err);
+        }
+        processDispatchResult(processedRequest, response, mappedHandler, mv, dispatchException);
+    }
+    catch (Exception ex) {
+        triggerAfterCompletion(processedRequest, response, mappedHandler, ex);
+    }
+    catch (Throwable err) {
+        triggerAfterCompletion(processedRequest, response, mappedHandler,
+                new NestedServletException("Handler processing failed", err));
+    }
+    finally {
+        // 判断是否异步执行请求
+        if (asyncManager.isConcurrentHandlingStarted()) {
+            // Instead of postHandle and afterCompletion
+            if (mappedHandler != null) {
+                mappedHandler.applyAfterConcurrentHandlingStarted(processedRequest, response);
+            }
+        }
+        else {
+            // Clean up any resources used by a multipart request.
+            if (multipartRequestParsed) {
+                cleanupMultipart(processedRequest);
+            }
+        }
+    }
+}
+```
+
+`HttpServletRequest processedRequest` - 实际处理时所用的 `request` ，如果不是上传请求直接使用，是上传请求封装为上传类型的 `request`。
+
+`HandlerExecutionChain mappedHandler` - 处理请求的处理链（包含处理器和对应的 `Interceptor`）。
+
+`boolean multipartRequestParsed` - 是不是上传请求标识。
+
+`ModelAndView mv` - 封装 `Model` 和 `View` 的容器。
+
+`Exception dispatchException` - 处理请求过程中抛出的异常。
+
+![image](../resources/doDispatch.jpg)
+

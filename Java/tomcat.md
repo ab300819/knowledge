@@ -22,5 +22,78 @@ Tomcat 里的 Server 由 `org.apache.catalina.startup.Catalina` 来管理，`Cat
 
 Tomcat 的入口 `main` 方法在 `org. pache.catalina.startup.Bootstrap` 中。 `Bootstrap` 的作用类似一个 `CatalinaAdaptor`， 具体处理过程还是使用`Catalina` 来完成的， 这么做的好处是可以把启动的入口和具体的管理类分开，从而可以很方便地创建出多种启动方式，每种启动方式只需要写一个相应的 `CatalinaAdaptor`就可以了。
 
-## Bootstrap 启动过程
+## `Bootstrap` 启动过程
 
+`Bootstrap` 是 Tomcat 的入口，正常情况下启动 Tomcat 就是调用 `Bootstrap` 的 `main` 方法。
+
+```java
+public static void main(String args[]) {
+
+    synchronized (daemonLock) {
+        if (daemon == null) {
+            // Don't set daemon until init() has completed
+            Bootstrap bootstrap = new Bootstrap();
+            try {
+                // 初始化 ClassLoader，并用 ClassLoader 创建了 Catalina 实例，赋值给 catalinaDaemon
+                bootstrap.init();
+            } catch (Throwable t) {
+                handleThrowable(t);
+                t.printStackTrace();
+                return;
+            }
+            daemon = bootstrap;
+        } else {
+            // When running as a service the call to stop will be on a new
+            // thread so make sure the correct class loader is used to
+            // prevent a range of class not found exceptions.
+            Thread.currentThread().setContextClassLoader(daemon.catalinaLoader);
+        }
+    }
+
+    try {
+        String command = "start";
+        if (args.length > 0) {
+            command = args[args.length - 1];
+        }
+
+        if (command.equals("startd")) {
+            args[args.length - 1] = "start";
+            daemon.load(args);
+            daemon.start();
+        } else if (command.equals("stopd")) {
+            args[args.length - 1] = "stop";
+            daemon.stop();
+        } else if (command.equals("start")) {
+            daemon.setAwait(true);
+            daemon.load(args);
+            daemon.start();
+        } else if (command.equals("stop")) {
+            daemon.stopServer(args);
+        } else if (command.equals("configtest")) {
+            daemon.load(args);
+            if (null==daemon.getServer()) {
+                System.exit(1);
+            }
+            System.exit(0);
+        } else {
+            log.warn("Bootstrap: command \"" + command + "\" does not exist.");
+        }
+    } catch (Throwable t) {
+        // Unwrap the Exception for clearer error reporting
+        if (t instanceof InvocationTargetException &&
+                t.getCause() != null) {
+            t = t.getCause();
+        }
+        handleThrowable(t);
+        t.printStackTrace();
+        System.exit(1);
+    }
+
+}
+```
+
+## `Catalina` 启动过程
+
+`Catalina` 的启动主要是调用 `setAwait` 、`load` 和 `start` 方法来完成。
+
+![image](../resources/tomcat_start.PNG)
