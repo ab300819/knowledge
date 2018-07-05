@@ -92,8 +92,122 @@ public static void main(String args[]) {
 }
 ```
 
+首先新建了 `Bootstrap`，并执行 `init` 方法初始化；然后处理 `main` 方法传入的命令，如果 `args` 参数为空，默认执行 `start`。在 `init` 方法里初始化了 `ClassLoader`，并用 `ClassLoader` 创建了 `Catalina` 实例，然后赋给 `catalinaDaemon` 变量，后面对命令的操作都要使用 `catalinaDaemon` 来具体执行。
+
+```java
+public void start() throws Exception {
+    if( catalinaDaemon==null ) init();
+
+    Method method = catalinaDaemon.getClass().getMethod("start", (Class [] )null);
+    method.invoke(catalinaDaemon, (Object [])null);
+}
+```
+
 ## `Catalina` 启动过程
 
-`Catalina` 的启动主要是调用 `setAwait` 、`load` 和 `start` 方法来完成。
+`Catalina` 的启动主要是调用 `setAwait` 、`load` 和 `start` 方法来完成。`setAwait` 方法用于设置 Server 启动完成后是否进入等待状态的标志，如果为 `true` 则进入，否则不进入；`load` 方法用于加载配置文件，创建并初始化 Server；`start` 方法用于启动服务器。
+
+```java
+public void setAwait(boolean b) {
+    await = b;
+}
+```
+
+`Catalina` 的 `load` 方法根据 `conf/server.xml` 创建 `Server` 对象，并赋值给 `server` 属性（具体操作通过开源项目 `Digester` 完成）
+
+```java
+public void load() {
+
+    if (loaded) {
+        return;
+    }
+    loaded = true;
+
+    long t1 = System.nanoTime();
+
+    // 省略创建 server 代码，创建过程使用 Digester 完成
+
+    // Start the new server
+    try {
+        getServer().init();
+    } catch (LifecycleException e) {
+        if (Boolean.getBoolean("org.apache.catalina.startup.EXIT_ON_INIT_FAILURE")) {
+            throw new java.lang.Error(e);
+        } else {
+            log.error("Catalina.start", e);
+        }
+    }
+
+    long t2 = System.nanoTime();
+    if(log.isInfoEnabled()) {
+        log.info("Initialization processed in " + ((t2 - t1) / 1000000) + " ms");
+    }
+}
+```
+`Catalina` 的 `start` 方法主要调用了 `server` 的 `start` 方法启动服务器，并根据 `await` 属性判断是否让程序进入了等待 状态。
+
+```java
+public void start() {
+
+    if (getServer() == null) {
+        load();
+    }
+
+    if (getServer() == null) {
+        log.fatal("Cannot start server. Server instance is not configured.");
+        return;
+    }
+
+    long t1 = System.nanoTime();
+
+    // Start the new server
+    try {
+        getServer().start();
+    } catch (LifecycleException e) {
+        log.fatal(sm.getString("catalina.serverStartFail"), e);
+        try {
+            getServer().destroy();
+        } catch (LifecycleException e1) {
+            log.debug("destroy() failed for failed Server ", e1);
+        }
+        return;
+    }
+
+    long t2 = System.nanoTime();
+
+    // 省略日志代码
+
+    // Register shutdown hook
+    // 注册关闭钩子代码
+    if (useShutdownHook) {
+        if (shutdownHook == null) {
+            shutdownHook = new CatalinaShutdownHook();
+        }
+        Runtime.getRuntime().addShutdownHook(shutdownHook);
+
+        // If JULI is being used, disable JULI's shutdown hook since
+        // shutdown hooks run in parallel and log messages may be lost
+        // if JULI's hook completes before the CatalinaShutdownHook()
+        LogManager logManager = LogManager.getLogManager();
+        if (logManager instanceof ClassLoaderLogManager) {
+            ((ClassLoaderLogManager) logManager).setUseShutdownHook(
+                    false);
+        }
+    }
+
+    // 进入等待
+    if (await) {
+        await();
+        stop();
+    }
+}
+```
+
+## `Server 启动过程`
+
+`Server` 接口中提供 `void addService(Service service);` 和 `void removeService(Service service);` 来添加和删除 `Service`。
+
+`Server` 的 `init` 方法和 `start` 方法分别循环调用了每个 `Service` 的 `init` 方法和 `start` 方法来启动所有 `Service`。
+
 
 ![image](../resources/tomcat_start.PNG)
