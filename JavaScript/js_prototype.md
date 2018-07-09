@@ -1,3 +1,5 @@
+# JavaScript prototype
+
 ### #创建层级结构
 
 #### ##定义类和属性
@@ -13,8 +15,8 @@ function Employee () {
 
 ```java
 public class Employee {
-   public String name = "";
-   public String dept = "general";
+    public String name = "";
+    public String dept = "general";
 }
 ```
 
@@ -38,11 +40,11 @@ WorkerBee.prototype = Object.create(Employee.prototype);
 
 ```java
 public class Manager extends Employee {
-   public Employee[] reports = new Employee[0];
+    public Employee[] reports = new Employee[0];
 }
 
 public class WorkerBee extends Employee {
-   public String[] projects = new String[0];
+    public String[] projects = new String[0];
 }
 ```
 
@@ -50,16 +52,16 @@ public class WorkerBee extends Employee {
 
 ```js
 function SalesPerson() {
-   WorkerBee.call(this);
-   this.dept = 'sales';
-   this.quota = 100;
+    WorkerBee.call(this);
+    this.dept = 'sales';
+    this.quota = 100;
 }
 SalesPerson.prototype = Object.create(WorkerBee.prototype);
 
 function Engineer() {
-   WorkerBee.call(this);
-   this.dept = 'engineering';
-   this.machine = '';
+    WorkerBee.call(this);
+    this.dept = 'engineering';
+    this.machine = '';
 }
 Engineer.prototype = Object.create(WorkerBee.prototype);
 ```
@@ -68,13 +70,13 @@ Engineer.prototype = Object.create(WorkerBee.prototype);
 
 ```java
 public class SalesPerson extends WorkerBee {
-   public String dept = "sales";
-   public double quota = 100.0;
+    public String dept = "sales";
+    public double quota = 100.0;
 }
 
 public class Engineer extends WorkerBee {
-   public String dept = "engineering";
-   public String machine = "";
+    public String dept = "engineering";
+    public String machine = "";
 }
 ```
 

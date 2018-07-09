@@ -1,4 +1,6 @@
-# 移除Ubuntu上陈旧的PPA仓库
+# Linux Tips
+
+## 移除Ubuntu上陈旧的PPA仓库
 
 1. `sudo apt-get update | grep "Failed"`
 

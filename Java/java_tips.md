@@ -1,6 +1,6 @@
 # Java 一些技巧
 
-## 使用 JDBC 连接数据库
+## 使用JDBC连接数据库
 
 ```java
 String driver = "com.mysql.cj.jdbc.Driver";
@@ -47,7 +47,7 @@ try {
 }
 ```
 
-## JDK 动态代理
+## JDK动态代理
 
 **写法一**
 
