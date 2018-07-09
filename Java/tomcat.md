@@ -209,6 +209,219 @@ public void start() {
 
 `Server` 的 `init` 方法和 `start` 方法分别循环调用了每个 `Service` 的 `init` 方法和 `start` 方法来启动所有 `Service`。
 
+`Server` 的默认实现是 `org.apache.catalina.core.StandardServer`；
+
+![image](resources/standard_server.svg)
+
+`init` 和 `start` 方法定义在 `LifecycleBase` 中，`LifecycleBase` 里的 `init` 方法和 `start` 方法又调用 `initInternal` 方法和 `startInternal` 方法，这两个方法都是模板方法，由 子类具体实现，所以调用 `StandardServer` 的 `init` 和 `start` 方法时会执行 `StandardServer` 自己的 `initInternal` 和 `startInternal` 方法。
+
+```java
+protected void initInternal() throws LifecycleException {
+
+    super.initInternal();
+
+    // Register global String cache
+    // Note although the cache is global, if there are multiple Servers
+    // present in the JVM (may happen when embedding) then the same cache
+    // will be registered under multiple names
+    onameStringCache = register(new StringCache(), "type=StringCache");
+
+    // Register the MBeanFactory
+    MBeanFactory factory = new MBeanFactory();
+    factory.setContainer(this);
+    onameMBeanFactory = register(factory, "type=MBeanFactory");
+
+    // Register the naming resources
+    globalNamingResources.init();
+
+    // Populate the extension validator with JARs from common and shared
+    // class loaders
+    if (getCatalina() != null) {
+        ClassLoader cl = getCatalina().getParentClassLoader();
+        // Walk the class loader hierarchy. Stop at the system class loader.
+        // This will add the shared (if present) and common class loaders
+        while (cl != null && cl != ClassLoader.getSystemClassLoader()) {
+            if (cl instanceof URLClassLoader) {
+                URL[] urls = ((URLClassLoader) cl).getURLs();
+                for (URL url : urls) {
+                    if (url.getProtocol().equals("file")) {
+                        try {
+                            File f = new File (url.toURI());
+                            if (f.isFile() &&
+                                    f.getName().endsWith(".jar")) {
+                                ExtensionValidator.addSystemResource(f);
+                            }
+                        } catch (URISyntaxException e) {
+                            // Ignore
+                        } catch (IOException e) {
+                            // Ignore
+                        }
+                    }
+                }
+            }
+            cl = cl.getParent();
+        }
+    }
+    // Initialize our defined Services
+    for (int i = 0; i < services.length; i++) {
+        services[i].init();
+    }
+}
+```
+
+```java
+protected void startInternal() throws LifecycleException {
+
+    fireLifecycleEvent(CONFIGURE_START_EVENT, null);
+    setState(LifecycleState.STARTING);
+
+    globalNamingResources.start();
+
+    // Start our defined Services
+    synchronized (servicesLock) {
+        for (int i = 0; i < services.length; i++) {
+            services[i].start();
+        }
+    }
+}
+```
+
+`StandardServer` 中还实现了 `await` 方法，`Catalina` 中就是调用它让服务器进入等待状态的。
+
+```java
+public void await() {
+    // Negative values - don't wait on port - tomcat is embedded or we just don't like ports
+    // 如果端口号为-2则不进入循环，直接返回
+    if( port == -2 ) {
+        // undocumented yet - for embedding apps that are around, alive.
+        return;
+    }
+
+    // 如果端口号为 -1 则进入循环，并且无法通过网络退出
+    if( port==-1 ) {
+        try {
+            awaitThread = Thread.currentThread();
+            while(!stopAwait) {
+                try {
+                    Thread.sleep( 10000 );
+                } catch( InterruptedException ex ) {
+                    // continue and check the flag
+                }
+            }
+        } finally {
+            awaitThread = null;
+        }
+        return;
+    }
+
+    // Set up a server socket to wait on
+    try {
+        awaitSocket = new ServerSocket(port, 1,
+                InetAddress.getByName(address));
+    } catch (IOException e) {
+        log.error("StandardServer.await: create[" + address
+                            + ":" + port
+                            + "]: ", e);
+        return;
+    }
+
+    try {
+        awaitThread = Thread.currentThread();
+
+        // Loop waiting for a connection and a valid command
+        while (!stopAwait) {
+            ServerSocket serverSocket = awaitSocket;
+            if (serverSocket == null) {
+                break;
+            }
+
+            // Wait for the next connection
+            Socket socket = null;
+            StringBuilder command = new StringBuilder();
+            try {
+                InputStream stream;
+                long acceptStartTime = System.currentTimeMillis();
+                try {
+                    socket = serverSocket.accept();
+                    socket.setSoTimeout(10 * 1000);  // Ten seconds
+                    stream = socket.getInputStream();
+                } catch (SocketTimeoutException ste) {
+                    // This should never happen but bug 56684 suggests that
+                    // it does.
+                    log.warn(sm.getString("standardServer.accept.timeout",
+                            Long.valueOf(System.currentTimeMillis() - acceptStartTime)), ste);
+                    continue;
+                } catch (AccessControlException ace) {
+                    log.warn("StandardServer.accept security exception: "
+                            + ace.getMessage(), ace);
+                    continue;
+                } catch (IOException e) {
+                    if (stopAwait) {
+                        // Wait was aborted with socket.close()
+                        break;
+                    }
+                    log.error("StandardServer.await: accept: ", e);
+                    break;
+                }
+
+                // Read a set of characters from the socket
+                int expected = 1024; // Cut off to avoid DoS attack
+                while (expected < shutdown.length()) {
+                    if (random == null)
+                        random = new Random();
+                    expected += (random.nextInt() % 1024);
+                }
+                while (expected > 0) {
+                    int ch = -1;
+                    try {
+                        ch = stream.read();
+                    } catch (IOException e) {
+                        log.warn("StandardServer.await: read: ", e);
+                        ch = -1;
+                    }
+                    // Control character or EOF (-1) terminates loop
+                    if (ch < 32 || ch == 127) {
+                        break;
+                    }
+                    command.append((char) ch);
+                    expected--;
+                }
+            } finally {
+                // Close the socket now that we are done with it
+                try {
+                    if (socket != null) {
+                        socket.close();
+                    }
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
+
+            // Match against our command string
+            boolean match = command.toString().equals(shutdown);
+            if (match) {
+                log.info(sm.getString("standardServer.shutdownViaPort"));
+                break;
+            } else
+                log.warn("StandardServer.await: Invalid command '"
+                        + command.toString() + "' received");
+        }
+    } finally {
+        ServerSocket serverSocket = awaitSocket;
+        awaitThread = null;
+        awaitSocket = null;
+
+        // Close the server socket and return
+        if (serverSocket != null) {
+            try {
+                serverSocket.close();
+            } catch (IOException e) {
+                // Ignore
+            }
+        }
+    }
+}
+```
 
 
 
