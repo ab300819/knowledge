@@ -1,6 +1,6 @@
-# Java 代码
+# Java 一些技巧
 
-**#JDBC**
+## 使用 JDBC 连接数据库
 
 ```java
 String driver = "com.mysql.cj.jdbc.Driver";
@@ -47,8 +47,9 @@ try {
 }
 ```
 
-**#动态代理**
-##写法一
+## JDK 动态代理
+
+**写法一**
 
 ```java
 InvocationHandler invocationHandler = (proxy, method, args) -> {
@@ -71,7 +72,7 @@ Subject subject = (Subject) proxyClass
 subject.reversalInput("Hello");
 ```
 
-##写法二
+**写法二**
 
 ```java
 InvocationHandler invocationHandler = (proxy, method, args) -> {
@@ -90,3 +91,5 @@ Subject subject = (Subject) Proxy.newProxyInstance(
 
 subject.reversalInput("hello");
 ```
+
+## 位运算
