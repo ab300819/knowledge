@@ -1,6 +1,6 @@
-### #`assertThat` 常见用法
+# `assertThat` 常见用法
 
-#字符相关匹配符
+## 字符相关匹配符
 
 ```java
 /**
@@ -32,7 +32,7 @@ assertThat(testedString, endsWith(suffix));
 assertThat(testedString, startsWith(prefix));
 ```
 
-#一般匹配符
+## 一般匹配符
 
 ```java
 // nullValue()匹配符断言被测object的值为null
@@ -61,7 +61,7 @@ assertThat(testedNumber, allOf( greaterThan(8), lessThan(16) ) );
 assertThat(testedNumber, anyOf( greaterThan(16), lessThan(8) ) );
 ```
 
-#数值相关匹配符
+## 数值相关匹配符
 
 ```java
 // closeTo匹配符断言被测的浮点型数testedDouble在20.0~0.5范围之内
@@ -80,7 +80,7 @@ assertThat(testedNumber, greaterThanOrEqualTo (16.0));
 assertThat(testedNumber, lessThanOrEqualTo (16.0));
 ```
 
-#集合相关匹配符
+## 集合相关匹配符
 
 ```java
 // hasEntry匹配符断言被测的Map对象mapObject含有一个键值为"key"对应元素值为"value"的Entry项
