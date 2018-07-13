@@ -1,4 +1,6 @@
-**#Python 类变量和实例变量** 
+# Python 技巧
+
+## 类变量和实例变量
 
 ```python
 class Test:
@@ -11,7 +13,7 @@ class Test:
 * 类变量（class variable）被该类的所有实例可以共享的变量；如果某个实例修改了该变量，这种变化可以被其他实例看到。
 * 实例变量（object variable, instance variable）属于实例私有；对实例变量的操作不会影响到其他实例对象。
 
-**#TKinter 事件及绑定**  
+## TKinter事件及绑定
 
 事件绑定函数 `bind`  
 
@@ -25,7 +27,7 @@ class Test:
 * `<Control-V>` : CTL 和V键被同时按下，V可以换成其它键位
 * `<F1>` : 按下F1,fn系列可以随意换
 
-**#Python 字符串连接**
+## 字符串连接
 
 * 原始的字符串连接方式：`str_1 + str_2`
 
@@ -50,13 +52,13 @@ a = '###'
 a.join(var_list) = 'tom###david###john'
 ```
 
-**#Python 控制台彩色输出**
+## 控制台彩色输出
 
 * 显示格式
 
 ```
 格式：\033[显示方式;前景色;背景色m
- 
+
 说明：
 前景色            背景色           颜色
 ---------------------------------------
@@ -76,7 +78,7 @@ a.join(var_list) = 'tom###david###john'
 5                闪烁
 7                反白显示
 8                不可见
- 
+
 例子：
 \033[1;31;40m    <!--1-高亮显示 31-前景色红色  40-背景色黑色-->
 \033[0m          <!--采用终端默认设置，即取消颜色设置-->
@@ -93,4 +95,11 @@ print('*ARGS:\t', 111)
 print('*TIME:\t', '22:28')
 print('*' * 50)
 print('\033[0m')
+```
+
+## 启动一个本地Web服务器
+
+```sh
+python -m SimpleHTTPServer 8000
+python3 -m http.server 8000
 ```
