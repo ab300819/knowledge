@@ -289,6 +289,7 @@ protected void startInternal() throws LifecycleException {
 `StandardServer` 中还实现了 `await` 方法，`Catalina` 中就是调用它让服务器进入等待状态的。
 
 ```java
+// 去除日志代码
 public void await() {
     // Negative values - don't wait on port - tomcat is embedded or we just don't like ports
     // 如果端口号为-2则不进入循环，直接返回
@@ -315,13 +316,11 @@ public void await() {
     }
 
     // Set up a server socket to wait on
+    // 如果端口不是-1和-2，则会新建一个监听关闭命令的 ServerSocket
     try {
         awaitSocket = new ServerSocket(port, 1,
                 InetAddress.getByName(address));
     } catch (IOException e) {
-        log.error("StandardServer.await: create[" + address
-                            + ":" + port
-                            + "]: ", e);
         return;
     }
 
@@ -348,19 +347,14 @@ public void await() {
                 } catch (SocketTimeoutException ste) {
                     // This should never happen but bug 56684 suggests that
                     // it does.
-                    log.warn(sm.getString("standardServer.accept.timeout",
-                            Long.valueOf(System.currentTimeMillis() - acceptStartTime)), ste);
                     continue;
                 } catch (AccessControlException ace) {
-                    log.warn("StandardServer.accept security exception: "
-                            + ace.getMessage(), ace);
                     continue;
                 } catch (IOException e) {
                     if (stopAwait) {
                         // Wait was aborted with socket.close()
                         break;
                     }
-                    log.error("StandardServer.await: accept: ", e);
                     break;
                 }
 
@@ -376,7 +370,6 @@ public void await() {
                     try {
                         ch = stream.read();
                     } catch (IOException e) {
-                        log.warn("StandardServer.await: read: ", e);
                         ch = -1;
                     }
                     // Control character or EOF (-1) terminates loop
@@ -398,14 +391,12 @@ public void await() {
             }
 
             // Match against our command string
+            // 检查再指定端口接收到的命令是否和 shutdown 命令相匹配
             boolean match = command.toString().equals(shutdown);
+            // 如果匹配则跳出循环
             if (match) {
-                log.info(sm.getString("standardServer.shutdownViaPort"));
                 break;
-            } else
-                log.warn("StandardServer.await: Invalid command '"
-                        + command.toString() + "' received");
-        }
+            }
     } finally {
         ServerSocket serverSocket = awaitSocket;
         awaitThread = null;
@@ -423,6 +414,103 @@ public void await() {
 }
 ```
 
+* `port` 为 `-2`，这回直接退出，不进入循环；
+* `port` 为 `-1`, 则会进入一个 `while(!stopAwait)` 的循环，并且在内部没有 `break` 跳出的语句，`stopAwait` 标志只有调用了 `stop` 方法才会设置为 `true`，所以 `port` 为 `-1` 时只有在外部调用 `stop` 方法才会退出循环。
+* `port` 为其他值，也会进入 `while(!stopAwait)` 循环，不过同时会在 `port` 所在端口启动一个 `ServerSocket` 来监听关闭命令。
 
+在 `server.xml` 中可以配置端口和关闭命令
+
+```xml
+<Server port="8005" shutdown="SHUTDOWN">
+```
+
+## `Service` 启动过程
+
+`Service` 的默认实现是 `org.apache.catalina.core.StandardService`，`StandardService` 也继承自 `LifecycleMBeanBase` 类，所以 `init` 和 `start` 方法最终也会调用 `initInternal` 和 `startInternal` 方法。
+
+![image](resources/standard_service.svg)
+
+```java
+protected void initInternal() throws LifecycleException {
+
+    super.initInternal();
+
+    if (engine != null) {
+        engine.init();
+    }
+
+    // Initialize any Executors
+    for (Executor executor : findExecutors()) {
+        if (executor instanceof JmxEnabled) {
+            ((JmxEnabled) executor).setDomain(getDomain());
+        }
+        executor.init();
+    }
+
+    // Initialize mapper listener
+    mapperListener.init();
+
+    // Initialize our defined Connectors
+    synchronized (connectorsLock) {
+        for (Connector connector : connectors) {
+            connector.init();
+        }
+    }
+}
+```
+
+```java
+protected void startInternal() throws LifecycleException {
+
+    if(log.isInfoEnabled())
+        log.info(sm.getString("standardService.start.name", this.name));
+    setState(LifecycleState.STARTING);
+
+    // Start our defined Container first
+    if (engine != null) {
+        synchronized (engine) {
+            engine.start();
+        }
+    }
+
+    synchronized (executors) {
+        for (Executor executor: executors) {
+            executor.start();
+        }
+    }
+
+    mapperListener.start();
+
+    // Start our defined Connectors second
+    synchronized (connectorsLock) {
+        for (Connector connector: connectors) {
+            // If it has already failed, don't try and start it
+            if (connector.getState() != LifecycleState.FAILED) {
+                connector.start();
+            }
+        }
+    }
+}
+```
+
+`StandardService` 中的 `initInternal` 和 `startInternal` 方法主要调用 `container`、`executors`、`mapperListener`、`connectors` 的 `init` 和 `start` 方法。<br>
+
+`mapperListener` 是 `Mapper` 的监听器，可以监听 `container` 容器的变化，`executors` 是用在 `connectors` 中管理线程的线程池。
+
+在 `server.xml` 中配置方式
+
+```xml
+<Service name="Catalina"> 
+    <Executor name="tomcatThreadPool" 
+    namePrefix="catalina-exec-" 
+    maxThreads="150"
+    minSpareThreads="4"/> 
+    <Connector executor="tomcatThreadPool" port="8080" protocol="HTTP/1.1" connectionTimeout="20000" redirectPort="8443"/>
+</Service>
+```
+
+`Connector` 配置了一个叫 `tomcatThreadPool` 的线程池，最多可以同时启动 `150` 个线程，最少要有 `4` 个可用线程。<br>
+
+整个启动流程，如图所示
 
 ![image](../resources/tomcat_start.PNG)
