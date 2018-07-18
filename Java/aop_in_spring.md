@@ -1,20 +1,39 @@
+<!-- TOC -->
+
+- [Spring AOP](#spring-aop)
+    - [一、Spring AOP 原理总结](#一spring-aop-原理总结)
+        - [动态代理](#动态代理)
+        - [原理对比](#原理对比)
+        - [AOP 术语](#aop-术语)
+        - [AOP 的动态代理](#aop-的动态代理)
+    - [二、Spring AOP 的使用](#二spring-aop-的使用)
+        - [2.1 切点](#21-切点)
+        - [2.2 使用注解创建切面](#22-使用注解创建切面)
+            - [2.2.1 定义切面](#221-定义切面)
+            - [2.2.2 创建环绕通知](#222-创建环绕通知)
+            - [2.2.3 处理通知中参数](#223-处理通知中参数)
+            - [2.2.4 通过注解引入新功能](#224-通过注解引入新功能)
+        - [2.3 在 XML 中声明切面](#23-在-xml-中声明切面)
+
+<!-- /TOC -->
+
 # Spring AOP
 
 **这种在运行时，动态地将代码切入到类的指定方法、指定位置上的编程思想就是面向切面的编程**
 
 ## 一、Spring AOP 原理总结
 
-### #动态代理
+### 动态代理
 
 * **JDK 动态代理**：只能为接口创建动态代理实例，而不能针对类 。
 * **CGLib（Code Generation Library）动态代理**：可以为任何类创建织入横切逻辑代理对象，主要是对指定的类生成一个子类，覆盖其中的方法，因为是继承，所以该类或方法最好不要声明成 `final`。
 
-### #原理对比
+### 原理对比
 
 * **JDK动态代理**：JDK动态代理技术。通过需要代理的目标类的 `getClass().getInterfaces()` 方法获取到接口信息（这里实际上是使用了Java反射技术。 `getClass()` 和 `getInterfaces()` 函数都在Class类中，Class对象描述的是一个正在运行期间的Java对象的类和接口信息），通过读取这些代理接口信息生成一个实现了代理接口的动态代理Class（动态生成代理类的字节码），然后通过反射机制获得动态代理类的构造函数，并利用该构造函数生成该Class的实例对象（`InvokeHandler` 作为构造函数的入参传递进去），在调用具体方法前调用 `InvokeHandler` 来处理。
 * **CGLib动态代理**：字节码技术。利用 asm 开源包，把代理对象类的 class 文件加载进来，通过修改其字节码生成子类来处理。采用非常底层的字节码技术，为一个类创建子类，并在子类中采用方法拦截的技术拦截所有父类方法的调用，并顺势织入横切逻辑。 
 
-### #AOP 术语
+### AOP 术语
 
 * **Joinpoint（连接点）**  
 程序执行的某个特定位置：如类开始初始化前，类初始化后，类某个方法调用前。一个类或一段代码拥有一些边界性质的特定点，这些代码中的特定点就被称为“连接点”。**Spring仅支持方法的连接点**，既仅能在方法调用前，方法调用后，方法抛出异常时等这些程序执行点进行织入增强。
@@ -40,7 +59,7 @@
 * **Aspect（切面）**  
 将 **Pointcut** 和 **Advice** 两者组装起来。有了 ***Aspect** 的信息，Spring就可以利用JDK或CGLib的动态代理技术采用统一的方式为目标Bean创建织入切面的代理对象了
 
-### #AOP 的动态代理
+### AOP 的动态代理
 
 Spring AOP 基于 XML 配置的 AOP 和基于 `@AspcetJ` 注解的 AOP，这两种方法虽然在配置切面时的表现方式不同，但底层都是使用动态代理技术（JDK 代理或 CGLib 代理）。
 
@@ -57,18 +76,18 @@ AspectJ 在编译时“自动”编译得到了一个新类，这个新类增强
 Spring 允许使用 AspectJ Annotation 用于定义方面（Aspect）、切入点（Pointcut）和增强处理（Advice），Spring 框架则可识别并根据这些 Annotation 来生成 AOP 代理。Spring 只是使用了和 AspectJ 5 一样的注解，但并没有使用 AspectJ 的编译器或者织入器（Weaver），底层依然使用的是 Spring AOP，依然是在运行时动态生成 AOP 代理，并不依赖于 AspectJ 的编译器或者织入器。<br>
 简单地说，Spring 依然采用运行时生成动态代理的方式来增强目标对象，所以它不需要增加额外的编译，也不需要 AspectJ 的织入器支持；而 AspectJ 在采用编译时增强，所以 AspectJ 需要使用自己的编译器来编译 Java 文件，还需要织入器。
 
-##**CGLib代理与JDK动态代理**
+**CGLib代理与JDK动态代理**
 
 1. 如果目标对象实现了接口，默认情况下会采用 JDK 的动态代理实现 AOP 
 2. 如果目标对象实现了接口，可以强制使用 CGLIB 实现 AOP 
 3. 如果目标对象没有实现了接口，必须采用 CGLIB 库，Spring 会自动在 JDK 动态代理和 CGLIB 之间转换
 
-##**如何强制使用CGLIB实现AOP**
+**如何强制使用CGLIB实现AOP**
 
 1. 添加CGLIB库
 2. 在 Spring 配置文件中加入 `<aop:aspectj-autoproxy proxy-target-class="true"/>`
 
-##**AOP自动代理原理**
+**AOP自动代理原理**
 
 Spring提供了自动代理机制，让容器为我们自动生成代理。在内部，Spring使用 `BeanPostProcessor` 自动地完成这项工作。
 
@@ -80,7 +99,7 @@ Spring提供了自动代理机制，让容器为我们自动生成代理。在�
 
 ## 二、Spring AOP 的使用
 
-### #2.1 切点
+### 2.1 切点
 
 ```java
 public interface Performance {
@@ -100,9 +119,9 @@ public interface Performance {
 
 在执行 `Performance` 的 `perform()` 方法时应用通知，但限定 *Bean* 的 ID 为 test
 
-### #2.2 使用注解创建切面
+### 2.2 使用注解创建切面
 
-#### ##2.2.1 定义切面
+#### 2.2.1 定义切面
 
 注解    |   通知
 --- |   ---
@@ -177,7 +196,7 @@ public class TotalConfig {
 <bean class="com.exercise.demo.aspect.config.AspectConfig"/>
 ```
 
-#### ##2.2.2 创建环绕通知
+#### 2.2.2 创建环绕通知
 
 ```java
 @Aspect
@@ -207,7 +226,7 @@ public class AspectConfig {
     }
 ```
 
-#### ##2.2.3 处理通知中参数
+#### 2.2.3 处理通知中参数
 
 ```java
 @Aspect
@@ -224,7 +243,7 @@ public class AspectConfig {
 }
 ```
 
-#### ##2.2.4 通过注解引入新功能
+#### 2.2.4 通过注解引入新功能
 
 ```java
 @DeclareParents(
@@ -239,9 +258,9 @@ public static Food food;
 public static Food food;
 * `@DeclareParents` 注解所标注的静态属性指明了要引入了接口。在这里，我们所引入的是 `Food` 接口。
 
-### #2.3 在 XML 中声明切面
+### 2.3 在 XML 中声明切面
 
-JavaConfig 配置
+**JavaConfig 配置**
 
 ```java
 @Aspect
@@ -292,7 +311,7 @@ public class AspectConfig {
 }
 ```
 
-对应 XML 配置
+**对应 XML 配置**
 
 ```xml
 <bean id="aspectConfig" class="com.exercise.test.aspect.config.AspectConfig"/>

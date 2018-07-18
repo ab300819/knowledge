@@ -1,3 +1,39 @@
+<!-- TOC -->
+
+- [Spring IoC](#spring-ioc)
+    - [一、装配 Bean](#一装配-bean)
+        - [1.1 Spring Bean 配置方案](#11-spring-bean-配置方案)
+        - [1.2 自动化装配 Bean](#12-自动化装配-bean)
+            - [1.2.1 创建可发现 Bean 并自动扫描](#121-创建可发现-bean-并自动扫描)
+            - [1.2.2 实现自动装配](#122-实现自动装配)
+        - [1.3通过 Java 代码装配 Bean](#13通过-java-代码装配-bean)
+            - [1.3.1 创建配置类](#131-创建配置类)
+            - [1.3.2 声明简单的 Bean](#132-声明简单的-bean)
+        - [1.4通过 XML 代码装配 Bean](#14通过-xml-代码装配-bean)
+            - [1.4.1 声明一个简单的 `<bean>`](#141-声明一个简单的-bean)
+            - [1.4.2 借助构造器注入初始化 Bean](#142-借助构造器注入初始化-bean)
+            - [1.4.3 设置属性](#143-设置属性)
+            - [1.4.4 使用 `<util:*>`](#144-使用-util)
+        - [1.5 混合配置](#15-混合配置)
+            - [1.5.1 在 JavaConfig 中引用 XML 配置](#151-在-javaconfig-中引用-xml-配置)
+            - [1.5.2 在 XML 配置中引用 JavaConfig](#152-在-xml-配置中引用-javaconfig)
+    - [二、高级装配](#二高级装配)
+        - [2.1 环境与 profile](#21-环境与-profile)
+            - [2.1.1 配置不同环境的配置](#211-配置不同环境的配置)
+                - [在 JavaConfig 中配置](#在-javaconfig-中配置)
+                - [在 XML 中配置](#在-xml-中配置)
+            - [2.1.2 激活配置](#212-激活配置)
+        - [2.2 条件化的 Bean](#22-条件化的-bean)
+        - [2.3 处理自动装配的歧义](#23-处理自动装配的歧义)
+            - [2.3.1 标记首选的 Bean](#231-标记首选的-bean)
+            - [2.3.2 限定自动装配的 Bean](#232-限定自动装配的-bean)
+        - [2.4 *Bean* 的作用域](#24-bean-的作用域)
+        - [2.5 运行时值注入](#25-运行时值注入)
+            - [2.5.1 注入外部值](#251-注入外部值)
+            - [2.5.2 使用 Spring 表达式语言进行装配](#252-使用-spring-表达式语言进行装配)
+
+<!-- /TOC -->
+
 # Spring IoC
 
 **Spring 三种ApplicationContext**
@@ -14,12 +50,12 @@
 * 在 *Java* 中进行显式配置
 * 隐式的 *Bean* 发现机制和自动装配
 
-### #1.2 自动化装配 *Bean*
+### 1.2 自动化装配 Bean
 
 * 组件扫描
 * 自动装配
 
-#### ##1.2.1 创建可发现 *Bean* 并自动扫描
+#### 1.2.1 创建可发现 Bean 并自动扫描
 
 * `@Component` 标注一个普通的 Spring Bean 类（可以指定 *Bean* 名称，未指定时默认为小写字母开头的类名）
 > `@Named('bean名称')` 是 Java 依赖注入规范提供的注解，有一些细微的差异，但是大多数场景可以相互替换。但是 `@Component` 语义更明确
@@ -48,15 +84,15 @@ public class BeanConfig {
 <context:component-scan base-package="soundsystem" />
 ```
 
-#### ##1.2.2 实现自动装配
+#### 1.2.2 实现自动装配
 
 * 使用 `@Autowired` 进行自动装配
 * 使用 `@Autowired(required = false)` 在没有匹配的 bean 的时候，会使这个 bean 处于未装配状态
 * `@Inject` 属于 Java 依赖注入规范，也能用来自动装配；和 `@Autowired` 有一些细微的区别，但是大多数场景可以互换使用
 
-### #1.3通过 Java 代码装配 *Bean*
+### 1.3通过 Java 代码装配 Bean
 
-#### ##1.3.1 创建配置类
+#### 1.3.1 创建配置类
 
 ```java
 @Configuration 
@@ -64,7 +100,7 @@ public class BeanConfig {
 }
 ```
 
-#### ##1.3.2 声明简单的 *Bean*
+#### 1.3.2 声明简单的 Bean
 
 ```java
 @Bean 
@@ -84,9 +120,9 @@ public CompactDisc sgtPeppers() {
 }
 ```
 
-### #1.4通过 XML 代码装配 *Bean*
+### 1.4通过 XML 代码装配 Bean
 
-#### ##1.4.1 声明一个简单的 `<bean>`
+#### 1.4.1 声明一个简单的 `<bean>`
 
 ```xml
 <bean class="soundsystem.SgtPeppers"/>
@@ -100,7 +136,7 @@ public CompactDisc sgtPeppers() {
 <bean id="compactDisc" class="soundsystem.SgtPeppers"/>
 ```
 
-#### ##1.4.2 借助构造器注入初始化 *Bean*
+#### 1.4.2 借助构造器注入初始化 Bean
 
 ```xml
 <bean id="cdPlayer" class="soundsystem.CDPlayer"> 
@@ -138,7 +174,7 @@ public CompactDisc sgtPeppers() {
 
 > `set` 元素同理，但是都不能用于 `c` 命名空间 
 
-#### ##1.4.3 设置属性
+#### 1.4.3 设置属性
 
 ```xml
 <bean id="cdPlayer" class="soundsystem.CDPlayer"> 
@@ -176,7 +212,7 @@ public CompactDisc sgtPeppers() {
 
 > `set` 元素同理，但是都不能用于 `p` 命名空间 
 
-#### ##1.4.4 使用 `<util:*>`
+#### 1.4.4 使用 `<util:*>`
 
 使用 `<util:*>` 创建单独的 *Bean*
 
@@ -196,9 +232,9 @@ public CompactDisc sgtPeppers() {
 </util:list>
 ```
 
-### #1.5 混合配置
+### 1.5 混合配置
 
-#### ##1.5.1 在 JavaConfig 中引用 XML 配置
+#### 1.5.1 在 JavaConfig 中引用 XML 配置
 
 * 拆分 JavaConfig 并引入
 ```java
@@ -225,7 +261,7 @@ public class OtherConfig {
 }
 ```
 
-#### ##1.5.2 在 XML 配置中引用 JavaConfig
+#### 1.5.2 在 XML 配置中引用 JavaConfig
 
 * 拆分 xml 配置文件，并引入
 ```xml
@@ -239,11 +275,11 @@ public class OtherConfig {
 
 ## 二、高级装配
 
-### #2.1 环境与 profile
+### 2.1 环境与 profile
 
-#### ##2.1.1 配置不同环境的配置
+#### 2.1.1 配置不同环境的配置
 
-##在 JavaConfig 中配置
+##### 在 JavaConfig 中配置
 
 * 创建不同环境的 *Configuration*，类级别
 ```java
@@ -279,7 +315,7 @@ public class TestConfig {
 }
 ```
 
-##在 XML 中配置
+##### 在 XML 中配置
 
 * 直接在 XML 根节点配置
 ```xml
@@ -310,7 +346,7 @@ public class TestConfig {
 </beans>
 ```
 
-#### ##2.1.2 激活配置
+#### 2.1.2 激活配置
 
 激活 *profile* 有两个属性：
 
@@ -336,7 +372,7 @@ public class TestConfig {
 
 * 在单元测试中，使用 `@ActiveProfiles("dev")` 激活环境
 
-### #2.2 条件化的 *Bean*
+### 2.2 条件化的 Bean
 
 使用 `@Conditional` 注解，根据计算结果，如果是 `true` 则实例化 *Bean*，如果是 `false`，则忽略<br>
 
@@ -408,9 +444,9 @@ public interface AnnotatedTypeMetadata {
 }
 ```
 
-### #2.3 处理自动装配的歧义
+### 2.3 处理自动装配的歧义
 
-#### ##2.3.1 标记首选的 *Bean*
+#### 2.3.1 标记首选的 Bean
 
 ```java
 @Component 
@@ -432,7 +468,7 @@ public Dessert iceCream() {
 <bean id="iceCream" class="com.desserteater.IceCream" primary="true"/>
 ```
 
-#### ##2.3.2 限定自动装配的 *Bean*
+#### 2.3.2 限定自动装配的 Bean
 
 `@Qualifier` 注解是使用限定符的主要方式，可以与 `@Autowired` 和 `@Inject` 协同使用，在注入时指定的 *Bean*
 
@@ -494,7 +530,7 @@ public void setDessert( Dessert dessert) {
 }
 ```
 
-### #2.4 *Bean* 的作用域
+### 2.4 *Bean* 的作用域
 
 Spring 作用域：
 
@@ -564,9 +600,9 @@ public class StoreService {
 
 默认情况下，它会使用 CGLib 创建目标类的代理。 但是也可以将 `proxy-target-class` 属性设置为 `false`， 进而要求它生成基于接口的代理
 
-### #2.5 运行时值注入
+### 2.5 运行时值注入
 
-#### ##2.5.1 注入外部值
+#### 2.5.1 注入外部值
 
 ```java
 @Configuration
@@ -635,7 +671,7 @@ public static PropertySourcesPlaceholderConfigurer placeholderConfigurer() {
 <context:property-placeholder/>
 ```
 
-#### ##2.5.2 使用 Spring 表达式语言进行装配
+#### 2.5.2 使用 Spring 表达式语言进行装配
 
 使用 Spring 表达式语言（Spring Expression Language， SpEL），需将表达式放入 `#{...}` 中；
 
