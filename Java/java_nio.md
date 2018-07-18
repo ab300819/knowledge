@@ -1,3 +1,29 @@
+<!-- TOC -->
+
+- [Java NIO](#java-nio)
+    - [概述](#概述)
+    - [`Channels` 和 `Buffers`](#channels-和-buffers)
+        - [主要实现](#主要实现)
+        - [使用方式](#使用方式)
+        - [`Buffer`属性](#buffer属性)
+        - [其他方法](#其他方法)
+    - [Scatter/Gather](#scattergather)
+    - [`Channel` 之间的数据传输](#channel-之间的数据传输)
+        - [复制文件](#复制文件)
+    - [`Selectors`](#selectors)
+        - [创建 `Selectors`](#创建-selectors)
+        - [向 `Selectors` 注册 Channels](#向-selectors-注册-channels)
+        - [SelectionKey's](#selectionkeys)
+    - [Pipe](#pipe)
+        - [创建管道](#创建管道)
+        - [向管道写数据](#向管道写数据)
+        - [从管道读取数据](#从管道读取数据)
+    - [NIO 网络通信](#nio-网络通信)
+        - [NIO 阻塞形态](#nio-阻塞形态)
+        - [NIO 非阻塞形态](#nio-非阻塞形态)
+
+<!-- /TOC -->
+
 # Java NIO
 
 ## 概述

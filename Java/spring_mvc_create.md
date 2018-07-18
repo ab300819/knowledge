@@ -1,3 +1,22 @@
+<!-- TOC -->
+
+- [Spring MVC 创建](#spring-mvc-创建)
+    - [一、`Context` 结构](#一context-结构)
+    - [二、配置方式](#二配置方式)
+        - [2.1 `web.xml` 配置方式](#21-webxml-配置方式)
+        - [2.2 Java 配置方式](#22-java-配置方式)
+    - [三、Spring MVC 创建过程](#三spring-mvc-创建过程)
+        - [3.1 整体结构](#31-整体结构)
+        - [3.2 `HttpServletBean`](#32-httpservletbean)
+        - [3.3 `FrameworkServlet`](#33-frameworkservlet)
+            - [3.3.1 获取 Spring 的根容器 `rootContext`](#331-获取-spring-的根容器-rootcontext)
+            - [3.3.2 设置 `WebApplicationContext` 并根据情况调用 `onRefresh` 方法](#332-设置-webapplicationcontext-并根据情况调用-onrefresh-方法)
+            - [3.3.3 将 `WebApplicationContext` 设置到 `ServletContext` 中](#333-将-webapplicationcontext-设置到-servletcontext-中)
+        - [3.4 `DispatcherServlet`](#34-dispatcherservlet)
+        - [3.5 Spring 中 XML 文件的解析](#35-spring-中-xml-文件的解析)
+
+<!-- /TOC -->
+
 # Spring MVC 创建
 
 ## 一、`Context` 结构
@@ -88,7 +107,7 @@ public class MyWebAppInitializer extends AbstractAnnotationConfigDispatcherServl
 `EnvironmentCapable` 用于提供 `Environment`，当 Spring 需要 `Environment` 时就调用其 `Environment getEnvironment()` 方法。
 
 ### 3.2 `HttpServletBean`
-3. 通过 `BeanUtils.instantiateClass(contextClass)` 创建
+
 `Servlet` 创建时可以直接调用无参数的 `init` 方法
 
 ```java
