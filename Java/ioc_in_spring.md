@@ -128,7 +128,7 @@ public CompactDisc sgtPeppers() {
 <bean class="soundsystem.SgtPeppers"/>
 ```
 
-> 默认 `id` 为 ``soundsystem.SgtPeppers#0`，其中 `#0` 是计数形式，用于区分同类型其他 *Bean*
+> 默认 `id` 为 `soundsystem.SgtPeppers#0`，其中 `#0` 是计数形式，用于区分同类型其他 *Bean*
 
 指定 `id`
 

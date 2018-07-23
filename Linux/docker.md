@@ -10,7 +10,7 @@
 curl -fsSL get.docker.com -o get-docker.sh
 ```
 
-## 常用操作
+## 基本操作
 
 ### 在交互方式中运行容器
 
@@ -74,12 +74,16 @@ docker kill 容器id
 
 **rm**
 
-
+移除容器
 
 ```bash
 docker rm 容器id
 ```
 
+批量移除容器
+
 ```bash
 docker rm $(docker ps -a -q)
 ```
+
+### 使用 Dockerfile 构建 Docker 镜像
