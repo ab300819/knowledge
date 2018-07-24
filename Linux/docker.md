@@ -87,3 +87,84 @@ docker rm $(docker ps -a -q)
 ```
 
 ### 使用 Dockerfile 构建 Docker 镜像
+
+```Dockerfile
+FROM busybox
+
+ENV foo=bar
+```
+
+创建一个名为 busybox2 镜像
+
+```shell
+docker build -t busybox2
+```
+
+### 使用两个链接在一起的容器运行 WordPress 博客程序
+
+拉取 mysql 和 wordpress 镜像
+
+```shell
+docker pull wordpress:latest
+
+docker pull mysql:latest
+```
+
+启动 mysql 容器并设置密码，`--name` 为容器指定名称，`-d` 为后台运行
+
+```shell
+docker run --name mysqlwp -e MYSQL_ROOT_PASSWORD=110119 -d mysql
+```
+
+启动 worpress 容器，并通过 `--link` 连接 mysql 容器
+
+```shell
+docker run --name wordpress --link mysqlwp:mysql -p 80:80 -d wordpress
+```
+
+为 wordpress 创建数据库，并为其创建一个用户
+
+```shell
+docker run --name mysqlwp -e MYSQL_ROOT_PASSWORD=test123456 \ 
+                            -e MYSQL_DATABASE=wordpress \ 
+                            -e MYSQL_USER=wordpress \ 
+                            -e MYSQL_PASSWORD=wordpresspwd \ 
+                            -d mysql
+
+```
+
+启动 wordpress 容器
+
+```shell
+docker run --name wordpress --link mysqlwp:mysql -p 80:80 \
+                            -e WORDPRESS_DB_NAME=wordpress \ 
+                            -e WORDPRESS_DB_USER=wordpress \ 
+                            -e WORDPRESS_DB_PASSWORD=wordpresspwd \ 
+                            -d wordpress
+```
+
+删除所有容器，通过 `-v` 删除 mysql 镜像中定义的数据卷
+
+```shell
+docker stop $(docker ps -q) 
+docker rm -v $(docker ps -aq)
+```
+
+### 备份在容器中运行的数据库
+
+* 将 Docker 主机上的卷挂载到 MySQL 容器中
+* 使用 `docker exec` 命令执行 `mysqldump`
+
+```shell
+docker run --name mysqlwp -e MYSQL_ROOT_PASSWORD=wordpressdocker \ 
+                            -e MYSQL_DATABASE=wordpress \ 
+                            -e MYSQL_USER=wordpress \ 
+                            -e MYSQL_PASSWORD=wordpresspwd \
+                            -v /home/docker/mysql:/var/lib/mysql \ 
+                            -d mysql
+```
+
+```shell
+docker exec mysqlwp mysqldump --all-databases \ 
+                                --password=wordpressdocker > wordpress.backup
+```
