@@ -1,3 +1,22 @@
+<!-- TOC -->
+
+- [Docker 笔记](#docker-笔记)
+    - [安装方式](#安装方式)
+    - [基本操作](#基本操作)
+        - [在交互方式中运行容器](#在交互方式中运行容器)
+        - [后台方式运行 Docker 容器](#后台方式运行-docker-容器)
+        - [容器生命周期](#容器生命周期)
+        - [使用 Dockerfile 构建 Docker 镜像](#使用-dockerfile-构建-docker-镜像)
+        - [使用两个链接在一起的容器运行 WordPress 博客程序](#使用两个链接在一起的容器运行-wordpress-博客程序)
+        - [备份在容器中运行的数据库](#备份在容器中运行的数据库)
+        - [在宿主机和容器之间共享数据](#在宿主机和容器之间共享数据)
+        - [在容器间共享数据](#在容器间共享数据)
+        - [对容器进行数据复制](#对容器进行数据复制)
+    - [创建和共享镜像](#创建和共享镜像)
+        - [将对容器的修改提交到镜像](#将对容器的修改提交到镜像)
+
+<!-- /TOC -->
+
 # Docker 笔记
 
 ## 安装方式
@@ -29,6 +48,8 @@ docker run -d ...
 ```bash
 docker exec -t -i [容器ID] /bin/bash
 ```
+
+> [官方文档](https://docs.docker.com/engine/reference/run/)
 
 ### 容器生命周期
 
@@ -99,6 +120,8 @@ ENV foo=bar
 ```shell
 docker build -t busybox2
 ```
+
+> [官方文档](https://docs.docker.com/engine/reference/builder/)
 
 ### 使用两个链接在一起的容器运行 WordPress 博客程序
 
@@ -171,3 +194,76 @@ docker exec mysqlwp mysqldump --all-databases \
 
 ### 在宿主机和容器之间共享数据
 
+通过 `-v` 参数将宿主机的卷挂载到容器中
+
+```bash
+docker run -ti -v /home/think/Downloads:/test ubuntu:18.04 /bin/bash
+```
+
+或者
+
+```bash
+docker run -ti -v "$PWD":/test ubuntu:18.04 /bin/bash
+```
+
+默认情况下是以读写方式挂载，如果想要以只读方式挂载数据卷，可在卷名后面后通过冒号设置相应的权限。
+
+```bash
+docker run -ti -v "$PWD":/test:ro ubuntu:18.04 /bin/bash
+```
+
+可通过 `docker inspect` 命令来查看数据卷的挂载映射情况。
+
+```bash
+docker inspect -f {{.Mounts}} 44d71a605b5b
+```
+
+> [官方文档](https://docs.docker.com/storage/volumes/)
+
+### 在容器间共享数据
+
+使用 `docker run` 命令的 `-v` 选项，省略宿主机中的路径，就可以创建一个称为 **数据容器** 的容器。
+
+```bash
+docker run -ti -v /test ubuntu:18.04 /bin/bash
+```
+
+可通过 `docker inspect` 命令查看数据卷位于宿主机位置
+
+```
+docker inspect -f {{.Mounts}} 0e41a4ca8172
+```
+
+重新创建一个数据卷
+
+```bash
+docker run -v /data --name data ubuntu:18.04
+```
+
+> 即使没有运行，映射关系仍然存在
+
+通过 `` 来挂载
+
+```bash
+run -ti --volumes-from data ubuntu:18.04 /bin/bash
+```
+
+> 可以通过  `docker rm -v data` 来删除容器和它的卷
+
+### 对容器进行数据复制
+
+将文件复制到宿主机上
+
+```bash
+docker cp fddb12a17fbc:/data/test.txt test.txt
+```
+
+将文件从宿主机复制到容器内
+
+```bash
+docker cp cpop.txt fddb12a17fbc:/data/cpop.txt
+```
+
+## 创建和共享镜像
+
+### 将对容器的修改提交到镜像
