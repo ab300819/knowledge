@@ -168,3 +168,6 @@ docker run --name mysqlwp -e MYSQL_ROOT_PASSWORD=wordpressdocker \
 docker exec mysqlwp mysqldump --all-databases \ 
                                 --password=wordpressdocker > wordpress.backup
 ```
+
+### 在宿主机和容器之间共享数据
+

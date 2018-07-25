@@ -1,4 +1,6 @@
-#### 整型
+# Core Java
+
+## 整型
 类型  |   存储需求    |   取值范围    |   十六进制
 ---|---|---|---
 `byte`  |   1字节 |   `-2^7` ~ `2^7-1` |   
@@ -9,7 +11,7 @@
 `double` |  8字节 |   |
 `char` |    2字节 |   `2^16-1` |
 
-#### Random
+## 随机数
 
 ```java
 long pureRandomLong = new Random().nextLong();
@@ -38,7 +40,7 @@ double doubleRandom = new RandomDataGenerator().nextUniform(doubleLeftLimit, dou
 System.out.println(doubleRandom);
 ```
 
-#### Generate Random String
+## 产生随机字符串
 
 ```java
 byte[] array = new byte[10];
