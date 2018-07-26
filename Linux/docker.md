@@ -14,6 +14,9 @@
         - [对容器进行数据复制](#对容器进行数据复制)
     - [创建和共享镜像](#创建和共享镜像)
         - [将对容器的修改提交到镜像](#将对容器的修改提交到镜像)
+        - [将镜像和容器保存为 tar 文件进行共享](#将镜像和容器保存为-tar-文件进行共享)
+        - [编写第一个 Dockerfile](#编写第一个-dockerfile)
+        - [将 Flask 应用打包到镜像](#将-flask-应用打包到镜像)
 
 <!-- /TOC -->
 
@@ -267,3 +270,101 @@ docker cp cpop.txt fddb12a17fbc:/data/cpop.txt
 ## 创建和共享镜像
 
 ### 将对容器的修改提交到镜像
+
+```bash
+docker commit 62152c27b520 ubuntu:update
+```
+
+通过 `docker diff` 来查看在容器中对镜像作出的修改
+
+```bash
+docker diff 62152c27b520
+```
+
+> [`docker commit` 参考手册](https://docs.docker.com/engine/reference/commandline/commit/)
+
+> [`docker diff` 参考手册](https://docs.docker.com/engine/reference/commandline/diff/)
+
+### 将镜像和容器保存为 tar 文件进行共享
+
+```bash
+# 导出
+docker export 7defac5eb46b > update.tar
+
+# 导入
+docker import - update < update.tar
+```
+
+```bash
+# 导出
+docker save -o ubuntu.tar update
+
+# 导入
+docker load < ubuntu.tar
+```
+
+> [`docker import` 参考手册](https://docs.docker.com/engine/reference/commandline/import/)
+
+> [`docker export` 参考手册](https://docs.docker.com/engine/reference/commandline/export/)
+
+> [`docker save` 参考手册](https://docs.docker.com/engine/reference/commandline/save/)
+
+> [`docker load` 参考手册](https://docs.docker.com/engine/reference/commandline/load/)
+
+### 编写第一个 Dockerfile
+
+**`ENTRYPOINT`**
+
+```Dockerfile
+FROM ubuntu:18.10
+
+ENTRYPOINT [ "/bin/echo" ]
+```
+
+构建
+
+```bash
+docker build .
+```
+
+运行
+
+```bash
+docker run 2c7eba9e4d01 Hi Docker!
+```
+
+**`CMD`**
+
+```Dockerfile
+FROM ubuntu:18.10
+
+CMD [ "/bin/echo","Hi Docker!" ]
+```
+
+构建
+
+```bash
+docker build .
+```
+
+运行
+
+```bash
+docker run 31d49d5907fc
+```
+
+可以覆盖命令
+
+```bash
+docker run 31d49d5907fc /bin/date
+```
+
+1. `ENTRYPOINT` 表示镜像在初始化时需要执行的命令，不可被重写覆盖；
+2. `CMD` 表示镜像运行默认参数，可被重写覆盖；
+3. `ENTRYPOINT`/`CMD` 都只能在文件中存在一次，并且最后一个生效，多个存在，只有最后一个生效，其它无效！
+4. 需要初始化运行多个命令，彼此之间可以使用 `&&` 隔开。
+
+> [Dockerfile 参考](https://docs.docker.com/engine/reference/builder/)
+
+### 将 Flask 应用打包到镜像
+
