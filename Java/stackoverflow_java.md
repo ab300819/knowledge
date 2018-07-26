@@ -181,7 +181,7 @@ for (Integer value : map.values()) {
 
 这个方法比 `entrySet` 迭代具有轻微的性能优势(大约快10%)并且代码更简洁
 
-## 方法3 使用 Iterator 迭代
+### 方法3 使用 Iterator 迭代
 
 使用泛型
 
@@ -230,3 +230,14 @@ while (entries.hasNext()) {
 如果你只需要使用key或者value使用方法2，如果你坚持使用java的老版本（java 5 以前的版本）或者打算在迭代的时候移除entries，使用方法3。其他情况请使用1方法。避免使用4方法。
 
 > [原问题](http://stackoverflow.com/questions/1066589/iterate-through-a-hashmap)
+
+## 修饰符作用范围
+
+修饰符  |   当前类  |   同 包   |   子 类   |   其他包
+--- |   --- |   --- |   --- |   ---
+`public`    |   √   |   √   |   √   |   √
+`protected`	|   √   |   √   |   √   |   ×
+`default`	|   √   |   √   |   ×   |   ×
+`private`	|   √   |   ×   |   ×   |   ×
+
+> [原问题](https://stackoverflow.com/questions/215497/in-java-difference-between-package-private-public-protected-and-private)
