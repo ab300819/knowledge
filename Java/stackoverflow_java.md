@@ -242,3 +242,115 @@ while (entries.hasNext()) {
 
 > [原问题](https://stackoverflow.com/questions/215497/in-java-difference-between-package-private-public-protected-and-private)
 
+
+## 如何测试一个数组是否包含指定的值
+
+### 使用 JDK
+
+```java
+Arrays.asList(test).contains("123");
+```
+
+### 使用 Apache Commons Lang 
+
+```java
+ArrayUtils.contains(test,"123");
+```
+
+### 使用 Java 8
+
+```java
+Stream.of(test).anyMatch(x->x=="test");
+
+// 基本类型
+IntStream.of(nums).anyMatch(x->x==4);
+```
+
+> [原问题](https://stackoverflow.com/questions/1128723/how-can-i-test-if-an-array-contains-a-certain-value)
+
+## 重写（Override） `equals` 和 `hashCode` 方法时应考虑的问题
+
+```java
+public class Person {
+    private String name;
+    private int age;
+    // ...
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 31). // two randomly chosen prime numbers
+            // if deriving: appendSuper(super.hashCode()).
+            append(name).
+            append(age).
+            toHashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Person))
+            return false;
+        if (obj == this)
+            return true;
+
+        Person rhs = (Person) obj;
+        return new EqualsBuilder().
+            // if deriving: appendSuper(super.equals(obj)).
+            append(name, rhs.name).
+            append(age, rhs.age).
+            isEquals();
+    }
+}
+```
+
+## 合并两个数组
+
+### 使用 JDK
+
+```java
+// 使用非泛型
+public Foo[] concat(Foo[] a, Foo[] b) {
+    int aLen = a.length;
+    int bLen = b.length;
+    Foo[] c= new Foo[aLen+bLen];
+    System.arraycopy(a, 0, c, 0, aLen);
+    System.arraycopy(b, 0, c, aLen, bLen);
+    return c;
+}
+```
+
+```java
+// 使用泛型
+public <T> T[] concatenate (T[] a, T[] b) {
+    int aLen = a.length;
+    int bLen = b.length;
+
+    @SuppressWarnings("unchecked")
+    T[] c = (T[]) Array.newInstance(a.getClass().getComponentType(), aLen+bLen);
+    System.arraycopy(a, 0, c, 0, aLen);
+    System.arraycopy(b, 0, c, aLen, bLen);
+
+    return c;
+}
+```
+
+### 使用 Apache Common Lang
+
+```java
+String[] both = ArrayUtils.addAll(first, second);
+```
+
+## 通过 String 查找 Enum
+
+定义一个枚举
+
+```java
+public enum Blah{
+    A, B, C, D
+}
+```
+
+通过字符串 `A` 获取 `Blah.A`
+
+```java
+Blah.valueOf("A");
+```

@@ -17,6 +17,9 @@
         - [将镜像和容器保存为 tar 文件进行共享](#将镜像和容器保存为-tar-文件进行共享)
         - [编写第一个 Dockerfile](#编写第一个-dockerfile)
         - [将 Flask 应用打包到镜像](#将-flask-应用打包到镜像)
+        - [根据最佳实践优化 Dockerfile](#根据最佳实践优化-dockerfile)
+        - [通过标签对镜像进行版本管理](#通过标签对镜像进行版本管理)
+        - [使用 ONBUILD 镜像](#使用-onbuild-镜像)
 
 <!-- /TOC -->
 
@@ -368,3 +371,71 @@ docker run 31d49d5907fc /bin/date
 
 ### 将 Flask 应用打包到镜像
 
+```python
+#!/usr/bin/env python
+
+from flask import Flask
+
+app = Flask(__name__)
+
+
+@app.route('/hi')
+def hello():
+    return 'Hello World！'
+
+
+if __name__ == '__main__':
+    app.run(port=5000)
+```
+
+```Dockerfile
+FROM ubuntu:18.04
+
+RUN apt update
+RUN apt install -y python3
+RUN apt install -y python3-pip
+RUN python3 -m pip install flask
+
+ADD test.py /home/test.py
+
+EXPOSE 5000
+
+CMD [ "python3","/home/test.py" ]  
+```
+
+构建镜像
+
+```bash
+docker build -t flask .
+```
+
+启动容器
+
+```bash
+docker run -d -P flask
+```
+
+### 根据最佳实践优化 Dockerfile
+
+1. 在每个容器中只运行一个进程；
+
+2. 不要以为你的容器将会长久存在：它们是临时的，会被停止和重新启动。你应该把它们当作不可变的实体，这意味着你不应该对其进行修改，而应从基础镜像重新创建它们。因此，需要将运行时配置和数据独立于容器和镜像进行管理。
+
+3. 使用 .dockerignore 文件；
+
+4. 利用 Docker Hub 的官方镜像，而不是自己从头编写；
+
+5. 最大限度地减少镜像层的数量，并利用镜像缓存的优点。
+
+[Dockerfile 最佳实践官方文档](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/)
+
+### 通过标签对镜像进行版本管理
+
+```bash
+# docker source[:tag] target[:tag]
+docker ubuntu:18.04 test 1.0
+```
+
+### 使用 ONBUILD 镜像
+
+[ONBUILD 文档](https://docs.docker.com/engine/reference/builder/#onbuild)
