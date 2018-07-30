@@ -354,3 +354,71 @@ public enum Blah{
 ```java
 Blah.valueOf("A");
 ```
+
+## `finally` 总会被执行？
+
+1. 使用 `System.exit()` ；
+2. jvm 崩溃；
+3. 其他线程干扰了现在运行的线程（通过 `interrupt` 方法）；
+
+> [原问题](https://stackoverflow.com/questions/65035/does-finally-always-execute-in-java?page=1&tab=votes#tab-top)
+
+## 创建一个文件并写入内容
+
+### 创建文本文件
+
+```java
+PrintWriter writer = new PrintWriter("the-file-name.txt", "UTF-8");
+writer.println("The first line");
+writer.println("The second line");
+writer.close();
+```
+
+### 创建二进制文件
+
+```java
+byte data[] = ...
+FileOutputStream out = new FileOutputStream("the-file-name");
+out.write(data);
+out.close();
+```
+
+### 创建文本文件 Java7+
+
+```java
+List<String> lines = Arrays.asList("The first line", "The second line");
+Path file = Paths.get("the-file-name.txt");
+Files.write(file, lines, Charset.forName("UTF-8"));
+//Files.write(file, lines, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+```
+
+### 创建二进制文件 Java7+
+
+```java
+byte data[] = ...
+Path file = Paths.get("the-file-name");
+Files.write(file, data);
+//Files.write(file, data, StandardOpenOption.APPEND);
+```
+
+> [原问题](https://stackoverflow.com/questions/2885173/how-do-i-create-a-file-and-write-to-it-in-java)
+
+## Java `foreach` 工作原理
+
+```java
+// add "monkey", "donkey", "skeleton key" to someList
+List<String> someList = new ArrayList<String>();
+
+for (String item : someList) {
+    System.out.println(item);
+}
+```
+
+相当于
+
+```java
+for (Iterator<String> i = someIterable.iterator(); i.hasNext();) {
+    String item = i.next();
+    System.out.println(item);
+}
+```

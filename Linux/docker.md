@@ -20,6 +20,7 @@
         - [根据最佳实践优化 Dockerfile](#根据最佳实践优化-dockerfile)
         - [通过标签对镜像进行版本管理](#通过标签对镜像进行版本管理)
         - [使用 ONBUILD 镜像](#使用-onbuild-镜像)
+    - [Docker 网络](#docker-网络)
 
 <!-- /TOC -->
 
@@ -438,4 +439,24 @@ docker ubuntu:18.04 test 1.0
 
 ### 使用 ONBUILD 镜像
 
+在一个 Dockerfile 文件中加上 `ONBUILD` 指令，该指令对利用该 Dockerfile 构建镜像（例如为A镜像）不会产生实质性影响。但是当编写一个新的 Dockerfile 文件来基于A镜像构建一个镜像（例如为B镜像）时，这时构造A镜像的 Dockerfile 文件中的 `ONBUILD` 指令就生效了，在构建B镜像的过程中，首先会执行 `ONBUILD` 指令指定的指令，然后才会执行其它指令。如果是再利用B镜像构造新的镜像时，那个 `ONBUILD` 指令就无效了，也就是说只能再构建子镜像中执行，对孙子镜像构建无效。
+
+利用 `ONBUILD` 指令，实际上就是相当于创建一个模板镜像，后续可以根据该模板镜像创建特定的子镜像，需要在子镜像构建过程中执行的一些通用操作就可以在模板镜像对应的 dockerfile 文件中用 `ONBUILD` 指令指定，从而减少 dockerfile 文件的重复内容编写。
+
+```dockerfile
+FROM node:0.12.6
+
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
+
+ONBUILD COPY package.json /usr/src/app
+ONBUILD RUN npm install
+ONBUILD COPY . /usr/src/app
+
+CMD [ "npm","start" ]
+```
+
 [ONBUILD 文档](https://docs.docker.com/engine/reference/builder/#onbuild)
+
+## Docker 网络
+
