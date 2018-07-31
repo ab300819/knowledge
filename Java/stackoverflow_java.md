@@ -422,3 +422,47 @@ for (Iterator<String> i = someIterable.iterator(); i.hasNext();) {
     System.out.println(item);
 }
 ```
+
+## 1927 年两个时间相减会得到奇怪结果
+
+```java
+public static void main(String[] args) throws ParseException {
+    SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");  
+    String str3 = "1927-12-31 23:54:07";  
+    String str4 = "1927-12-31 23:54:08";  
+    Date sDt3 = sf.parse(str3);  
+    Date sDt4 = sf.parse(str4);  
+    long ld3 = sDt3.getTime() /1000;  
+    long ld4 = sDt4.getTime() /1000;
+    System.out.println(ld4-ld3);
+}
+
+// 353
+```
+
+```java
+String str3 = "1927-12-31 23:54:08";  
+String str4 = "1927-12-31 23:54:09";  
+
+// 1
+```
+
+```
+java version "1.6.0_22"
+Java(TM) SE Runtime Environment (build 1.6.0_22-b04)
+Dynamic Code Evolution Client VM (build 0.2-b02-internal, 19.0-b04-internal, mixed mode)
+
+Timezone(`TimeZone.getDefault()`):
+
+sun.util.calendar.ZoneInfo[id="Asia/Shanghai",
+offset=28800000,dstSavings=0,
+useDaylight=false,
+transitions=19,
+lastRule=null]
+
+Locale(Locale.getDefault()): zh_CN
+```
+
+因为1927年11月31日上海的时区变了。在1927年12月31日的午夜，时钟回调了5分52秒，所以 `1927-12-31 23:54:08` 这个时间实际上发生了两次。
+
+[原问题](https://stackoverflow.com/questions/6841333/why-is-subtracting-these-two-times-in-1927-giving-a-strange-result)

@@ -21,6 +21,12 @@
         - [通过标签对镜像进行版本管理](#通过标签对镜像进行版本管理)
         - [使用 ONBUILD 镜像](#使用-onbuild-镜像)
     - [Docker 网络](#docker-网络)
+        - [查看容器的 IP 地址](#查看容器的-ip-地址)
+            - [Example 1](#example-1)
+            - [Example 2](#example-2)
+            - [Example 3](#example-3)
+        - [将容器端口暴露到主机上](#将容器端口暴露到主机上)
+    - [在 Docker 中进行容器链接](#在-docker-中进行容器链接)
 
 <!-- /TOC -->
 
@@ -460,3 +466,52 @@ CMD [ "npm","start" ]
 
 ## Docker 网络
 
+### 查看容器的 IP 地址
+
+#### Example 1
+
+```bash
+# 使用 docker inspect 命令
+docker inspect --format '{{.NetworkSettings.IPAddress}}' nginx
+```
+
+#### Example 2
+
+```bash
+# 执行 ip add 命令获取
+docker exec -ti nginx ip add | grep global
+```
+
+#### Example 3
+
+```bash
+# 查看 /etc/hosts 文件
+docker exec -ti nginx cat /etc/host | grep nginx
+```
+
+### 将容器端口暴露到主机上
+
+通过 `-P` 选项将容器内的端口动态绑定到宿主机上；也可以通过 `-p` 选项手动指定映射关系。
+
+```bash
+docker run -d -p 5000 --name foobar flask
+
+# 或者 Dockerfile 中写入
+docker run -d -P flask
+```
+
+可以通过 `docker port` 来查看端口映射信息
+
+```bash
+docker port foobar 5000
+```
+
+可以选择协议
+
+```bash
+docker run -d -p 5000/tcp -p 53/udp flask
+```
+
+## 在 Docker 中进行容器链接
+
+`--link` 已废弃，使用 [桥接网络](https://docs.docker.com/network/bridge/)
