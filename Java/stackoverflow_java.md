@@ -466,3 +466,116 @@ Locale(Locale.getDefault()): zh_CN
 因为1927年11月31日上海的时区变了。在1927年12月31日的午夜，时钟回调了5分52秒，所以 `1927-12-31 23:54:08` 这个时间实际上发生了两次。
 
 [原问题](https://stackoverflow.com/questions/6841333/why-is-subtracting-these-two-times-in-1927-giving-a-strange-result)
+
+## 计算 MD5 值
+
+```java
+byte[] byteOfData = test.getBytes(Charset.forName("utf-8"));
+MessageDigest md = MessageDigest.getInstance("md5");
+byte[] md5Value = md.digest(byteOfData);
+```
+
+如果需要计算的数据量大，可以先循环调用 `md.update(byteOfData)` 来加载数据，最后调用 `md.digest()` 
+
+## 一种奇怪的内部类定义方法
+
+```java
+class A {
+    int t() { return 1; }
+    static A a =  new A() { int t() { return 2; } };
+}
+```
+
+**测试了，好像不行**
+
+## 如何创建泛型数组
+
+**检查：强类型**
+
+```java
+public class GenSet<E> {
+
+    private E[] a;
+
+    public GenSet(Class<E> c, int s) {
+        // Use Array native method to create array
+        // of a type only known at run time
+        @SuppressWarnings("unchecked")
+        final E[] a = (E[]) Array.newInstance(c, s);
+        this.a = a;
+    }
+
+    E get(int i) {
+        return a[i];
+    }
+}
+```
+
+**未检查：弱类型**
+
+```java
+public class GenSet<E> {
+
+    private Object[] a;
+
+    public GenSet(int s) {
+        a = new Object[s];
+    }
+
+    E get(int i) {
+        @SuppressWarnings("unchecked")
+        final E e = (E) a[i];
+        return e;
+    }
+}
+```
+
+上述代码在编译期能够通过，但因为泛型擦除的缘故，在程序执行过程中，数组的类型有且仅有 `Object` 类型存在，这个时候如果我们强制转化为`E`类型的话，在运行时会有 `ClassCastException` 抛出。所以，要确定好泛型的上界。
+
+```java
+public class GenSet<E extends Foo> { // E has an upper bound of Foo
+
+    private Foo[] a; // E erases to Foo, so use Foo[]
+
+    public GenSet(int s) {
+        a = new Foo[s];
+    }
+
+    ...
+}
+```
+
+[原问题](https://stackoverflow.com/questions/529085/how-to-create-a-generic-array-in-java)
+
+## 获取完整的堆栈信息
+
+```java
+Thread.currentThread().getStackTrace();
+```
+
+## 一行代码初始化列表
+
+```java
+List<String> list =new ArrayList<String>(){{
+    add("A");
+    add("B");
+    add("C");
+}};
+```
+
+## 初始化静态 Map
+
+```java
+public class Test {
+    private static final Map<Integer, String> myMap;
+    static {
+        Map<Integer, String> aMap = ....;
+        aMap.put(1, "one");
+        aMap.put(2, "two");
+        myMap = Collections.unmodifiableMap(aMap);
+    }
+}
+```
+
+**使用 Guava**
+
