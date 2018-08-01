@@ -579,3 +579,20 @@ public class Test {
 
 **使用 Guava**
 
+```java
+static final Map<Integer, String> MY_MAP = ImmutableMap.of(
+    1, "one",
+    2, "two"
+);
+```
+
+元素数量较多（超过 5 个）时使用下面方式
+
+```java
+static final Map<Integer, String> MY_MAP = ImmutableMap.<Integer, String>builder()
+    .put(1, "one")
+    .put(2, "two")
+    // ... 
+    .put(15, "fifteen")
+    .build();
+```
