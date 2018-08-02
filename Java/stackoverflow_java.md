@@ -1,3 +1,61 @@
+<!-- TOC -->
+
+- [stackoverflow](#stackoverflow)
+    - [将InputStream转换为String](#将inputstream转换为string)
+        - [使用 JDk `Scanner`](#使用-jdk-scanner)
+        - [使用 Jdk `InputStreamReader` 和 `StringBuilder`](#使用-jdk-inputstreamreader-和-stringbuilder)
+        - [使用 JDK `ByteArrayOutputStream` 和 `inputStream.read`](#使用-jdk-bytearrayoutputstream-和-inputstreamread)
+        - [使用 JDK `BufferedReader `](#使用-jdk-bufferedreader-)
+        - [使用 JDK `BufferedInputStream` 和 `ByteArrayOutputStream`](#使用-jdk-bufferedinputstream-和-bytearrayoutputstream)
+        - [使用 JDK `inputStream.read()` 和 `StringBuilder`](#使用-jdk-inputstreamread-和-stringbuilder)
+        - [使用 Java8 Stream](#使用-java8-stream)
+        - [使用 parallel Stream](#使用-parallel-stream)
+        - [使用 Apache Utils](#使用-apache-utils)
+        - [使用 Apache Commons](#使用-apache-commons)
+        - [使用 Guava](#使用-guava)
+    - [将 Array 转化为 List](#将-array-转化为-list)
+    - [HashMap 遍历](#hashmap-遍历)
+        - [方法1 使用 For-Each 迭代 entries](#方法1-使用-for-each-迭代-entries)
+        - [方法2 使用 For-Each 迭代 keys 和 values](#方法2-使用-for-each-迭代-keys-和-values)
+        - [方法3 使用 Iterator 迭代](#方法3-使用-iterator-迭代)
+        - [方法4 迭代keys并搜索values（低效的）](#方法4-迭代keys并搜索values低效的)
+        - [总结](#总结)
+    - [修饰符作用范围](#修饰符作用范围)
+    - [如何测试一个数组是否包含指定的值](#如何测试一个数组是否包含指定的值)
+        - [使用 JDK](#使用-jdk)
+        - [使用 Apache Commons Lang](#使用-apache-commons-lang)
+        - [使用 Java 8](#使用-java-8)
+    - [重写（Override） `equals` 和 `hashCode` 方法时应考虑的问题](#重写override-equals-和-hashcode-方法时应考虑的问题)
+    - [合并两个数组](#合并两个数组)
+        - [使用 JDK](#使用-jdk-1)
+        - [使用 Apache Common Lang](#使用-apache-common-lang)
+    - [通过 String 查找 Enum](#通过-string-查找-enum)
+    - [`finally` 总会被执行？](#finally-总会被执行)
+    - [创建一个文件并写入内容](#创建一个文件并写入内容)
+        - [创建文本文件](#创建文本文件)
+        - [创建二进制文件](#创建二进制文件)
+        - [创建文本文件 Java7+](#创建文本文件-java7)
+        - [创建二进制文件 Java7+](#创建二进制文件-java7)
+    - [Java `foreach` 工作原理](#java-foreach-工作原理)
+    - [1927 年两个时间相减会得到奇怪结果](#1927-年两个时间相减会得到奇怪结果)
+    - [计算 MD5 值](#计算-md5-值)
+    - [一种奇怪的内部类定义方法](#一种奇怪的内部类定义方法)
+    - [如何创建泛型数组](#如何创建泛型数组)
+    - [获取完整的堆栈信息](#获取完整的堆栈信息)
+    - [一行代码初始化列表](#一行代码初始化列表)
+    - [初始化静态 Map](#初始化静态-map)
+    - [给 3 个布尔变量，当其中有 2 个或者 2 个以上为 true 才返回 true](#给-3-个布尔变量当其中有-2-个或者-2-个以上为-true-才返回-true)
+    - [输出数组最简单的方式](#输出数组最简单的方式)
+    - [Java 源码中设计模式](#java-源码中设计模式)
+    - [生成随机字符串](#生成随机字符串)
+    - [将堆栈信息转化为字符串](#将堆栈信息转化为字符串)
+    - [在整数左边填充 0](#在整数左边填充-0)
+    - [从文件读取字符串](#从文件读取字符串)
+    - [使用 `URLConnection` 接受和发送 HTTP 请求](#使用-urlconnection-接受和发送-http-请求)
+    - [内存泄露代码](#内存泄露代码)
+
+<!-- /TOC -->
+
 # stackoverflow
 
 ## 将InputStream转换为String
@@ -771,3 +829,195 @@ try (Stream<String> lines = Files.lines(path, encoding)) {
 ```
 
 [原问题](https://stackoverflow.com/questions/326390/how-do-i-create-a-java-string-from-the-contents-of-a-file)
+
+## 使用 `URLConnection` 接受和发送 HTTP 请求
+
+准备参数
+
+```java
+String url = "http://example.com";
+String charset = "UTF-8";  // Or in Java 7 and later, use the constant: java.nio.charset.StandardCharsets.UTF_8.name()
+String param1 = "value1";
+String param2 = "value2";
+// ...
+
+String query = String.format("param1=%s&param2=%s", 
+    URLEncoder.encode(param1, charset), 
+    URLEncoder.encode(param2, charset));
+```
+
+发送带有参数的 HTTP GET 请求
+
+```java
+URLConnection connection = new URL(url + "?" + query).openConnection();
+connection.setRequestProperty("Accept-Charset", charset);
+InputStream response = connection.getInputStream();
+```
+
+如果没有任何参数，可以直接使用 `openStream()`
+
+```java
+InputStream response = new URL(url).openStream();
+```
+
+发送带有参数的 HTTP POST 请求
+
+```java
+URLConnection connection = new URL(url).openConnection();
+connection.setDoOutput(true); // Triggers POST.
+connection.setRequestProperty("Accept-Charset", charset);
+connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=" + charset);
+
+try (OutputStream output = connection.getOutputStream()) {
+    output.write(query.getBytes(charset));
+}
+
+InputStream response = connection.getInputStream();
+// ...
+```
+
+也可以将 `URLConnection` 强转为 `HttpURLConnection`，使用其 `setRequestMethod()` 方法，但是若要获取连接输出，仍然要设置 `setDoOutput(true)`
+
+```java
+HttpURLConnection httpConnection = (HttpURLConnection) new URL(url).openConnection();
+httpConnection.setRequestMethod("POST");
+// ...
+```
+
+[原问题](https://stackoverflow.com/questions/2793150/how-to-use-java-net-urlconnection-to-fire-and-handle-http-requests)
+
+
+## 内存泄露代码
+
+```java
+import java.io.IOException;
+import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.Path;
+
+/**
+ * Example demonstrating a ClassLoader leak.
+ *
+ * <p>To see it in action, copy this file to a temp directory somewhere,
+ * and then run:
+ * <pre>{@code
+ *   javac ClassLoaderLeakExample.java
+ *   java -cp . ClassLoaderLeakExample
+ * }</pre>
+ *
+ * <p>And watch the memory grow! On my system, using JDK 1.8.0_25, I start
+ * getting OutofMemoryErrors within just a few seconds.
+ *
+ * <p>This class is implemented using some Java 8 features, mainly for
+ * convenience in doing I/O. The same basic mechanism works in any version
+ * of Java since 1.2.
+ */
+public final class ClassLoaderLeakExample {
+
+  static volatile boolean running = true;
+
+  public static void main(String[] args) throws Exception {
+    Thread thread = new LongRunningThread();
+    try {
+      thread.start();
+      System.out.println("Running, press any key to stop.");
+      System.in.read();
+    } finally {
+      running = false;
+      thread.join();
+    }
+  }
+
+  /**
+   * Implementation of the thread. It just calls {@link #loadAndDiscard()}
+   * in a loop.
+   */
+  static final class LongRunningThread extends Thread {
+    @Override public void run() {
+      while(running) {
+        try {
+          loadAndDiscard();
+        } catch (Throwable ex) {
+          ex.printStackTrace();
+        }
+        try {
+          Thread.sleep(100);
+        } catch (InterruptedException ex) {
+          System.out.println("Caught InterruptedException, shutting down.");
+          running = false;
+        }
+      }
+    }
+  }
+  
+  /**
+   * A simple ClassLoader implementation that is only able to load one
+   * class, the LoadedInChildClassLoader class. We have to jump through
+   * some hoops here because we explicitly want to ensure we get a new
+   * class each time (instead of reusing the class loaded by the system
+   * class loader). If this child class were in a JAR file that wasn't
+   * part of the system classpath, we wouldn't need this mechanism.
+   */
+  static final class ChildOnlyClassLoader extends ClassLoader {
+    ChildOnlyClassLoader() {
+      super(ClassLoaderLeakExample.class.getClassLoader());
+    }
+    
+    @Override protected Class<?> loadClass(String name, boolean resolve)
+        throws ClassNotFoundException {
+      if (!LoadedInChildClassLoader.class.getName().equals(name)) {
+        return super.loadClass(name, resolve);
+      }
+      try {
+        Path path = Paths.get(LoadedInChildClassLoader.class.getName()
+            + ".class");
+        byte[] classBytes = Files.readAllBytes(path);
+        Class<?> c = defineClass(name, classBytes, 0, classBytes.length);
+        if (resolve) {
+          resolveClass(c);
+        }
+        return c;
+      } catch (IOException ex) {
+        throw new ClassNotFoundException("Could not load " + name, ex);
+        }
+    }
+    }
+
+  /**
+   * Helper method that constructs a new ClassLoader, loads a single class,
+   * and then discards any reference to them. Theoretically, there should
+   * be no GC impact, since no references can escape this method! But in
+   * practice this will leak memory like a sieve.
+   */
+    static void loadAndDiscard() throws Exception {
+    ClassLoader childClassLoader = new ChildOnlyClassLoader();
+    Class<?> childClass = Class.forName(
+        LoadedInChildClassLoader.class.getName(), true, childClassLoader);
+    childClass.newInstance();
+    // When this method returns, there will be no way to reference
+    // childClassLoader or childClass at all, but they will still be
+    // rooted for GC purposes!
+    }
+
+  /**
+   * An innocuous-looking class. Doesn't do anything interesting.
+   */
+    public static final class LoadedInChildClassLoader {
+    // Grab a bunch of bytes. This isn't necessary for the leak, it just
+    // makes the effect visible more quickly.
+    // Note that we're really leaking these bytes, since we're effectively
+    // creating a new instance of this static final field on each iteration!
+    static final byte[] moreBytesToLeak = new byte[1024 * 1024 * 10];
+
+    private static final ThreadLocal<LoadedInChildClassLoader> threadLocal
+        = new ThreadLocal<>();
+    
+    public LoadedInChildClassLoader() {
+        // Stash a reference to this class in the ThreadLocal
+        threadLocal.set(this);
+        }
+    }
+}
+
+```
