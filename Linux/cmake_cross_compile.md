@@ -33,7 +33,7 @@ SET(CMAKE_C_COMPILER arm-linux-gnueabihf-gcc-6)
 SET(CMAKE_CXX_COMPILER arm-linux-gnueabihf-g++-6)
 
 # where is the target environment
-SET(CMAKE_FIND_ROOT_PATH  /opt/eldk-2007-01-19/ppc_74xx /home/alex/eldk-ppc74xx-inst)
+# SET(CMAKE_FIND_ROOT_PATH  /opt/eldk-2007-01-19/ppc_74xx /home/alex/eldk-ppc74xx-inst)
 
 # search for programs in the build host directories
 SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)

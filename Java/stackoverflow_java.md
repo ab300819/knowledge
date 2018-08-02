@@ -586,7 +586,7 @@ static final Map<Integer, String> MY_MAP = ImmutableMap.of(
 );
 ```
 
-元素数量较多（超过 5 个）时使用下面方式
+元素数量较多（超过 5 个）时，使用下面方式
 
 ```java
 static final Map<Integer, String> MY_MAP = ImmutableMap.<Integer, String>builder()
@@ -596,3 +596,178 @@ static final Map<Integer, String> MY_MAP = ImmutableMap.<Integer, String>builder
     .put(15, "fifteen")
     .build();
 ```
+
+## 给 3 个布尔变量，当其中有 2 个或者 2 个以上为 true 才返回 true
+
+```java
+a ? (b || c) : (b && c);
+
+a && (b || c) || (b && c);
+
+a ^ b ? c : a
+
+(a==b) ? a : c;
+```
+
+## 输出数组最简单的方式
+
+```java
+Arrays.toString(intArray);
+
+Arrays.deepToString(strArray);
+```
+
+区别在于 `deepToString` 更适合多维数组
+
+## Java 源码中设计模式
+
+[原问题](https://stackoverflow.com/questions/1673841/examples-of-gof-design-patterns-in-javas-core-libraries)
+
+## 生成随机字符串
+
+```java
+import java.security.SecureRandom;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Random;
+
+public class RandomString {
+
+    /**
+     * Generate a random string.
+     */
+    public String nextString() {
+        for (int idx = 0; idx < buf.length; ++idx)
+            buf[idx] = symbols[random.nextInt(symbols.length)];
+        return new String(buf);
+    }
+
+    public static final String upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    public static final String lower = upper.toLowerCase(Locale.ROOT);
+
+    public static final String digits = "0123456789";
+
+    public static final String alphanum = upper + lower + digits;
+
+    private final Random random;
+
+    private final char[] symbols;
+
+    private final char[] buf;
+
+    public RandomString(int length, Random random, String symbols) {
+        if (length < 1) throw new IllegalArgumentException();
+        if (symbols.length() < 2) throw new IllegalArgumentException();
+        this.random = Objects.requireNonNull(random);
+        this.symbols = symbols.toCharArray();
+        this.buf = new char[length];
+    }
+
+    /**
+     * Create an alphanumeric string generator.
+     */
+    public RandomString(int length, Random random) {
+        this(length, random, alphanum);
+    }
+
+    /**
+     * Create an alphanumeric strings from a secure generator.
+     */
+    public RandomString(int length) {
+        this(length, new SecureRandom());
+    }
+
+    /**
+     * Create session identifiers.
+     */
+    public RandomString() {
+        this(21);
+    }
+
+}
+```
+
+使用举例
+
+```java
+RandomString gen = new RandomString(8, ThreadLocalRandom.current());
+```
+
+```java
+RandomString session = new RandomString();
+```
+
+```java
+String easy = RandomString.digits + "ACEFGHJKLMNPQRUVWXYabcdefhijkprstuvwx";
+RandomString tickets = new RandomString(23, new SecureRandom(), easy);
+```
+
+[原问题](https://stackoverflow.com/questions/41107/how-to-generate-a-random-alpha-numeric-string)
+
+## 将堆栈信息转化为字符串
+
+使用 Apache commons lang
+
+```java
+org.apache.commons.lang.exception.ExceptionUtils.getStackTrace(Throwable)
+```
+
+使用 JDK
+
+```java
+import java.io.StringWriter;
+import java.io.PrintWriter;
+
+// ...
+
+StringWriter sw = new StringWriter();
+PrintWriter pw = new PrintWriter(sw);
+e.printStackTrace(pw);
+String sStackTrace = sw.toString(); // stack trace as a string
+System.out.println(sStackTrace);
+```
+
+## 在整数左边填充 0
+
+```java
+String.format("%05d", yournumber);
+```
+
+[原问题](https://stackoverflow.com/questions/473282/how-can-i-pad-an-integer-with-zeros-on-the-left)
+
+## 从文件读取字符串
+
+从文件里读取所有文本
+
+```java
+static String readFile(String path, Charset encoding) throws IOException 
+{
+    byte[] encoded = Files.readAllBytes(Paths.get(path));
+    return new String(encoded, encoding);
+}
+```
+
+从文件读取所有行（Java 7）
+
+```java
+List<String> lines = Files.readAllLines(Paths.get(path), encoding);
+```
+
+使用 Java 8 `BufferedReader`
+
+```java
+try (BufferedReader r = Files.newBufferedReader(path, encoding)) {
+    r.lines().forEach(System.out::println);
+}
+```
+
+使用 Java 8 `Stream`
+
+```java
+try (Stream<String> lines = Files.lines(path, encoding)) {
+    lines.forEach(System.out::println);
+}
+```
+
+[原问题](https://stackoverflow.com/questions/326390/how-do-i-create-a-java-string-from-the-contents-of-a-file)
