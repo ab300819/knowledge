@@ -42,11 +42,11 @@ SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 ```
 
-`-DCMAKE_TOOLCHAIN_FILE=./toolChain.cmake`
+使用 `-DCMAKE_TOOLCHAIN_FILE=./toolChain.cmake`
 
-> [参考](https://www.cnblogs.com/rickyk/p/3875334.html) <br>
-> [官方Wiki](https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/CrossCompiling) <br>
-> [官方Help](https://cmake.org/cmake/help/v3.6/manual/cmake-toolchains.7.html) <br>
+> [参考](https://www.cnblogs.com/rickyk/p/3875334.html) 
+> [官方Wiki](https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/CrossCompiling) 
+> [官方Help](https://cmake.org/cmake/help/v3.6/manual/cmake-toolchains.7.html)
 
 ## `CMakeLists.txt` 添加库注意事项
 
