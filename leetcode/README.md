@@ -1,9 +1,14 @@
 # LeetCode
 
-`#`   |   Title   |   Difficulty
+#   |   Title   |   Difficulty
 --- |   --- |   ---
-1   |   [Two Sum](1.Two_Sum.md) |   Easy
-7   |   [Reverse Integer](7.Reverse_Integer.md) |   Easy
+1   |   [Two Sum](algorithms/1.Two_Sum.md) |   Easy
+7   |   [Reverse Integer](algorithms/7.Reverse_Integer.md) |   Easy
+9   |   [Palindrome Number](algorithms/9.Palindrome_Number.md) |   Easy
+20   |   [Valid Parentheses](algorithms/20.Valid_Parentheses.md) |   Easy
+21   |   [Merge Two Sorted Lists](algorithms/21.Merge_Two_Sorted_Lists.md) |   Easy
+26   |   [Remove Duplicates from Sorted Array](algorithms/26.Remove_Duplicates_from_Sorted_Array.md) |   Easy
+27   |   [Remove Element](algorithms/27.Remove_Element.md) |   Easy
 175 |   [Combine Two Tables](database/175.Combine_Two_Tables.md)  |   Easy
 176 |   [Second Highest Salary](database/176.Second_Highest_Salary.md)   |   Easy
 177 |   [Nth Highest Salary](database/177.Nth_Highest_Salary.md)  |   Medium	
