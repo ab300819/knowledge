@@ -3,12 +3,17 @@
 #   |   Title   |   Difficulty
 --- |   --- |   ---
 1   |   [Two Sum](algorithms/1.Two_Sum.md) |   Easy
+2   |   [Add Two Numbers](algorithms/2.Add_Two_Numbers.md) |   Medium
 7   |   [Reverse Integer](algorithms/7.Reverse_Integer.md) |   Easy
 9   |   [Palindrome Number](algorithms/9.Palindrome_Number.md) |   Easy
 20   |   [Valid Parentheses](algorithms/20.Valid_Parentheses.md) |   Easy
 21   |   [Merge Two Sorted Lists](algorithms/21.Merge_Two_Sorted_Lists.md) |   Easy
 26   |   [Remove Duplicates from Sorted Array](algorithms/26.Remove_Duplicates_from_Sorted_Array.md) |   Easy
 27   |   [Remove Element](algorithms/27.Remove_Element.md) |   Easy
+28   |   [Implement strStr()](algorithms/28.Implement_strStr.md) |   Easy
+35   |   [Search Insert Position](algorithms/35.Search_Insert_Position.md) |   Easy
+58   |   [Length of Last Word](algorithms/58.Length_of_Last_Word.md) |   Easy
+67   |   [Add Binary](algorithms/67.Add_Binary.md) |   Easy
 175 |   [Combine Two Tables](database/175.Combine_Two_Tables.md)  |   Easy
 176 |   [Second Highest Salary](database/176.Second_Highest_Salary.md)   |   Easy
 177 |   [Nth Highest Salary](database/177.Nth_Highest_Salary.md)  |   Medium	
@@ -22,6 +27,7 @@
 196 |   [Delete Duplicate Emails](database/196.Delete_Duplicate_Emails.md) |   Easy	
 197 |   [Rising Temperature](database/197.Rising_Temperature.md)  |   Easy	
 262 |   [Trips and Users](database/262.Trips_and_Users.md) |   Hard	
+412 |   [Fizz Buzz](algorithms/412.Fizz_Buzz.md) |   Easy
 569 |   Median Employee Salary  |   Hard	
 570 |   Managers with at Least 5 Direct Reports |   Medium	
 571 |   Find Median Given Frequency of Numbers  |   Hard	
