@@ -93,3 +93,86 @@ subject.reversalInput("hello");
 ```
 
 ## 位运算
+
+### 移位操作
+
+```java
+// 左移相当于乘上 2^n
+target << n
+// 无符号左移
+target <<< n
+
+// 右移相当于除以 2^n
+target >> n
+// 无符号右移
+target >>> n
+```
+
+### 判断 2 的 n 次幂
+
+```java
+public int isPower(int n) {
+
+    if (n < 1) return -1;
+
+    for (int i = 1, j = 0; i <= n; i <<= 1, j++) {
+        if (i == n) return j;
+    }
+
+    return -1;
+}
+```
+
+### 返回二进制中 1 的个数
+
+```java
+public int checkHighBit1(int target) {
+
+    int count = 0;
+
+    for (; target > 0; target >>= 1) {
+        if ((target & 1) == 1) count++;
+    }
+    return count;
+}
+
+public int checkHighBit2(int target) {
+
+    int count = 0;
+
+    for (; target != 0; count++) {
+        target &= (target - 1);
+    }
+    return count;
+}
+```
+
+## 字符串
+
+### 字符串反转
+
+`how are you` 反转为 `you are how`
+
+**Method A**
+
+```java
+
+```
+
+**Method B**
+
+```java
+
+```
+
+## 不用比较返回最大值或最小值
+
+```java
+public int maxWithout(int a, int b) {
+    return (int) (((long) a + (long) +b + Math.abs((long) a - (long) b)) / 2);
+}
+
+public int minWithout(int a, int b) {
+    return (int) (((long) a + (long) +b - Math.abs((long) a - (long) b)) / 2);
+}
+```
