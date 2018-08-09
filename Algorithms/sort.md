@@ -1,6 +1,23 @@
+<!-- TOC -->
+
+- [排序算法](#排序算法)
+    - [选择排序](#选择排序)
+    - [插入排序](#插入排序)
+    - [冒泡排序](#冒泡排序)
+    - [快速排序](#快速排序)
+    - [希尔排序](#希尔排序)
+    - [归并排序](#归并排序)
+
+<!-- /TOC -->
+
 # 排序算法
 
 ## 选择排序
+
+**不稳定**
+
+时间复杂度：O(n^2)
+空间复杂度：O(1)
 
 ```java
 public static void selectionSort(int[] data) {
@@ -27,6 +44,11 @@ public static void selectionSort(int[] data) {
 
 ## 插入排序
 
+**稳定**
+
+时间复杂度：O(n^2)
+空间复杂度：O(1)
+
 ```java
 public static void insertionSort(int[] data) {
 
@@ -45,6 +67,11 @@ public static void insertionSort(int[] data) {
 ```
 
 ## 冒泡排序
+
+**稳定**
+
+时间复杂度：O(n^2)
+空间复杂度：O(1)
 
 ```java
 public static void bubbleSort(int[] data) {
@@ -66,6 +93,11 @@ public static void bubbleSort(int[] data) {
 ```
 
 ## 快速排序
+
+**不稳定**
+
+时间复杂度：O(nlogn)期望时间，O(n^2)最坏情况
+空间复杂度：O(logn)
 
 ```java
 public static void quickSort(int[] data, int low, int high) {
@@ -113,6 +145,11 @@ public static int partition(int[] data, int low, int high) {
 
 ## 希尔排序
 
+**不稳定**
+
+时间复杂度：O(nlogn)期望时间
+空间复杂度：O(1)
+
 ```java
 public static void shellSort1(int[] data) {
 
@@ -159,6 +196,11 @@ public static void shellSort2(int[] data) {
 ```
 
 ## 归并排序
+
+**稳定**
+
+时间复杂度：O(nlogn)
+空间复杂度: O(n)+O(logn)(如果不是重上到小)，O(1)
 
 ```java
 public static void mergeSort(int[] data, int low, int high) {
