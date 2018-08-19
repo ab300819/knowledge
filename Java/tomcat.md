@@ -2,7 +2,7 @@
 
 ## Tomcat 的顶层结构及启动过程
 
-## Tomcat 的顶层结构
+### Tomcat 的顶层结构
 
 Tomcat 中最顶层的容器叫Server， 代表整个服务器， Server 中包含至少一个 Service， 用于具体提供服务。
 
@@ -22,7 +22,7 @@ Tomcat 里的 Server 由 `org.apache.catalina.startup.Catalina` 来管理，`Cat
 
 Tomcat 的入口 `main` 方法在 `org. pache.catalina.startup.Bootstrap` 中。 `Bootstrap` 的作用类似一个 `CatalinaAdaptor`， 具体处理过程还是使用`Catalina` 来完成的， 这么做的好处是可以把启动的入口和具体的管理类分开，从而可以很方便地创建出多种启动方式，每种启动方式只需要写一个相应的 `CatalinaAdaptor`就可以了。
 
-## `Bootstrap` 启动过程
+### `Bootstrap` 启动过程
 
 `Bootstrap` 是 Tomcat 的入口，正常情况下启动 Tomcat 就是调用 `Bootstrap` 的 `main` 方法。
 
@@ -103,7 +103,7 @@ public void start() throws Exception {
 }
 ```
 
-## `Catalina` 启动过程
+### `Catalina` 启动过程
 
 `Catalina` 的启动主要是调用 `setAwait` 、`load` 和 `start` 方法来完成。`setAwait` 方法用于设置 Server 启动完成后是否进入等待状态的标志，如果为 `true` 则进入，否则不进入；`load` 方法用于加载配置文件，创建并初始化 Server；`start` 方法用于启动服务器。
 
@@ -203,7 +203,7 @@ public void start() {
 }
 ```
 
-## `Server 启动过程`
+### `Server 启动过程`
 
 `Server` 接口中提供 `void addService(Service service);` 和 `void removeService(Service service);` 来添加和删除 `Service`。
 
@@ -424,7 +424,7 @@ public void await() {
 <Server port="8005" shutdown="SHUTDOWN">
 ```
 
-## `Service` 启动过程
+### `Service` 启动过程
 
 `Service` 的默认实现是 `org.apache.catalina.core.StandardService`，`StandardService` 也继承自 `LifecycleMBeanBase` 类，所以 `init` 和 `start` 方法最终也会调用 `initInternal` 和 `startInternal` 方法。
 
@@ -514,3 +514,138 @@ protected void startInternal() throws LifecycleException {
 整个启动流程，如图所示
 
 ![image](../resources/tomcat_start.PNG)
+
+## Tomcat 的生命周期管理
+
+### `Lifecycle` 接口
+
+Tomcat 通过 `org.apache.catalina.Lifecycle` 接口统一管理生命周期，所有有生命周期的组件都要实现 `Lifecycle` 接口。
+
+13 种事件类型
+
+```java
+String BEFORE_INIT_EVENT = "before_init";
+String AFTER_INIT_EVENT = "after_init";
+String START_EVENT = "start";
+String BEFORE_START_EVENT = "before_start";
+String AFTER_START_EVENT = "after_start";
+String STOP_EVENT = "stop";
+String BEFORE_STOP_EVENT = "before_stop";
+String AFTER_STOP_EVENT = "after_stop";
+String AFTER_DESTROY_EVENT = "after_destroy";
+String BEFORE_DESTROY_EVENT = "before_destroy";
+String PERIODIC_EVENT = "periodic";
+String CONFIGURE_START_EVENT = "configure_start";
+String CONFIGURE_STOP_EVENT = "configure_stop";
+```
+
+3 个管理监听器的方法
+
+```java
+/**
+ * Add a LifecycleEvent listener to this component.
+ *
+ * @param listener The listener to add
+ */
+void addLifecycleListener(LifecycleListener listener);
+
+
+/**
+ * Get the life cycle listeners associated with this life cycle.
+ *
+ * @return An array containing the life cycle listeners associated with this
+ *         life cycle. If this component has no listeners registered, a
+ *         zero-length array is returned.
+ */
+LifecycleListener[] findLifecycleListeners();
+
+
+/**
+ * Remove a LifecycleEvent listener from this component.
+ *
+ * @param listener The listener to remove
+ */
+void removeLifecycleListener(LifecycleListener listener);
+```
+
+4 个生命周期方法
+
+```java
+void init() throws LifecycleException;
+void start() throws LifecycleException;
+void stop() throws LifecycleException;
+void destroy() throws LifecycleException;
+```
+
+2 个获取当前状态的方法
+
+```java
+LifecycleState getState();
+String getStateName();
+```
+
+### `LifecycleBase`
+
+`LifecycleBase` 是 `Lifecycle` 接口默认实现方式；监听器管理是使用 `LifecycleListener` 类型的 `CopyOnWriteArrayList` 来保存所有的监听器，然后定义了添加、删除、查找和执行监听器的方法；生命周期方法中设置相应状态并调用对应的模板方法；组件当前状态在生命周期的是个方法中已经设置好，直接返回就可以了。
+
+**3 个管理监听器的方法**
+
+```java
+private final List<LifecycleListener> lifecycleListeners = new CopyOnWriteArrayList<>();
+
+@Override
+public void addLifecycleListener(LifecycleListener listener) {
+    lifecycleListeners.add(listener);
+}
+
+@Override
+public LifecycleListener[] findLifecycleListeners() {
+    return lifecycleListeners.toArray(new LifecycleListener[0]);
+}
+
+@Override
+public void removeLifecycleListener(LifecycleListener listener) {
+    lifecycleListeners.remove(listener);
+}
+
+protected void fireLifecycleEvent(String type, Object data) {
+    LifecycleEvent event = new LifecycleEvent(this, type, data);
+    for (LifecycleListener listener : lifecycleListeners) {
+        listener.lifecycleEvent(event);
+    }
+}
+```
+
+**4 个生命周期方法**
+
+四个生命周期方法的实现中首先判断当前的状态和要处理的方法是否匹配，如果不匹配就会执行相应方法使其匹配（如在 `init` 之前调用了 `start`， 这时会先执行 `init` 方法），或者不处理甚至抛出异常，如果匹配或者处理后匹配了，则会调用相应的模板方法并设置相应的状态。
+
+```java
+private final List<LifecycleListener> lifecycleListeners = new CopyOnWriteArrayList<>();
+
+@Override
+public final synchronized void init() throws LifecycleException {
+    if (!state.equals(LifecycleState.NEW)) {
+        invalidTransition(Lifecycle.BEFORE_INIT_EVENT);
+    }
+
+    try {
+        setStateInternal(LifecycleState.INITIALIZING, null, false);
+        initInternal();
+        setStateInternal(LifecycleState.INITIALIZED, null, false);
+    } catch (Throwable t) {
+        handleSubClassException(t, "lifecycleBase.initFail", toString());
+    }
+}
+```
+
+`invalidTransition` 方法用于处理不符合要求的状态，另外 3 个周期方法也会调用，用于处理异常。
+
+```java
+private void invalidTransition(String type) throws LifecycleException {
+    String msg = sm.getString("lifecycleBase.invalidTransition", type, toString(), state);
+    throw new LifecycleException(msg);
+}
+```
+
+`start` 方法在启动前先判断是不是
