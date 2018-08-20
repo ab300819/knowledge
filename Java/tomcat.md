@@ -648,4 +648,207 @@ private void invalidTransition(String type) throws LifecycleException {
 }
 ```
 
-`start` 方法在启动前先判断是不是
+`start` 方法在启动前先判断是不是已经启动，如果已经启动则直接返回，如果没有初始化会先执行初始化，如果失败状态就会调用 `stop` 方法进行关闭，如果不是这些状态也不是刚初始化完或者已经停止了则会抛出异常。如果是刚初始化完或已经停止，则会将状态设置为 `LifecycleState.STARTING_PREP`，然后调用 `startInternal()` 进行启动。
+
+```java
+public final synchronized void start() throws LifecycleException {
+
+    if (LifecycleState.STARTING_PREP.equals(state) || LifecycleState.STARTING.equals(state) ||
+            LifecycleState.STARTED.equals(state)) {
+
+        // 删除日志代码
+
+        return;
+    }
+
+    if (state.equals(LifecycleState.NEW)) {
+        init();
+    } else if (state.equals(LifecycleState.FAILED)) {
+        stop();
+    } else if (!state.equals(LifecycleState.INITIALIZED) &&
+            !state.equals(LifecycleState.STOPPED)) {
+        invalidTransition(Lifecycle.BEFORE_START_EVENT);
+    }
+
+    try {
+        setStateInternal(LifecycleState.STARTING_PREP, null, false);
+        startInternal();
+        if (state.equals(LifecycleState.FAILED)) {
+            // This is a 'controlled' failure. The component put itself into the
+            // FAILED state so call stop() to complete the clean-up.
+            stop();
+        } else if (!state.equals(LifecycleState.STARTING)) {
+            // Shouldn't be necessary but acts as a check that sub-classes are
+            // doing what they are supposed to.
+            invalidTransition(Lifecycle.AFTER_START_EVENT);
+        } else {
+            setStateInternal(LifecycleState.STARTED, null, false);
+        }
+    } catch (Throwable t) {
+        // This is an 'uncontrolled' failure so put the component into the
+        // FAILED state and throw an exception.
+        handleSubClassException(t, "lifecycleBase.startFail", toString());
+    }
+}
+```
+
+`setStateInternal` 方法除了用于设置状态还可以检查设置状态合不合逻辑。
+
+```java
+private synchronized void setStateInternal(LifecycleState state, Object data, boolean check) 
+    throws LifecycleException {
+
+    if (check) {
+        // Must have been triggered by one of the abstract methods (assume
+        // code in this class is correct)
+        // null is never a valid state
+        if (state == null) {
+            invalidTransition("null");
+            // Unreachable code - here to stop eclipse complaining about
+            // a possible NPE further down the method
+            return;
+        }
+
+        // Any method can transition to failed
+        // startInternal() permits STARTING_PREP to STARTING
+        // stopInternal() permits STOPPING_PREP to STOPPING and FAILED to
+        // STOPPING
+        if (!(state == LifecycleState.FAILED ||
+                (this.state == LifecycleState.STARTING_PREP &&
+                        state == LifecycleState.STARTING) ||
+                (this.state == LifecycleState.STOPPING_PREP &&
+                        state == LifecycleState.STOPPING) ||
+                (this.state == LifecycleState.FAILED &&
+                        state == LifecycleState.STOPPING))) {
+            // No other transition permitted
+            invalidTransition(state.name());
+        }
+    }
+
+    this.state = state;
+    String lifecycleEvent = state.getLifecycleEvent();
+    if (lifecycleEvent != null) {
+        fireLifecycleEvent(lifecycleEvent, data);
+    }
+}
+```
+
+## Container 分析
+
+### `ContainerBase` 的结构
+
+`Container` 是 Tomcat 中容器的接口，通常使用的 `Servlet` 就封装在其子接口 `Wrapper` 中。`Container` 一 共有 4 个子接口 `Engine`、`Host`、`Context`、` Wrapper` 和一个默认实现类 `ContainerBase`，每个子接口都是一个容器，这 4 个子容器都有一个对应的 `StandardXXX` 实现类，并且这些实现类都继承 `ContainerBase` 类。另外 `Container` 还继承 `Lifecycle` 接口，而且 `ContainerBase` 间接继承 `LifecycleBase`， 所以 `Engine`、`Host`、`Context`、`Wrapper` 4 个子容器都符合 Tomcat 生命周期管理模式。
+
+
+![image](resources/container_base.svg)
+
+### `Container` 的 4 个子容器
+
+`Container` 的子容器 `Engine`、`Host`、`Context`、`Wrapper` 是逐层包含的关系：
+* `Engine`：引擎，用来管理多个站点，一个 Service 最多只能有一个 `Engine`; 
+* `Host`：代表一个站点，也可以叫虚拟主机，通过 配置 `Host` 就可以添加站点，可以有多个；
+* `Context`：代表一个应用程序，可以有多个，对应着平时开发的一套程序，或者一个 `WEB- INF` 目录以及下面的 `web. xml` 文件；
+* `Wrapper`：每个 `Wrapper` 封装 着 一个 `Servlet`。
+
+![image](resources/container_structure.png)
+
+### `Container` 的启动
+
+`Container` 的启动是通过 `init` 和 `start` 方法来完成。会在 Tomcat 启动时被 Service 调用。
+
+除了最顶层容器的 `init` 是被 Service 调用的，子容器的 `init` 方法是在执行 `start` 方法的时候通过状态判断还没有初始化才会调用。
+
+`start` 方法除了在父容器的 `startInternal` 方法中调用，还会在父容器的添加子容器的 `addChild` 方法中调用。
+
+**`ContainerBase`**
+
+`initInternal` 方法
+
+```java
+@Override
+protected void initInternal() throws LifecycleException {
+    reconfigureStartStopExecutor(getStartStopThreadsInternal());
+    super.initInternal();
+}
+
+private void reconfigureStartStopExecutor(int threads) {
+    if (threads == 1) {
+        if (!(startStopExecutor instanceof InlineExecutorService)) {
+            startStopExecutor = new InlineExecutorService();
+        }
+    } else {
+        if (startStopExecutor instanceof ThreadPoolExecutor) {
+            ((ThreadPoolExecutor) startStopExecutor).setMaximumPoolSize(threads);
+            ((ThreadPoolExecutor) startStopExecutor).setCorePoolSize(threads);
+        } else {
+            BlockingQueue<Runnable> startStopQueue = new LinkedBlockingQueue<>();
+            ThreadPoolExecutor tpe = new ThreadPoolExecutor(threads, threads, 10,
+                    TimeUnit.SECONDS, startStopQueue,
+                    new StartStopThreadFactory(getName() + "-startStop-"));
+            tpe.allowCoreThreadTimeOut(true);
+            startStopExecutor = tpe;
+        }
+    }
+}
+```
+
+`startInternal` 主要做了 5 件事：
+
+* 如果有 `Cluster` 和 `Realm` 则调用其 `start` 方法；
+* 调用所有子容器的 `start` 方法启动子容器；
+* 启动管道；
+* 启动完成后将状态设置为 `LifecycleState.STARTING` 状态；
+* 启用后台线程定时处理一些事情。
+
+```java
+@Override
+protected synchronized void startInternal() throws LifecycleException {
+
+    // Start our subordinate components, if any
+    logger = null;
+    getLogger();
+    Cluster cluster = getClusterInternal();
+    if (cluster instanceof Lifecycle) {
+        ((Lifecycle) cluster).start();
+    }
+    Realm realm = getRealmInternal();
+    if (realm instanceof Lifecycle) {
+        ((Lifecycle) realm).start();
+    }
+
+    // Start our child containers, if any
+    Container children[] = findChildren();
+    List<Future<Void>> results = new ArrayList<>();
+    for (int i = 0; i < children.length; i++) {
+        results.add(startStopExecutor.submit(new StartChild(children[i])));
+    }
+
+    boolean fail = false;
+    for (Future<Void> result : results) {
+        try {
+            result.get();
+        } catch (Exception e) {
+            log.error(sm.getString("containerBase.threadedStartFailed"), e);
+            fail = true;
+        }
+
+    }
+    if (fail) {
+        throw new LifecycleException(
+                sm.getString("containerBase.threadedStartFailed"));
+    }
+
+    // Start the Valves in our pipeline (including the basic), if any
+    if (pipeline instanceof Lifecycle)
+        ((Lifecycle) pipeline).start();
+
+
+    setState(LifecycleState.STARTING);
+
+    // Start our thread
+    threadStart();
+
+}
+```
+
+`Cluster` 用于配置集群，`Realm` 是 Tomcat 的安全域，可以用来管理资源的访问权限。
