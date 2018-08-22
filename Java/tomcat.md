@@ -1,3 +1,22 @@
+<!-- TOC -->
+
+- [Tomcat](#tomcat)
+    - [Tomcat 的顶层结构及启动过程](#tomcat-的顶层结构及启动过程)
+        - [Tomcat 的顶层结构](#tomcat-的顶层结构)
+        - [`Bootstrap` 启动过程](#bootstrap-启动过程)
+        - [`Catalina` 启动过程](#catalina-启动过程)
+        - [`Server 启动过程`](#server-启动过程)
+        - [`Service` 启动过程](#service-启动过程)
+    - [Tomcat 的生命周期管理](#tomcat-的生命周期管理)
+        - [`Lifecycle` 接口](#lifecycle-接口)
+        - [`LifecycleBase`](#lifecyclebase)
+    - [Container 分析](#container-分析)
+        - [`ContainerBase` 的结构](#containerbase-的结构)
+        - [`Container` 的 4 个子容器](#container-的-4-个子容器)
+        - [`Container` 的启动](#container-的启动)
+
+<!-- /TOC -->
+
 # Tomcat
 
 ## Tomcat 的顶层结构及启动过程
@@ -852,3 +871,183 @@ protected synchronized void startInternal() throws LifecycleException {
 ```
 
 `Cluster` 用于配置集群，`Realm` 是 Tomcat 的安全域，可以用来管理资源的访问权限。
+
+子容器是使用 `startStopExecutor` 线程池来启动，将启动线程的 `Future` 保存到一个 `List` 中，然后遍历每个 `Future` 并调用其 `get` 方法。遍历 `Future` 主要有两个作用：
+1. 其 `get` 方法是阻塞的，只有线程处理完之后才会向下走，这就保证了管道 Pipeline 启动之前容器已经启动完成了；
+2. 可以处理启动过程中遇到的异常。
+
+启动子容器的线程类型  `StartChild` 是一个实现 `Callable` 的内部类，主要作用就是调用子容器的 `start` 方法
+
+```java
+private static class StartChild implements Callable<Void> {
+
+    private Container child;
+
+    public StartChild(Container child) {
+        this.child = child;
+    }
+
+    @Override
+    public Void call() throws LifecycleException {
+        child.start();
+        return null;
+    }
+}
+```
+
+**`Engine`**
+
+`Service` 会调用顶层容器的 `init` 和 `start` 方法。如果使用了 `Engine` 就会调用 `Engine` 的。`Engine` 的默认实现类 `StandardEngine` 中的 `initInternal` 和 `startInternal`：
+
+```java
+@Override
+protected void initInternal() throws LifecycleException {
+    // Ensure that a Realm is present before any attempt is made to start
+    // one. This will create the default NullRealm if necessary.
+    getRealm();
+    super.initInternal();
+}
+
+@Override
+protected synchronized void startInternal() throws LifecycleException {
+
+    // Standard container startup
+    super.startInternal();
+}
+```
+
+**`Host`**
+
+`Host` 默认实现类 `StandardHost` 没有重写 `initInternal` 方法，初始化默认调用 `ContainerBase` 的`initInternal` 方法，重写 `startInternal`。
+
+```java
+@Override
+protected synchronized void startInternal() throws LifecycleException {
+
+    // Set error report valve
+    String errorValve = getErrorReportValveClass();
+    if ((errorValve != null) && (!errorValve.equals(""))) {
+        try {
+            boolean found = false;
+            Valve[] valves = getPipeline().getValves();
+            for (Valve valve : valves) {
+                if (errorValve.equals(valve.getClass().getName())) {
+                    found = true;
+                    break;
+                }
+            }
+            if(!found) {
+                Valve valve =
+                    (Valve) Class.forName(errorValve).getConstructor().newInstance();
+                getPipeline().addValve(valve);
+            }
+        } catch (Throwable t) {
+            ExceptionUtils.handleThrowable(t);
+            log.error(sm.getString(
+                    "standardHost.invalidErrorReportValveClass",
+                    errorValve), t);
+        }
+    }
+    super.startInternal();
+}
+```
+
+检查 `Host` 管道中有没有指定的 value，如果没有添加进去。`getErrorReportValveClass` 返回 `errorReportValveClass` 属性，可以配置，默认值是 `"org.apache.catalina.valves.ErrorReportValve"`。
+
+`Host` 的启动除了 `startInternal` 方法，还有 `HostConfig` 中相应的方法，`HostConfig` 继承自 `LifecycleListener` 的监听器（`Engine` 也有对应的 `EngineConfig` 监听器，不过里面只是简单地做了日志记录），在接收到 `Lifecycle.START_EVENT` 事件时会调用 `start` 方法来启动，`HostConfig` 的 `start` 方法会检查配置的 `Host` 站点配置的位置是否存在以及是不是目录，最后调用 `deployApps` 方法部署应用。
+
+```java
+protected void deployApps() {
+
+    File appBase = host.getAppBaseFile();
+    File configBase = host.getConfigBaseFile();
+    String[] filteredAppPaths = filterAppPaths(appBase.list());
+    // Deploy XML descriptors from configBase
+    deployDescriptors(configBase, configBase.list());
+    // Deploy WARs
+    deployWARs(appBase, filteredAppPaths);
+    // Deploy expanded folders
+    deployDirectories(appBase, filteredAppPaths);
+
+}
+```
+
+有三种部署方式：
+1. 通过 xml 文件；
+2. 通过 war 包；
+3. 通过文件夹。
+
+**`Context`**
+
+`Context` 的默认实现类 `StandardContext` 在 `startInternal` 方法中调用了在 `web.xml` 中定义的 `Listener`，另外还初始化了其中的 `Filter` 和 `load-on-startup` 的 `Servlet`。
+
+```java
+@Override
+protected synchronized void startInternal() throws LifecycleException {
+
+    // Configure and call application event listeners
+    // 触发listener
+    if (ok) {
+        if (!listenerStart()) {
+            log.error(sm.getString("standardContext.listenerFail"));
+            ok = false;
+        }
+    }
+
+    // Configure and call application filters
+    // 初始化 Filter
+    if (ok) {
+        if (!filterStart()) {
+            log.error(sm.getString("standardContext.filterFail"));
+            ok = false;
+        }
+    }
+
+    // Load and initialize all "load on startup" servlets
+    // 初始化 Servlets
+    if (ok) {
+        if (!loadOnStartup(findChildren())){
+            log.error(sm.getString("standardContext.servletFail"));
+            ok = false;
+        }
+    }
+}
+```
+
+**`Wrapper`**
+
+`Wrapper` 的默认实现类 `StandardWrapper` 没有重写 `initInternal` 方法，初始化时会默认调用 `ContainerBase` 的 `initInternal` 方法，重写了 `startInternal` 方法。
+
+```java
+@Override
+protected synchronized void startInternal() throws LifecycleException {
+
+    // Send j2ee.state.starting notification
+    if (this.getObjectName() != null) {
+        Notification notification = new Notification("j2ee.state.starting",
+                                                    this.getObjectName(),
+                                                    sequenceNumber++);
+        broadcaster.sendNotification(notification);
+    }
+
+    // Start up this component
+    super.startInternal();
+
+    setAvailable(0L);
+
+    // Send j2ee.state.running notification
+    if (this.getObjectName() != null) {
+        Notification notification =
+            new Notification("j2ee.state.running", this.getObjectName(),
+                            sequenceNumber++);
+        broadcaster.sendNotification(notification);
+    }
+
+}
+```
+
+主要做了三件事：
+
+* 用 `broadcaster` 发送通知，主要用于 JMX； 
+* 调用了父类 `ContainerBase` 中的 `startInternal` 方法； 
+* 调用 `setAvailable` 方法让 `Servlet` 有效。
