@@ -14,6 +14,10 @@
         - [`ContainerBase` 的结构](#containerbase-的结构)
         - [`Container` 的 4 个子容器](#container-的-4-个子容器)
         - [`Container` 的启动](#container-的启动)
+    - [Pipline-Value 管道](#pipline-value-管道)
+        - [Pipline-Value 的实现方法](#pipline-value-的实现方法)
+    - [Connector 分析](#connector-分析)
+        - [Connector 的结构](#connector-的结构)
 
 <!-- /TOC -->
 
@@ -1051,3 +1055,22 @@ protected synchronized void startInternal() throws LifecycleException {
 * 用 `broadcaster` 发送通知，主要用于 JMX； 
 * 调用了父类 `ContainerBase` 中的 `startInternal` 方法； 
 * 调用 `setAvailable` 方法让 `Servlet` 有效。
+
+## Pipline-Value 管道
+
+### Pipline-Value 的实现方法
+
+**Pipeline 管道生命周期的实现方法**
+
+`Container` 中的 `Pipeline` 在抽象实现类 `ContainerBase` 中定义，并在生命周期的 `startInternal`、`stopInternal`、`destroyInternal` 方法中调用管道的相应生命周期方法。
+
+## Connector 分析
+
+### Connector 的结构
+
+Connector 中具体是用 `ProtocolHandler` 来处理请求，不同的 `ProtocolHandler` 代表不同的连接类型。
+
+![image](resources/connector.png)
+
+
+也就是说 Endpoint 用来实现 TCP/IP 协议，Processor 用来实现 HTTP 协议，Adapter 将请求适配到 Servlet 容器进行具体处理。
