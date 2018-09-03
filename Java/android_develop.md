@@ -134,3 +134,39 @@ intent.putExtra("key","value");
 ```
 
 **返回数据给上一个活动**
+
+使用 `startActivityForResult()` 启动 Activity
+
+```java
+startActivityForResult(new Intent(MainActivity.this, SecondActivity.class), 1);
+```
+
+并重写 `onActivityResult()` 方法
+
+```java
+@Override
+protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    switch (requestCode) {
+        case 1:
+            if (resultCode == RESULT_OK) {
+                String returnData = data.getStringExtra("back_data");
+                Log.d("FirstActivity", returnData);
+            }
+            break;
+        default:
+            break;
+    }
+}
+```
+
+在新的 Activity 中添加返回数据
+
+```java
+@Override
+public void onBackPressed() {
+    Intent intent = new Intent();
+    intent.putExtra("back_data", "Hello SecondActivity");
+    setResult(RESULT_OK, intent);
+    super.onBackPressed();
+}
+```
