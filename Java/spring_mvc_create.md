@@ -26,7 +26,7 @@
 ## 二、配置方式
 
 ### 2.1 `web.xml` 配置方式
-3. 通过 `BeanUtils.instantiateClass(contextClass)` 创建
+
 ```xml
 <web-app>
 
@@ -58,7 +58,7 @@
 ```
 
 ### 2.2 Java 配置方式
-3. 通过 `BeanUtils.instantiateClass(contextClass)` 创建
+
 ```java
 public class MyWebAppInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
 
@@ -84,11 +84,11 @@ public class MyWebAppInitializer extends AbstractAnnotationConfigDispatcherServl
 在 **Servlet 3.0** 环境中： 
 
 1. 容器会首先查找实现 `javax.servlet.ServletContainerInitializer` 接口的类，如果发现会用来配置 `Servlet` 容器；
-2. Srping 提供这个接口的实现，为 `SpringServletContainerInitializer` ，这个类反过来会查找实现 `3. 通过 `BeanUtils.instantiateClass(contextClass)` 创建WebApplicationInitializer` 的类，并将配置的任务交给他们来完成；
+2. Srping 提供这个接口的实现，为 `SpringServletContainerInitializer` ，这个类反过来会查找实现 `WebApplicationInitializer` 的类，并将配置的任务交给他们来完成；
 
 ![image](../resources/spring_servlet_containerInitializer_dependence.svg)
 
-3. Spring 3.2 中，提供了 `WebApplicationInitializer` 实现基础，也就是`AbstractAnno3. 通过 `BeanUtils.instantiateClass(contextClass)` 创建tationConfigDispatcherServletInitializer` 。
+3. Spring 3.2 中，提供了 `WebApplicationInitializer` 实现基础，也就是`AbstractAnnotationConfigDispatcherServletInitializer` 。
 
 ![image](../resources/abstract_annotation_config_dispatcher_servlet_initializer_dependence.svg)
 
@@ -187,7 +187,6 @@ WebApplicationContext rootContext = WebApplicationContextUtils.getWebApplication
 ```
 
 2. 设置 `webApplicationContext` 并根据情况调用 `onRefresh` 方法；
-3. 通过 `BeanUtils.instantiateClass(contextClass)` 创建
 3. 将 `webApplicationContext` 设置到 `ServletContext`
 
 ```java
@@ -208,7 +207,7 @@ String ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE = WebApplicationContext.class.getN
 获取根容器只需要调用 `servletContext.getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE)`
 
 #### 3.3.2 设置 `WebApplicationContext` 并根据情况调用 `onRefresh` 方法
-3. 通过 `BeanUtils.instantiateClass(contextClass)` 创建
+
 设置 `WebApplicationContext` 有三种方式
 
 第一种方式是在构造方法中传递 `WebApplicationContext` 参数，适用于 Servlet3.0环境中。在 Servlet3.0 之后可以在程序中使用 `ServletContext` 中的 `addServlet` 方式注册 `Servlet`，这是就可以在新建 `FrameworkServlet` 和其子类的时候通过构造方法传递 `WebApplicationContext`。
