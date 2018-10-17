@@ -1,6 +1,6 @@
 # LeetCode
 
-#   |   Title   |   Difficulty
+`#`   |   Title   |   Difficulty
 --- |   --- |   ---
 1   |   [Two Sum](algorithms/1.Two_Sum.md) |   Easy
 2   |   [Add Two Numbers](algorithms/2.Add_Two_Numbers.md) |   Medium
