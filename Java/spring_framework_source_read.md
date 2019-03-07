@@ -10,7 +10,7 @@ protected void doRegisterBeanDefinitions(Element root) {
     // the new (child) delegate with a reference to the parent for fallback purposes,
     // then ultimately reset this.delegate back to its original (parent) reference.
     // this behavior emulates a stack of delegates without actually necessitating one.
-    BeanDefinitionParserDelegate parent = this.delegate;
+    BeanDefinitionParserDeblegate parent = this.delegate;
     this.delegate = createDelegate(getReaderContext(), root, parent);
 
     if (this.delegate.isDefaultNamespace(root)) {
@@ -19,7 +19,7 @@ protected void doRegisterBeanDefinitions(Element root) {
             String[] specifiedProfiles = StringUtils.tokenizeToStringArray(
                     profileSpec, BeanDefinitionParserDelegate.MULTI_VALUE_ATTRIBUTE_DELIMITERS);
             if (!getReaderContext().getEnvironment().acceptsProfiles(specifiedProfiles)) {
-                
+
                 // 省略日志代码
 
                 return;

@@ -1,6 +1,6 @@
 # Git 常用命令
 
-### 一、新建代码库
+## 一、新建代码库
 
 ```bash
 # 在当前目录新建一个Git代码库
@@ -13,9 +13,9 @@ $ git init [project-name]
 $ git clone [url]
 ```
 
-### 二、配置
+## 二、配置
 
-Git的设置文件为 **.gitconfig**，它可以在用户主目录下（全局配置），也可以在项目目录下（项目配置）
+Git 的设置文件为 **.gitconfig**，它可以在用户主目录下（全局配置），也可以在项目目录下（项目配置）
 
 ```bash
 # 显示当前的Git配置
@@ -29,7 +29,7 @@ $ git config [--global] user.name "[name]"
 $ git config [--global] user.email "[email address]"
 ```
 
-### 三、增加/删除文件
+## 三、增加/删除文件
 
 ```bash
 # 添加指定文件到暂存区
@@ -55,7 +55,7 @@ $ git rm --cached [file]
 $ git mv [file-original] [file-renamed]
 ```
 
-### 四、代码提交
+## 四、代码提交
 
 ```bash
 # 提交暂存区到仓库区
@@ -78,7 +78,7 @@ $ git commit --amend -m [message]
 $ git commit --amend [file1] [file2] ...
 ```
 
-### 五、分支
+## 五、分支
 
 ```bash
 # 列出所有本地分支
@@ -125,7 +125,7 @@ $ git push origin --delete [branch-name]
 $ git branch -dr [remote/branch]
 ```
 
-### 六、标签
+## 六、标签
 
 ```bash
 # 列出所有tag
@@ -156,7 +156,7 @@ $ git push [remote] --tags
 $ git checkout -b [branch] [tag]
 ```
 
-### 七、查看信息
+## 七、查看信息
 
 ```bash
 # 显示有变更的文件
@@ -221,7 +221,7 @@ $ git show [commit]:[filename]
 $ git reflog
 ```
 
-### 八、远程同步
+## 八、远程同步
 
 ```bash
 # 下载远程仓库的所有变动
@@ -249,7 +249,7 @@ $ git push [remote] --force
 $ git push [remote] --all
 ```
 
-### 九、撤销
+## 九、撤销
 
 ```bash
 # 恢复暂存区的指定文件到工作区
@@ -285,9 +285,15 @@ $ git stash
 $ git stash pop
 ```
 
-### 十、其他
+## 十、其他
 
 ```bash
 # 生成一个可供发布的压缩包
 $ git archive
+```
+
+- 以远程分支为基础创建本地分支
+
+```bash
+git checkout -b bugfix-myContact origin/release
 ```
