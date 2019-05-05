@@ -1,8 +1,96 @@
 # Spring Boot With Websocket
 
-## `@MessageMapping` 向服务器发送消息
+## 消息发送流程
 
-单客户端向服务器发送消息后，`AbstractMethodMessageHandler#handleMatch` 会拦截并处理请求。
+由客户端向服务器发送消息消息时，`AbstractMethodMessageHandler` 会用来处理拥有 `@MessageMapping` 注解，且符合目标路径的方法； 并通过 `@SendTo` 或 `@SendToUser` 注解发送处理后的信息，最终所有信息会通过 `SimpleBrokerMessageHandler` 的 `sendMessageToSubscribers` 方法统一发送。
+
+`MessageHandler` 作为处理“消息”（`Message`）基本接口，既用来处理进站消息，也用用于处理出站消息。
+
+![image](resources/message_handler.png)
+
+- `SimpAnnotationMethodMessageHandler` 的 `handleMatch` 用于处理入站消息，并将结果发送；
+- `SimpleBrokerMessageHandler` 的 `sendMessageToSubscribers` 方法用于实际发送消息；
+
+所有的进站与出站消息都会通过 `ExecutorSubscribableChannel` 的 `SendTask` 内部类统一处理，其内部属性 `messageHandler` 可以根据不同的接口实现，用于处理进站或出站消息。
+
+```java
+private class SendTask implements MessageHandlingRunnable {
+
+    private final Message<?> inputMessage;
+
+    private final MessageHandler messageHandler;
+
+    private int interceptorIndex = -1;
+
+    public SendTask(Message<?> message, MessageHandler messageHandler) {
+        this.inputMessage = message;
+        this.messageHandler = messageHandler;
+    }
+
+    @Override
+    public Message<?> getMessage() {
+        return this.inputMessage;
+    }
+
+    @Override
+    public MessageHandler getMessageHandler() {
+        return this.messageHandler;
+    }
+
+    @Override
+    public void run() {
+        Message<?> message = this.inputMessage;
+        try {
+            message = applyBeforeHandle(message);
+            if (message == null) {
+                return;
+            }
+            this.messageHandler.handleMessage(message);
+            triggerAfterMessageHandled(message, null);
+        }
+        // 省略异常捕捉
+    }
+
+    @Nullable
+    private Message<?> applyBeforeHandle(Message<?> message) {
+        // ...
+    }
+
+    private void triggerAfterMessageHandled(Message<?> message, @Nullable Exception ex) {
+        // ...
+    }
+}
+```
+
+## 处理入站信息
+
+在处理入站消息时，`MessageHandler` 使用的是 `WebSocketAnnotationMethodMessageHandler` 实现，调用其父类 `AbstractMethodMessageHandler` 的 `handleMessage` 方法。
+
+```java
+@Override
+public void handleMessage(Message<?> message) throws MessagingException {
+    String destination = getDestination(message);
+    if (destination == null) {
+        return;
+    }
+    String lookupDestination = getLookupDestination(destination);
+    if (lookupDestination == null) {
+        return;
+    }
+
+    MessageHeaderAccessor headerAccessor = MessageHeaderAccessor.getMutableAccessor(message);
+    headerAccessor.setHeader(DestinationPatternsMessageCondition.LOOKUP_DESTINATION_HEADER, lookupDestination);
+    headerAccessor.setLeaveMutable(true);
+    message = MessageBuilder.createMessage(message.getPayload(), headerAccessor.getMessageHeaders());
+
+    // 省略日志代码
+
+    handleMessageInternal(message, lookupDestination);
+    headerAccessor.setImmutable();
+}
+```
+
+在 `handleMessageInternal` 中会调用 `handleMatch` 方法拦截并处理请求
 
 ```java
 protected void handleMatch(T mapping, HandlerMethod handlerMethod, String lookupDestination, Message<?> message) {
@@ -35,21 +123,137 @@ protected void handleMatch(T mapping, HandlerMethod handlerMethod, String lookup
 }
 ```
 
-`HandlerMethodReturnValueHandlerComposite#handleReturnValue` 方法最终会调用 `SendToMethodReturnValueHandler#handleReturnValue` 进行处理。
-
-## `@SendTo` 广播
+`handleReturnValue` 方法最终会调用 `SendToMethodReturnValueHandler` 中 `handleReturnValue` 方法发送处理结果。
 
 ```java
-@MessageMapping("/send")
-@SendTo("/topic/replay")
-public MessageDto getAndSenMessage(MessageDto messageDto) {
-    return new MessageDto();
+@Override
+public void handleReturnValue(@Nullable Object returnValue, MethodParameter returnType, Message<?> message)
+        throws Exception {
+
+    if (returnValue == null) {
+        return;
+    }
+
+    MessageHeaders headers = message.getHeaders();
+    String sessionId = SimpMessageHeaderAccessor.getSessionId(headers);
+    DestinationHelper destinationHelper = getDestinationHelper(headers, returnType);
+
+    // 处理 SendToUser 注解
+    SendToUser sendToUser = destinationHelper.getSendToUser();
+    if (sendToUser != null) {
+        boolean broadcast = sendToUser.broadcast();
+        String user = getUserName(message, headers);
+        if (user == null) {
+            if (sessionId == null) {
+                throw new MissingSessionUserException(message);
+            }
+            user = sessionId;
+            broadcast = false;
+        }
+        String[] destinations = getTargetDestinations(sendToUser, message, this.defaultUserDestinationPrefix);
+        for (String destination : destinations) {
+            destination = destinationHelper.expandTemplateVars(destination);
+            if (broadcast) {
+                this.messagingTemplate.convertAndSendToUser(
+                        user, destination, returnValue, createHeaders(null, returnType));
+            }
+            else {
+                this.messagingTemplate.convertAndSendToUser(
+                        user, destination, returnValue, createHeaders(sessionId, returnType));
+            }
+        }
+    }
+
+    // 处理 SendTo 注解
+    SendTo sendTo = destinationHelper.getSendTo();
+    if (sendTo != null || sendToUser == null) {
+        String[] destinations = getTargetDestinations(sendTo, message, this.defaultDestinationPrefix);
+        for (String destination : destinations) {
+            destination = destinationHelper.expandTemplateVars(destination);
+            this.messagingTemplate.convertAndSend(destination, returnValue, createHeaders(sessionId, returnType));
+        }
+    }
 }
 ```
 
-~~返回值会被广播到 `/topic/replay` 这个订阅路径中；Spring 处理消息的主要类是 `SimpleBrokerMessageHandler`，当发送广播时会调用其中 `sendMessageToSubscribers` 方法。~~
+其中 `convertAndSendToUser` 和 `convertAndSend` 最终都会调用 `AbstractMessageSendingTemplate` 中的 `convertAndSend` 方法。
 
-## `@SendToUser` 点对点
+```java
+@Override
+public void convertAndSend(D destination, Object payload, @Nullable Map<String, Object> headers,
+        @Nullable MessagePostProcessor postProcessor) throws MessagingException {
+
+    Message<?> message = doConvert(payload, headers, postProcessor);
+    send(destination, message);
+}
+```
+
+`send` 方法会调用 `SimpMessagingTemplate` 中的 `doSend` 方法，`doSend` 会调用其中的 `sendInternal` 方法，`sendInternal` 调用 `AbstractMessageChannel` 中的 `send` 方法，最终通过 `ExecutorSubscribableChannel` 中的 `sendInternal` 发送消息。
+
+## 处理出站消息
+
+在上一步中，消息还没有实际发送出去，只是交由线程池处理，仍然会用到 `MessageHandler`，只是这里会使用 `SimpleBrokerMessageHandler` 实现，调用其父类 `AbstractBrokerMessageHandler` 的 `handleMessage` 方法。
+
+`handleMessage` 会调用 `SimpleBrokerMessageHandler` 中的 `handleMessageInternal` 方法。
+
+```java
+@Override
+	protected void handleMessageInternal(Message<?> message) {
+		MessageHeaders headers = message.getHeaders();
+		SimpMessageType messageType = SimpMessageHeaderAccessor.getMessageType(headers);
+		String destination = SimpMessageHeaderAccessor.getDestination(headers);
+		String sessionId = SimpMessageHeaderAccessor.getSessionId(headers);
+
+		updateSessionReadTime(sessionId);
+
+		if (!checkDestinationPrefix(destination)) {
+			return;
+		}
+
+		if (SimpMessageType.MESSAGE.equals(messageType)) {
+            logMessage(message);
+
+            // 实际发送方法
+			sendMessageToSubscribers(destination, message);
+        }
+        // 根据 Message 类别分别处理
+		else if (SimpMessageType.CONNECT.equals(messageType)) {
+			logMessage(message);
+			if (sessionId != null) {
+				long[] heartbeatIn = SimpMessageHeaderAccessor.getHeartbeat(headers);
+				long[] heartbeatOut = getHeartbeatValue();
+				Principal user = SimpMessageHeaderAccessor.getUser(headers);
+				MessageChannel outChannel = getClientOutboundChannelForSession(sessionId);
+				this.sessions.put(sessionId, new SessionInfo(sessionId, user, outChannel, heartbeatIn, heartbeatOut));
+				SimpMessageHeaderAccessor connectAck = SimpMessageHeaderAccessor.create(SimpMessageType.CONNECT_ACK);
+				initHeaders(connectAck);
+				connectAck.setSessionId(sessionId);
+				if (user != null) {
+					connectAck.setUser(user);
+				}
+				connectAck.setHeader(SimpMessageHeaderAccessor.CONNECT_MESSAGE_HEADER, message);
+				connectAck.setHeader(SimpMessageHeaderAccessor.HEART_BEAT_HEADER, heartbeatOut);
+				Message<byte[]> messageOut = MessageBuilder.createMessage(EMPTY_PAYLOAD, connectAck.getMessageHeaders());
+				getClientOutboundChannel().send(messageOut);
+			}
+		}
+		else if (SimpMessageType.DISCONNECT.equals(messageType)) {
+			logMessage(message);
+			if (sessionId != null) {
+				Principal user = SimpMessageHeaderAccessor.getUser(headers);
+				handleDisconnect(sessionId, user, message);
+			}
+		}
+		else if (SimpMessageType.SUBSCRIBE.equals(messageType)) {
+			logMessage(message);
+			this.subscriptionRegistry.registerSubscription(message);
+		}
+		else if (SimpMessageType.UNSUBSCRIBE.equals(messageType)) {
+			logMessage(message);
+			this.subscriptionRegistry.unregisterSubscription(message);
+		}
+	}
+```
 
 ## 传递参数
 
