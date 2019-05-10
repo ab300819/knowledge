@@ -10,6 +10,7 @@
 
 ## 一些技巧
 
+- [bash 脚本](bash_prepare.md)
 - [区域与语言设置](linux_locale.md)
 - [tmux 使用](tmux_usage.md)
 - [docker](docker.md)
