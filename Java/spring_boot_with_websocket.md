@@ -255,6 +255,8 @@ public void convertAndSend(D destination, Object payload, @Nullable Map<String, 
 	}
 ```
 
+> [状态机](http://ifeve.com/java-secret-using-enum-to-build-state/)
+
 ## 传递参数
 
 1. 在消息头中加参数
@@ -301,7 +303,7 @@ public class Chat2Controller {
 	@Autowired
 	private SimpMessagingTemplate template;
 
-	// 如果只有一个模板变量,那么可以直接使用@DestinationVariable
+	// 如果只有一个模板变量,那么可以直接使用 @DestinationVariable
 	@MessageMapping("/hello/{userName}/{topic}")
     public String send(String message,
         @DestinationVariable("topic") String topic,
@@ -351,4 +353,49 @@ public void chat(SimpMessageHeaderAccessor headerAccessor, @RequestBody ChatMess
     User user = (User) headerAccessor.getSessionAttributes().get("user");  // right
     chatService.chat(user,chatMessage);
 }
+```
+
+## Tomcat 连接数
+
+### 独立 Tomcat
+
+#### 定义 WebSocket 连接数
+
+在 `web.xml` 中
+
+```xml
+<!--websocket executor 线程池的核心容量大小 -->
+<context-param>
+    <param-name>org.apache.tomcat.websocket.executorCoreSize</param-name>
+    <param-value>200</param-value>
+</context-param>
+<!--websocket executor 线程池的最大容量大小 -->
+<context-param>
+    <param-name>org.apache.tomcat.websocket.executorMaxSize</param-name>
+    <param-value>1000</param-value>
+</context-param>
+```
+
+- `org.apache.tomcat.websocket.executorCoreSize`: executor线程池的核心大小。如果不设置，则默认为 0;
+- `org.apache.tomcat.websocket.executorMaxSize`: executor线程池所允许的最大值。如果不设置，则默认为 200;
+- `org.apache.tomcat.websocket.executorKeepAliveTimeSeconds`: executor线程池中空闲进程所保留的最大时间。如果未指定，则默认为60秒。
+
+### Embed Tomcat
+
+## Tomcat 使用 Nio
+
+将 `/conf/server.xml` 文件
+
+```xml
+<Connector port="8080" protocol="HTTP/1.1"
+connectionTimeout="20000"
+redirectPort="8443" />
+```
+
+中的 `protocol` 属性值改为 `org.apache.coyote.http11.Http11NioProtocol` 即可
+
+```xml
+<Connector port="8080" protocol="org.apache.coyote.http11.Http11NioProtocol"
+connectionTimeout="20000"
+redirectPort="8443" />
 ```

@@ -2,7 +2,7 @@
 
 ## 基本语法
 
-```
+```bash
 find [path] [expression]
 ```
 
@@ -20,4 +20,3 @@ find \! -name "query"       # 不包含
 ```
 
 ### 按类型查找文件
-
