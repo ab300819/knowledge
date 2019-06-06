@@ -23,7 +23,7 @@
 
 <!-- /TOC -->
 
-#  Java 并发
+# Java 并发
 
 **JUC**
 
@@ -31,7 +31,7 @@ Java 并发包 `java.util.concurrnt`
 
 **AQS**
 
-抽象类 ` AbstractQueuedSynchronizer`
+抽象类 `AbstractQueuedSynchronizer`
 
 **CAS**
 
