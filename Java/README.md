@@ -21,6 +21,8 @@
 - [深入理解虚拟机之虚拟机类加载机制](jvm_loader.md)
 - [深入理解虚拟机之虚拟机字节码执行引擎](jvm_run_engine.md)
 
+### [编译 JVM](jvm_compile.md)
+
 ## Spring
 
 - [Spring IoC](ioc_in_spring.md)
