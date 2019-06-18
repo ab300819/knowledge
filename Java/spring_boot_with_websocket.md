@@ -376,9 +376,9 @@ public void chat(SimpMessageHeaderAccessor headerAccessor, @RequestBody ChatMess
 </context-param>
 ```
 
-- `org.apache.tomcat.websocket.executorCoreSize`: executor线程池的核心大小。如果不设置，则默认为 0;
-- `org.apache.tomcat.websocket.executorMaxSize`: executor线程池所允许的最大值。如果不设置，则默认为 200;
-- `org.apache.tomcat.websocket.executorKeepAliveTimeSeconds`: executor线程池中空闲进程所保留的最大时间。如果未指定，则默认为60秒。
+- `org.apache.tomcat.websocket.executorCoreSize`: executor 线程池的核心大小。如果不设置，则默认为 0;
+- `org.apache.tomcat.websocket.executorMaxSize`: executor 线程池所允许的最大值。如果不设置，则默认为 200;
+- `org.apache.tomcat.websocket.executorKeepAliveTimeSeconds`: executor 线程池中空闲进程所保留的最大时间。如果未指定，则默认为 60 秒。
 
 ### Embed Tomcat
 
@@ -398,4 +398,14 @@ redirectPort="8443" />
 <Connector port="8080" protocol="org.apache.coyote.http11.Http11NioProtocol"
 connectionTimeout="20000"
 redirectPort="8443" />
+```
+
+### STOMP 事务
+
+```js
+//发送消息
+//事务支持
+var tx = stomp.begin();
+stomp.send("/app/marco", { transaction: tx.id }, strJson);
+tx.commit();
 ```
