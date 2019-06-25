@@ -1,32 +1,35 @@
 <!-- TOC -->
 
 - [Docker 笔记](#docker-笔记)
-    - [安装方式](#安装方式)
-    - [基本操作](#基本操作)
-        - [在交互方式中运行容器](#在交互方式中运行容器)
-        - [后台方式运行 Docker 容器](#后台方式运行-docker-容器)
-        - [容器生命周期](#容器生命周期)
-        - [使用 Dockerfile 构建 Docker 镜像](#使用-dockerfile-构建-docker-镜像)
-        - [使用两个链接在一起的容器运行 WordPress 博客程序](#使用两个链接在一起的容器运行-wordpress-博客程序)
-        - [备份在容器中运行的数据库](#备份在容器中运行的数据库)
-        - [在宿主机和容器之间共享数据](#在宿主机和容器之间共享数据)
-        - [在容器间共享数据](#在容器间共享数据)
-        - [对容器进行数据复制](#对容器进行数据复制)
-    - [创建和共享镜像](#创建和共享镜像)
-        - [将对容器的修改提交到镜像](#将对容器的修改提交到镜像)
-        - [将镜像和容器保存为 tar 文件进行共享](#将镜像和容器保存为-tar-文件进行共享)
-        - [编写第一个 Dockerfile](#编写第一个-dockerfile)
-        - [将 Flask 应用打包到镜像](#将-flask-应用打包到镜像)
-        - [根据最佳实践优化 Dockerfile](#根据最佳实践优化-dockerfile)
-        - [通过标签对镜像进行版本管理](#通过标签对镜像进行版本管理)
-        - [使用 ONBUILD 镜像](#使用-onbuild-镜像)
-    - [Docker 网络](#docker-网络)
-        - [查看容器的 IP 地址](#查看容器的-ip-地址)
-            - [Example 1](#example-1)
-            - [Example 2](#example-2)
-            - [Example 3](#example-3)
-        - [将容器端口暴露到主机上](#将容器端口暴露到主机上)
+  - [安装方式](#安装方式)
+  - [基本操作](#基本操作)
+    - [在交互方式中运行容器](#在交互方式中运行容器)
+    - [后台方式运行 Docker 容器](#后台方式运行-docker-容器)
+    - [容器生命周期](#容器生命周期)
+    - [使用 Dockerfile 构建 Docker 镜像](#使用-dockerfile-构建-docker-镜像)
+    - [使用两个链接在一起的容器运行 WordPress 博客程序](#使用两个链接在一起的容器运行-wordpress-博客程序)
+    - [备份在容器中运行的数据库](#备份在容器中运行的数据库)
+    - [在宿主机和容器之间共享数据](#在宿主机和容器之间共享数据)
+    - [在容器间共享数据](#在容器间共享数据)
+    - [对容器进行数据复制](#对容器进行数据复制)
+  - [创建和共享镜像](#创建和共享镜像)
+    - [将对容器的修改提交到镜像](#将对容器的修改提交到镜像)
+    - [将镜像和容器保存为 tar 文件进行共享](#将镜像和容器保存为-tar-文件进行共享)
+    - [编写第一个 Dockerfile](#编写第一个-dockerfile)
+    - [将 Flask 应用打包到镜像](#将-flask-应用打包到镜像)
+    - [根据最佳实践优化 Dockerfile](#根据最佳实践优化-dockerfile)
+    - [通过标签对镜像进行版本管理](#通过标签对镜像进行版本管理)
+    - [使用 ONBUILD 镜像](#使用-onbuild-镜像)
+  - [Docker 网络](#docker-网络)
+    - [查看容器的 IP 地址](#查看容器的-ip-地址)
+      - [Example 1](#example-1)
+      - [Example 2](#example-2)
+      - [Example 3](#example-3)
+    - [将容器端口暴露到主机上](#将容器端口暴露到主机上)
     - [在 Docker 中进行容器链接](#在-docker-中进行容器链接)
+    - [理解 Docker 容器网络](#理解-docker-容器网络)
+    - [选择容器网络模式](#选择容器网络模式)
+    - [配置 Docker 守护进程 iptables 和 IP 转发设置](#配置-docker-守护进程-iptables-和-ip-转发设置)
 
 <!-- /TOC -->
 
@@ -161,10 +164,10 @@ docker run --name wordpress --link mysqlwp:mysql -p 80:80 -d wordpress
 为 wordpress 创建数据库，并为其创建一个用户
 
 ```shell
-docker run --name mysqlwp -e MYSQL_ROOT_PASSWORD=test123456 \ 
-                            -e MYSQL_DATABASE=wordpress \ 
-                            -e MYSQL_USER=wordpress \ 
-                            -e MYSQL_PASSWORD=wordpresspwd \ 
+docker run --name mysqlwp -e MYSQL_ROOT_PASSWORD=test123456 \
+                            -e MYSQL_DATABASE=wordpress \
+                            -e MYSQL_USER=wordpress \
+                            -e MYSQL_PASSWORD=wordpresspwd \
                             -d mysql
 
 ```
@@ -173,35 +176,35 @@ docker run --name mysqlwp -e MYSQL_ROOT_PASSWORD=test123456 \
 
 ```shell
 docker run --name wordpress --link mysqlwp:mysql -p 80:80 \
-                            -e WORDPRESS_DB_NAME=wordpress \ 
-                            -e WORDPRESS_DB_USER=wordpress \ 
-                            -e WORDPRESS_DB_PASSWORD=wordpresspwd \ 
+                            -e WORDPRESS_DB_NAME=wordpress \
+                            -e WORDPRESS_DB_USER=wordpress \
+                            -e WORDPRESS_DB_PASSWORD=wordpresspwd \
                             -d wordpress
 ```
 
 删除所有容器，通过 `-v` 删除 mysql 镜像中定义的数据卷
 
 ```shell
-docker stop $(docker ps -q) 
+docker stop $(docker ps -q)
 docker rm -v $(docker ps -aq)
 ```
 
 ### 备份在容器中运行的数据库
 
-* 将 Docker 主机上的卷挂载到 MySQL 容器中
-* 使用 `docker exec` 命令执行 `mysqldump`
+- 将 Docker 主机上的卷挂载到 MySQL 容器中
+- 使用 `docker exec` 命令执行 `mysqldump`
 
 ```shell
-docker run --name mysqlwp -e MYSQL_ROOT_PASSWORD=wordpressdocker \ 
-                            -e MYSQL_DATABASE=wordpress \ 
-                            -e MYSQL_USER=wordpress \ 
+docker run --name mysqlwp -e MYSQL_ROOT_PASSWORD=wordpressdocker \
+                            -e MYSQL_DATABASE=wordpress \
+                            -e MYSQL_USER=wordpress \
                             -e MYSQL_PASSWORD=wordpresspwd \
-                            -v /home/docker/mysql:/var/lib/mysql \ 
+                            -v /home/docker/mysql:/var/lib/mysql \
                             -d mysql
 ```
 
 ```shell
-docker exec mysqlwp mysqldump --all-databases \ 
+docker exec mysqlwp mysqldump --all-databases \
                                 --password=wordpressdocker > wordpress.backup
 ```
 
@@ -261,7 +264,7 @@ docker run -v /data --name data ubuntu:18.04
 run -ti --volumes-from data ubuntu:18.04 /bin/bash
 ```
 
-> 可以通过  `docker rm -v data` 来删除容器和它的卷
+> 可以通过 `docker rm -v data` 来删除容器和它的卷
 
 ### 对容器进行数据复制
 
@@ -407,7 +410,7 @@ ADD test.py /home/test.py
 
 EXPOSE 5000
 
-CMD [ "python3","/home/test.py" ]  
+CMD [ "python3","/home/test.py" ]
 ```
 
 构建镜像
@@ -445,7 +448,7 @@ docker ubuntu:18.04 test 1.0
 
 ### 使用 ONBUILD 镜像
 
-在一个 Dockerfile 文件中加上 `ONBUILD` 指令，该指令对利用该 Dockerfile 构建镜像（例如为A镜像）不会产生实质性影响。但是当编写一个新的 Dockerfile 文件来基于A镜像构建一个镜像（例如为B镜像）时，这时构造A镜像的 Dockerfile 文件中的 `ONBUILD` 指令就生效了，在构建B镜像的过程中，首先会执行 `ONBUILD` 指令指定的指令，然后才会执行其它指令。如果是再利用B镜像构造新的镜像时，那个 `ONBUILD` 指令就无效了，也就是说只能再构建子镜像中执行，对孙子镜像构建无效。
+在一个 Dockerfile 文件中加上 `ONBUILD` 指令，该指令对利用该 Dockerfile 构建镜像（例如为 A 镜像）不会产生实质性影响。但是当编写一个新的 Dockerfile 文件来基于 A 镜像构建一个镜像（例如为 B 镜像）时，这时构造 A 镜像的 Dockerfile 文件中的 `ONBUILD` 指令就生效了，在构建 B 镜像的过程中，首先会执行 `ONBUILD` 指令指定的指令，然后才会执行其它指令。如果是再利用 B 镜像构造新的镜像时，那个 `ONBUILD` 指令就无效了，也就是说只能再构建子镜像中执行，对孙子镜像构建无效。
 
 利用 `ONBUILD` 指令，实际上就是相当于创建一个模板镜像，后续可以根据该模板镜像创建特定的子镜像，需要在子镜像构建过程中执行的一些通用操作就可以在模板镜像对应的 dockerfile 文件中用 `ONBUILD` 指令指定，从而减少 dockerfile 文件的重复内容编写。
 
@@ -512,6 +515,28 @@ docker port foobar 5000
 docker run -d -p 5000/tcp -p 53/udp flask
 ```
 
-## 在 Docker 中进行容器链接
+### 在 Docker 中进行容器链接
 
 `--link` 已废弃，使用 [桥接网络](https://docs.docker.com/network/bridge/)
+
+### 理解 Docker 容器网络
+
+### 选择容器网络模式
+
+通过 `--net=none` 选项启动一个不带任何网络功能的容器
+
+```bash
+docker run -it --rm --net=none ubuntu:18.04 bash
+```
+
+通过 `--net=host` 选项来启动一个 host 模式的容器
+
+```bash
+docker run -it --rm --net=host ubuntu:18.04 bash
+```
+
+> 通过 `net=host` 选项启动一个容器可能会比较危险，尤其是同时指定 `privileged=true` 参数启动一个特权容器。
+
+[Docker 容器网络](https://docs.docker.com/network/)
+
+### 配置 Docker 守护进程 iptables 和 IP 转发设置
