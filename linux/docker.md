@@ -69,7 +69,7 @@ docker exec -t -i [容器ID] /bin/bash
 
 ### 容器生命周期
 
-**create**
+#### `create`
 
 创建一个新容器
 
@@ -77,7 +77,7 @@ docker exec -t -i [容器ID] /bin/bash
 docker create -P --expose=1234 python:2.7 python -m SimpleHTTPServer 1234
 ```
 
-**start**
+#### `start`
 
 启动容器
 
@@ -85,7 +85,7 @@ docker create -P --expose=1234 python:2.7 python -m SimpleHTTPServer 1234
 docker start 容器id
 ```
 
-**restart**
+#### `restart`
 
 重启容器
 
@@ -93,7 +93,7 @@ docker start 容器id
 docker restart 容器id
 ```
 
-**stop**
+#### `stop`
 
 停止正在运行的容器，这个命令会发送 `SIGTERM` 到容器，如果在一定时间内容器还没有停止，则会再发送 `SIGKILL` 信号强制停止
 
@@ -101,7 +101,7 @@ docker restart 容器id
 docker stop 容器id
 ```
 
-**kill**
+#### `kill`
 
 停止正在运行的容器，这个命令会发送 `SIGKILL` 信号强制停止
 
@@ -109,7 +109,7 @@ docker stop 容器id
 docker kill 容器id
 ```
 
-**rm**
+#### `rm`
 
 移除容器
 
@@ -246,7 +246,7 @@ docker run -ti -v /test ubuntu:18.04 /bin/bash
 
 可通过 `docker inspect` 命令查看数据卷位于宿主机位置
 
-```
+```bash
 docker inspect -f {{.Mounts}} 0e41a4ca8172
 ```
 
@@ -295,7 +295,6 @@ docker diff 62152c27b520
 ```
 
 > [`docker commit` 参考手册](https://docs.docker.com/engine/reference/commandline/commit/)
-
 > [`docker diff` 参考手册](https://docs.docker.com/engine/reference/commandline/diff/)
 
 ### 将镜像和容器保存为 tar 文件进行共享
@@ -317,11 +316,8 @@ docker load < ubuntu.tar
 ```
 
 > [`docker import` 参考手册](https://docs.docker.com/engine/reference/commandline/import/)
-
 > [`docker export` 参考手册](https://docs.docker.com/engine/reference/commandline/export/)
-
 > [`docker save` 参考手册](https://docs.docker.com/engine/reference/commandline/save/)
-
 > [`docker load` 参考手册](https://docs.docker.com/engine/reference/commandline/load/)
 
 ### 编写第一个 Dockerfile

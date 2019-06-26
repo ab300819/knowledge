@@ -1,6 +1,6 @@
 # Java Thread Pool
 
-## #`ThreadPoolExecutor` 构造方法参数
+## `ThreadPoolExecutor` 构造方法参数
 
 ```java
 public ThreadPoolExecutor(int corePoolSize,
@@ -12,32 +12,31 @@ public ThreadPoolExecutor(int corePoolSize,
                             RejectedExecutionHandler handler)
 ```
 
-* `corePoolSize` 该线程池中核心线程数最大值<br>
-线程池新建线程的时候，如果当前线程总数小于 `corePoolSize` ，则新建的是核心线程；如果超过 `corePoolSize`，则新建的是非核心线程。<br>
-<br>
-核心线程默认情况下会一直存活在线程池中，即使这个核心线程啥也不干(闲置状态)。<br>
-<br>
-如果指定 `ThreadPoolExecutor` 的 `allowCoreThreadTimeOut` 这个属性为 `true`，那么核心线程如果不干活(闲置状态)的话，超过一定时间( `keepAliveTime` )，就会被销毁掉
+* `corePoolSize` 该线程池中核心线程数最大值
+线程池新建线程的时候，如果当前线程总数小于 `corePoolSize` ，则新建的是核心线程；如果超过 `corePoolSize`，则新建的是非核心线程。
+核心线程默认情况下会一直存活在线程池中，即使这个核心线程啥也不干(闲置状态)。
+如果指定 `ThreadPoolExecutor` 的 `allowCoreThreadTimeOut` 这个属性为 `true`，那么核心线程如果不干活(闲置状态)的话，超过一定时间( `keepAliveTime` )，就会被销毁掉。
 
-* `maximumPoolSize` 线程池的最大线程数<br>
+* `maximumPoolSize` 线程池的最大线程数
 线程总数 = 核心线程数 + 非核心线程数
 
-* `keepAliveTime` 线程池中非核心线程闲置超时时长<br>
+* `keepAliveTime` 线程池中非核心线程闲置超时时长
+
 > 注意：一个非核心线程，如果不干活(闲置状态)的时长，超过这个参数所设定的时长，就会被销毁掉。但是，如果设置了  `allowCoreThreadTimeOut = true`，则会作用于核心线程
 
-* `unit` 时间单位<br>
+* `unit` 时间单位
 * `workQueue` 用来储存等待执行任务的队列
 * `threadFactory` 线程工厂
-* `handler` 拒绝策略<br>
-主要用来抛异常，当线程无法执行新任务时（一般是由于线程池中的线程数量已经达到最大数或者线程池关闭导致的），默认情况下，当线程池无法处理新线程时，会抛出一个 `RejectedExecutionException`
+* `handler` 拒绝策略
+主要用来抛异常，当线程无法执行新任务时（一般是由于线程池中的线程数量已经达到最大数或者线程池关闭导致的），默认情况下，当线程池无法处理新线程时，会抛出一个 `RejectedExecutionException`。
 
-### ##线程池大小
+### 线程池大小
 
 * 线程池有两个线程数的设置，一个为核心池线程数，一个为最大线程数
 * 在创建了线程池后，默认情况下，线程池中并没有任何线程，等到有任务来才创建线程去执行任务，除非调用了 `prestartAllCoreThreads()` 或者 `prestartCoreThread()` 方法  
 * 当创建的线程数等于 `corePoolSize` 时，会加入设置的阻塞队列。当队列满时，会创建线程执行任务直到线程池中的数量等于 `maximumPoolSize`
 
-### ##适当的阻塞队列
+### 适当的阻塞队列
 
 方法    |   抛出异常    |   返回特殊值  |   一直阻塞    |   超时退出
 :---    |   :---    |   :---    |   :---    |   :---
@@ -53,14 +52,14 @@ public ThreadPoolExecutor(int corePoolSize,
 * `LinkedTransferQueue` 一个由链表结构组成的无界阻塞队列。
 * `LinkedBlockingDeque` 一个由链表结构组成的双向阻塞队列。
 
-### ##明确拒绝策略
+### 明确拒绝策略
 
 * `ThreadPoolExecutor.AbortPolicy` 丢弃任务并抛出 `RejectedExecutionException` 异常。 (默认)
 * `ThreadPoolExecutor.DiscardPolicy` 也是丢弃任务，但是不抛出异常。
 * `ThreadPoolExecutor.DiscardOldestPolicy` 丢弃队列最前面的任务，然后重新尝试执行任务（重复此过程）
 * `ThreadPoolExecutor.CallerRunsPolicy` 由调用线程处理该任务
 
-### ##`Executors` 提供的4种线程池
+### `Executors` 提供的4种线程池
 
 ```java
 /**
@@ -136,9 +135,9 @@ public static ScheduledExecutorService newScheduledThreadPool(
 >【强制】线程池不允许使用 `Executors` 去创建，而是通过 `ThreadPoolExecutor` 的方式，
 这样的处理方式让写的同学更加明确线程池的运行规则，规避资源耗尽的风险。（阿里巴巴java开发手册）
 
-## #`Runnable` 和 `Callable`
+## `Runnable` 和 `Callable`
 
-### ##`Runnable`
+### `Runnable`
 
 1. 实现该接口并重写run方法
 2. 利用该类的对象创建线程
@@ -157,7 +156,7 @@ executor.execute(new Runnable() {
 
 相对于继承 `Thread` 来创建线程方式，使用 `Runnable` 可以让你的实现类同时实现多个接口，而相对于 `Callable` 及 `Future` ， `Runnable` 方法并不返回任务执行结果且不能抛出异常。
 
-### ##`Callable`
+### `Callable`
 
 与 `Runnable` 不同， `Callable` 是个泛型参数化接口，并能返回线程的执行结果，且能在无法正常计算时抛出异常   
 
@@ -193,7 +192,7 @@ public static <T> Callable<T> callable(Runnable task, T result) {
         throw new NullPointerException();
     return new RunnableAdapter<T>(task, result);//通过RunnableAdapter实现
 }
-    
+
 static final class RunnableAdapter<T> implements Callable<T> {
     final Runnable task;
     final T result;

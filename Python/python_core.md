@@ -1,42 +1,36 @@
-### 第1章 运行和编码
+# 第1章 运行和编码
 
-#### 在unix环境中运行Python脚本
+## 在unix环境中运行Python脚本
 
-* 运行权限
+### 运行权限
+
 ```bash
-chmod +x scriptfile
-```
-或者
-```bash
+chmod u+x scriptfile
+
 chmod 755 scriptfile
 ```
 
-* 在脚本头部添加
+### 在脚本头部添加
+
 ```python
 #!/usr/local/bin/python
-
 #!/usr/local/bin/python3
-```
-或者
-```python
-#!/usr/bin/env python
 
+#!/usr/bin/env python
 #!/usr/bin/env python3
 ```
 
-#### 脚本编码
+### 编码
 
 ```python
 # -*- coding: encoding -*-
 ```
 
-### 第2章 基本语法
+## 第2章 基本语法
 
-#### Python 基础
+### `list` 和 `tuple`
 
-##### 一、 `list` 和 `tuple`
-
-###### 1、`list`是一种有序的集合，可以随时添加和删除其中的元素
+`list`是一种有序的集合，可以随时添加和删除其中的元素
 
 ```python
 # 创建列表
@@ -62,7 +56,7 @@ classmates.pop(i)   # 删除索引位置为i的元素
 classmates[1] = 'Sarah' # 把某个元素替换成其他的
 ```
 
-###### 2、 `tuple` 是另一种有序列表叫元组，和 `list` 非常类似，但是 `tuple` 一旦初始化就不能修改
+`tuple` 是另一种有序列表叫元组，和 `list` 非常类似，但是 `tuple` 一旦初始化就不能修改
 
 ```python
 # 创建 tuple
@@ -78,7 +72,8 @@ t = ()
 # 定义一个只有1个元素的 tuple
 t = (1,)
 ```
-##### 二、循环
+
+### 循环
 
 ```python
 names = ['Michael', 'Bob', 'Tracy']
@@ -95,9 +90,7 @@ while n > 0:
 print(sum)
 ```
 
-##### 三、 `dict` 和 `set`
-
-###### 1、`dict`  
+### `dict` 和 `set`
 
 `dict`使用键-值（key-value）存储
 
@@ -118,8 +111,6 @@ d.get('Thomas')
 d.pop('Bob')
 ```
 
-###### 2、 `set`
-
 `set` 和 `dict` 类似，也是一组key的集合，但不存储value，而且key不能重复
 
 ```python
@@ -132,9 +123,10 @@ s.add(4)    # 添加一个key
 s.remove(4) # 删除一个key
 ```
 
-#### 函数
+## 第3章函数
 
 默认参数必须指向不变对象
+
 ```python
 def add_end(L=None):
     if L is None:
@@ -143,14 +135,14 @@ def add_end(L=None):
     return L
 ```
 
-#### 高级特性
+## 第4张高级特性
 
-##### 一、 切片
+### 切片
 
 ```python
 # 初始化列表
 L = ['Michael', 'Sarah', 'Tracy', 'Bob', 'Jack']
- 
+
 # 从索引0开始取，直到索引3为止，但不包括索引3
 L[0:3]
 
