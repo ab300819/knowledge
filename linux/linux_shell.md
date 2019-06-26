@@ -16,6 +16,11 @@
   - [例子](#例子-1)
     - [通过文件名查找](#通过文件名查找)
     - [按照类型查找文件](#按照类型查找文件)
+    - [通过文件大小查找](#通过文件大小查找)
+    - [通过时间来查找文件](#通过时间来查找文件)
+    - [通过 Owner 和权限搜索](#通过-owner-和权限搜索)
+    - [限制查找的深度](#限制查找的深度)
+    - [对搜索结果批处理](#对搜索结果批处理)
 
 <!-- /TOC -->
 
@@ -110,4 +115,112 @@ find \! -name "query"       # 不包含
 find -type [fdlcb] "query"
 ```
 
-`type`
+`type` 后能够使用的类型有
+
+- `f` 常规文件
+- `d` 目录
+- `l` 连接
+- `c` character devices
+- `b` block devices
+
+查找系统中所有以 `.conf` 结尾的文件
+
+```bash
+find / -type f -name "*.conf"
+```
+
+### 通过文件大小查找
+
+```bash
+find /path/to/folder -size 50M
+```
+
+`size` 可使用的单位有
+
+- `b` 512byte blocks
+- `c` byte 字节
+- `w` two byte
+- `k` kB 千字节
+- `M` MB
+- `G` GB
+
+`size` 后面的参数可以使用 `+` 或 `-` 或者不加来标识，超过，少于或者正好。
+
+```bash
+find / -size +700M   # 表示查找大于 700M 的文件
+find / -size -50c    # 表示查找小于 50 byte 的文件
+find . -size 50M     # 表示在当前目录查找正好 50M 的文件
+```
+
+### 通过时间来查找文件
+
+linux 会存储下面的时间：
+
+- Access time 上一次文件读或者写的时间
+- Modifica time 上一次文件被修改的时间
+- Change time 上一次文件 inode meta 信息被修改的时间
+
+在按照时间查找时，可以使用 `-atime`， `-mtime` 或者 `-ctime` ，和之前 `size` 参数一样可以使用 `+` 或者 `-` 来标识超多多长时间或者少于多长时间。
+
+```bash
+find / -mtime 1          # 寻找修改时间超过一天的文件
+find / -atime -1         # 寻找在一天时间内被访问的文件
+find / -ctime +3         # 寻找 meta 信息被修改的时间超过 3 天的文件
+```
+
+寻找修改时间超过 1 小时的 mp3 文件
+
+```bash
+find /path/to/folder -maxdepath 1 -mmin +60 -type f -name "*.mp3"
+```
+
+一次性删除超过 60 分钟未修改的 mp3
+
+```bash
+find /path/to/folder -maxdepath 1 -mmin +60 -type f -name "*.mp3" -exec rm -f {} \;
+```
+
+### 通过 Owner 和权限搜索
+
+使用 `-user` 和 `-group` 参数来通过拥有者搜寻
+
+```bash
+find / -user einverne
+find / -group shadow
+```
+
+按权限查找文件
+
+```bash
+find / -perm 644
+find / -perm -644 # 查找权限至少是 644 的文件
+```
+
+### 限制查找的深度
+
+```bash
+find -maxdepth 2 -name "query"
+
+find -mindepth 2 -maxdepth 3 -name "query"
+```
+
+### 对搜索结果批处理
+
+```bash
+find [param] -exec command {} \;
+```
+
+批量修改权限
+
+```bash
+find . -type f -perm 644 -exec chmod 664 {} \;
+find . -type d -perm 755 -exec chmod 700 {} \;   # 批量修改文件夹权限
+```
+
+批量删除时间超过 1 天的文件
+
+```bash
+find /path/to/folder/* -mtime +1 -exec rm {} \;
+```
+
+[参考](http://einverne.github.io/post/2018/02/find-command.html)
