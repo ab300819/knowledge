@@ -1,4 +1,4 @@
-# 第1章 运行和编码
+# 基本语法
 
 ## 在unix环境中运行Python脚本
 
@@ -26,7 +26,7 @@ chmod 755 scriptfile
 # -*- coding: encoding -*-
 ```
 
-## 第2章 基本语法
+## 数据结构
 
 ### `list` 和 `tuple`
 
@@ -73,23 +73,6 @@ t = ()
 t = (1,)
 ```
 
-### 循环
-
-```python
-names = ['Michael', 'Bob', 'Tracy']
-for name in names:
-    print(name)
-```
-
-```python
-sum = 0
-n = 99
-while n > 0:
-    sum = sum + n
-    n = n - 2
-print(sum)
-```
-
 ### `dict` 和 `set`
 
 `dict`使用键-值（key-value）存储
@@ -123,53 +106,41 @@ s.add(4)    # 添加一个key
 s.remove(4) # 删除一个key
 ```
 
-## 第3章函数
+### 高级特性
 
-默认参数必须指向不变对象
+#### 切片
 
-```python
-def add_end(L=None):
-    if L is None:
-        L = []
-    L.append('END')
-    return L
-```
-
-## 第4张高级特性
-
-### 切片
+从 0 到索引 3 位置，但不包括 3，[0,3)
 
 ```python
-# 初始化列表
-L = ['Michael', 'Sarah', 'Tracy', 'Bob', 'Jack']
+l[0:3]
 
-# 从索引0开始取，直到索引3为止，但不包括索引3
-L[0:3]
+# 默认从 0 开始
+l[:3]
 
-# 后10个数
-L[-10:]
-
-# 前10个数，每两个取一个
-L[:10:2]
-
-# 所有数，每5个取一个
-L[::5]
-
-# 逆序
-L[::-1]
+# 从 0 到结束
+l[0:]
 ```
 
-##### 二、迭代
-
-默认情况下，`dict` 迭代的是key。如果要迭代value，可以用 `for value in d.values()` ，如果要同时迭代key和value，可以用 `for k, v in d.items()`
+取倒数第 1 个
 
 ```python
-# 实现下标循环
-for i, value in enumerate(['A', 'B', 'C']):
-    print(i, value)
+l=[-1]
 ```
 
-##### 三、列表生成式
+隔 5 个取一个
+
+```python
+l=[::5]
+```
+
+逆序
+
+```python
+l[::-1]
+```
+
+#### 列表生成器
 
 ```python
 # 生成[1x1, 2x2, 3x3, ..., 10x10]
@@ -181,74 +152,137 @@ for i, value in enumerate(['A', 'B', 'C']):
 # ['AX', 'AY', 'AZ', 'BX', 'BY', 'BZ', 'CX', 'CY', 'CZ']
 [m + n for m in 'ABC' for n in 'XYZ']
 ```
-##### 四、生成器
+
+#### 生成器
+
+和列表生成器的区别在于，不会直接计算出所有元素，而是在循环中不断计算元素值。
+
+创建generator
 
 ```python
-# 创建generator
 g = (x * x for x in range(10))
 ```
 
+使用 `g.next()` 或循环得到元素值。
+
+使用 `yield`，将函数转变为生成器
+
 ```python
-# 将函数转变为生成器
 def fib(max):
     n, a, b = 0, 0, 1
     while n < max:
+        # yield b
         print(b)
         a, b = b, a + b
         n = n + 1
     return 'done'
-    
-# 将print(b)改为yield b
-def fib(max):
-    n, a, b = 0, 0, 1
-    while n < max:
-        yield b
-        a, b = b, a + b
-        n = n + 1
-    return 'done'
 ```
 
-##### 五、迭代器
+#### 迭代
+
+普通循环
+
+```python
+names = ['Michael', 'Bob', 'Tracy']
+for name in names:
+    print(name)
+```
+
+带有下标循环
+
+```python
+for i, value in enumerate(['A', 'B', 'C']):
+    print(i, value)
+```
+
+默认情况下，`dict` 迭代的是 key，如果要迭代 value，可以用
+
+```python
+for value in d.values()
+````
+
+如果要同时迭代 key 和 value，可以用
+
+```python
+for k, v in d.items()
+```
 
 可用于 `for` 循环的数据类型有两种：
-* 集合数据类型，如 `list` 、 `tuple` 、 `dict` 、 `set` 、 `str` 等
-* `generator` ，包括生成器和带 `yield` 的generator function
+
+- 集合数据类型，如 `list` 、 `tuple` 、 `dict` 、 `set` 、 `str` 等
+- `generator` ，包括生成器和带 `yield` 的generator function
 
 `isinstance()` 判断一个对象是 `Iterable` 还是 `Iterator`
-* 可以直接作用于 `for` 循环的对象统称为**可迭代对象**：`Iterable`  
-* 可以被 `next()` 函数调用并不断返回下一个值的对象称为**迭代器**：`Iterator`
 
-#### 函数式编程
+- 可以直接作用于 `for` 循环的对象统称为 **可迭代对象** ：`Iterable`  
+- 可以被 `next()` 函数调用并不断返回下一个值的对象称为 **迭代器** ：`Iterator`
 
-##### 一、高阶函数
+## 函数
 
-1. `map/reduce`
+默认参数必须指向不变对象
 
-* `map`  
-`map()` 函数接收两个参数，一个是函数，一个是 `Iterable`，`map` 将传入的函数依次作用到序列的每个元素，并把结果作为新的 `Iterator` 返回
-
-* `reduce`  
-`reduce` 把一个函数作用在一个序列 `[x1, x2, x3, ...]` 上，这个函数必须接收两个参数，`reduce` 把结果继续和序列的下一个元素做累积计算  
-`reduce(f, [x1, x2, x3, x4]) = f(f(f(x1, x2), x3), x4)`
-
-2. `filter`  
-`filter()` 函数用于过滤序列，接收一个函数和一个序列，把传入的函数依次作用于每个元素，然后根据返回值是 `True` 还是 `False` 决定保留还是丢弃该元素
-
-3. `sorted`
-* 直接进行排序
+```python
+def add_end(L=None):
+    if L is None:
+        L = []
+    L.append('END')
+    return L
 ```
+
+## 函数式编程
+
+### 高阶函数
+
+#### `map` / `reduce`
+
+`map` 函数接收两个参数，一个是函数，一个是 `Iterable`，`map` 将传入的函数依次作用到序列的每个元素，并把结果作为新的 `Iterator` 返回
+
+```python
+def square(x):
+    return x*x
+
+map(square,[1,2,3,4,5,5,6,7,8,9])
+```
+
+`reduce` 把一个函数作用在一个序列 `[x1, x2, x3, ...]` 上，这个函数必须接收两个参数，`reduce` 把结果继续和序列的下一个元素做累积计算
+
+```python
+def add(x,y):
+    return x+y
+
+reduce(add,[1,2,3,4,5,6,7,8,9])
+```
+
+#### `filter`  
+
+`filter` 函数用于过滤序列，接收一个函数和一个序列，把传入的函数依次作用于每个元素，然后根据返回值是 `True` 还是 `False` 决定保留还是丢弃该元素
+
+```python
+def checkNum(n):
+    return n%2==1
+
+filter(checkNum,[1,2,3,4,5,6,7,8,9])
+```
+
+#### `sorted`
+
+直接进行排序
+
+```python
 sorted([36, 5, -12, 9, -21])
 ```
 
-* 接受一个 `key` 实现自定义排序
-```
-sorted([36, 5, -12, 9, -21], key=abs)
-```
-##### 二、返回函数
+接受一个 `sort_rule(x,y)` 函数实现自定义排序
 
-* 函数作为返回值
 ```python
-# 例
+sorted([36, 5, -12, 9, -21], sort_rule)
+```
+
+### 返回函数
+
+函数作为返回值
+
+```python
 def lazy_sum(*args):
     def sum():
         ax = 0
@@ -258,7 +292,8 @@ def lazy_sum(*args):
     return sum
 ```
 
-* 闭包
+闭包
+
 ```python
 def count():
     def f(j):
@@ -271,26 +306,27 @@ def count():
     return fs
 ```
 
-##### 三、匿名函数
+### 匿名函数
 
 ```python
 lambda 参数 : 函数主体
 ```
 
-##### 四、装饰器
+### 装饰器
+
+函数对象有一个__name__属性，可以拿到函数的名字
 
 ```python
-# 函数对象有一个__name__属性，可以拿到函数的名字
 
 def now():
-    ...
+    pass
 
 now.__name__
 ```
 
-```python
-# 完整的decorator的写法
+decorator 的写法
 
+```python
 import functools
 
 def log(func):
@@ -301,9 +337,9 @@ def log(func):
     return wrapper
 ```
 
-```python
-# 针对带参数的decorator
+参数的decorator
 
+```python
 import functools
 
 def log(text):
@@ -316,28 +352,41 @@ def log(text):
     return decorator
 ```
 
-##### 五、偏函数
+使用装饰器
 
 ```python
-# 将字符串转化为整数，默认十进制
-int('12345')
+@log
+now()
+```
 
-# 默认十进制，传入base参数，就可以做N进制的转换
+### 偏函数
+
+将字符串转化为整数，默认十进制
+
+```python
+int('12345')
+```
+
+默认十进制，传入base参数，就可以做N进制的转换
+
+```python
 int('12345', base=8)
 ```
 
+通过偏函数，把某些参数给固定住，创建一个新函数并返回
+
 ```python
-# 通过偏函数，把某些参数给固定住，创建一个新函数并返回
 import functools
 int2 = functools.partial(int, base=2)
 ```
 
-#### 面向对象编程
+## 面向对象编程
 
-##### 一、类和实例
+### 类和实例
+
+定义类
 
 ```python
-# 定义类
 class Student(object):
 
     def __init__(self, name, score):
@@ -354,31 +403,42 @@ class Student(object):
             return 'B'
         else:
             return 'C'
+```
 
-# 创建实例
+创建实例
+
+```python
 bart = Student('Bart Simpson', 59)
 lisa = Student('Lisa Simpson', 87)
 ```
 
-##### 二、访问限制   
+### 访问限制
+
 实例的变量名如果以 `__` 开头，就变成了一个私有变量（`private`），需要增加 `get_name` 和 `get_score` 方法
 
-##### 三、继承和多态
+### 继承和多态
+
+父类
 
 ```python
-# 父类
 class Animal(object):
     def run(self):
         print('Animal is running...')
+```
 
-# 子类
+子类
+
+```python
 class Dog(Animal):
     pass
 
 class Cat(Animal):
     pass
-    
-# 多态
+```
+
+多态
+
+```python
 class Dog(Animal):
 
     def run(self):
@@ -388,10 +448,11 @@ class Dog(Animal):
         print('Eating meat...')
 ```
 
-##### 三、获取对象信息
+### 获取对象信息
+
+判断对象类型
 
 ```python
-# 判断对象类型
 type()
 
 type(123)
@@ -400,27 +461,26 @@ type('str')
 # <class 'str'>
 type(None)
 # <type(None) 'NoneType'>
-
-# 对于class的继承关系,使用 isinstance()
-
-# 使用 dir() 获得一个对象的所有属性和方法
 ```
 
-#### 面向对象高级编程
+对于 class 的继承关系，使用 `isinstance()`，使用 `dir()` 获得一个对象的所有属性和方法
 
-##### 一、使用 `__slots__`
+## 面向对象高级编程
+
+### 使用 `__slots__`
+
+通过 `__slots__` 变量，来限制该class实例能添加的属性
 
 ```python
-# 通过 __slots__ 变量，来限制该class实例能添加的属性
 class Student(object):
-    __slots__ = ('name', 'age') # 用tuple定义允许绑定的属性名称
+    __slots__ = ('name', 'age') # 用 tuple 定义允许绑定的属性名称
 ```
 
-##### 二、使用 `@property`
+### 使用 `@property`
 
-```
-# 既可直接操作属性，又可实现参数检查
+既可直接操作属性，又可实现参数检查
 
+```python
 class Student(object):
 
     @property
@@ -434,41 +494,45 @@ class Student(object):
         if value < 0 or value > 100:
             raise ValueError('score must between 0 ~ 100!')
         self._score = value
-
 ```
 
-##### 三、多重继承
+### 定制类
 
-##### 四、定制类
+#### `__str__`
 
-1. `__str__`
+通过  定制输出信息
+
 ```python
 class Student(object):
     def __init__(self,name):
         self.name = name
     def __str__(self):
         return 'Student object (name: %s)' % self.name
-        
+
 # 测试
-print(Student('Michael'))
+s=Student('Michael')
+print(s)
+s
 ```
 
->直接显示变量调用的不是 `__str__()` ，而是 `__repr__()` ，两者的区别是 `__str__()` 返回用户看到的字符串，而 `__repr__()` 返回程序开发者看到的字符串
+直接显示变量调用的不是 `__str__()` ，而是 `__repr__()` ，两者的区别是 `__str__()` 返回用户看到的字符串，而 `__repr__()` 返回程序开发者看到的字符串。
+
+定义一个 `__repr__`
 
 ```python
-# 定义一个 __repr__()
-# 偷懒写法
 class Student(object):
     def __init__(self, name):
         self.name = name
     def __str__(self):
         return 'Student object (name=%s)' % self.name
+    # 偷懒写法
     __repr__ = __str__
 ```
 
-2. `__iter__`
+#### `__iter__`
 
 一个类想被用于 `for ... in` 循环，类似 `list` 或 `tuple` 那样，就必须实现一个 `__iter__()` 方法
+
 ```python
 class Fib(object):
     def __init__(self):
@@ -484,9 +548,10 @@ class Fib(object):
         return self.a # 返回下一个值
 ```
 
-3. `__getitem__`
+#### `__getitem__`
 
-* 像 `list` 实现下标取元素
+像 `list` 实现下标取元素
+
 ```python
 class Fib(object):
     def __getitem__(self, n):
@@ -496,7 +561,8 @@ class Fib(object):
         return a
 ```
 
-* 实现切片
+实现切片
+
 ```python
 class Fib(object):
     def __getitem__(self, n):
@@ -519,10 +585,12 @@ class Fib(object):
             return L
 ```
 
-4. `__getattr__`   
+#### `__getattr__`
+
 当一个属性或方法不存在时，通过定义 `__getattr__` 动态的返回属性或方法
+当调用不存在的属性时，解释器会试图调用 `__getattr__(self, 'score')` 来尝试获得属性
+
 ```python
-# 当调用不存在的属性时，解释器会试图调用 __getattr__(self, 'score') 来尝试获得属性
 class Student(object):
 
     def __init__(self):
@@ -538,14 +606,16 @@ class Student(object):
     def __getattr__(self, attr):
         if attr=='age':
             return lambda: 25
-            
+
 # 方法调用方式
 s = Student()
 s.age()
 ```
 
-5. `__call__`  
+#### `__call__`  
+
 定义一个 `__call__()` 方法，就可以直接对实例进行调用  
+
 ```python
 class Student(object):
     def __init__(self, name):
@@ -560,11 +630,11 @@ s = Student()
 s()
 ```
 
-##### 五、使用枚举类
+### 使用枚举类
+
+使用 `@unique` 装饰器可以检查保证没有重复值
 
 ```python
-# 精确控制枚举类派生类默认值
-# @unique 装饰器可以检查保证没有重复值
 
 from enum import Enum, unique
 
@@ -579,9 +649,16 @@ class Weekday(Enum):
     Sat = 6
 ```
 
-##### 六、使用元类
+### 使用元类
 
-1. `type()`
+#### `type()`
+
+要创建一个 class 对象，`type()` 函数依次传入 3 个参数：
+
+1. class 的名称
+2. 继承的父类集合，注意 Python 支持多重继承，如果只有一个父类，别忘了 `tuple` 的单元素写法；
+3. class 的方法名称与函数绑定，这里把函数 `fn` 绑定到方法名 `hello` 上。
+
 ```python
 def fn(self, name='world'): # 先定义函数
     print('Hello, %s.' % name)
@@ -589,12 +666,8 @@ def fn(self, name='world'): # 先定义函数
 Hello = type('Hello', (object,), dict(hello=fn)) # 创建Hello class
 ```
 
-要动态创建一个 `class` 对象，`type()` 函数依次传入3个参数:
-* `class` 的名称
-* 继承的父类集合，Python支持多重继承，如果只有一个父类，别忘了 `tuple` 的单元素写法
-* `class` 的方法名称与函数绑定，把函数 `fn` 绑定到方法名 `hello上
+#### `metaclass`
 
-2. `metaclass`
 ```python
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
@@ -617,11 +690,12 @@ L.add('END')
 print(L)
 ```
 
-#### 错误、调试和测试
+## 错误、调试和测试
 
-##### 错误处理
+### 错误处理
 
-1. `try ... except`
+`try ... except`
+
 ```python
 try:
     print('try...')
@@ -634,7 +708,8 @@ finally:
 print('END')
 ```
 
-2. 记录错误
+记录错误
+
 ```python
 import logging
 
