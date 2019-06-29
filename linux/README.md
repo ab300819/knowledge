@@ -13,4 +13,5 @@
 
 - [docker](docker.md)
 - [tmux 使用](tmux_note.md)
+- [git subtree 使用](git-subtree-note.md)
 - [技巧](linux_tips.md)
