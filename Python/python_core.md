@@ -1,3 +1,73 @@
+<!-- TOC -->
+
+- [基本语法](#基本语法)
+    - [在unix环境中运行Python脚本](#在unix环境中运行python脚本)
+        - [运行权限](#运行权限)
+        - [在脚本头部添加](#在脚本头部添加)
+        - [编码](#编码)
+    - [数据结构](#数据结构)
+        - [`list` 和 `tuple`](#list-和-tuple)
+        - [`dict` 和 `set`](#dict-和-set)
+        - [高级特性](#高级特性)
+            - [切片](#切片)
+            - [列表生成器](#列表生成器)
+            - [生成器](#生成器)
+            - [迭代](#迭代)
+    - [函数](#函数)
+    - [函数式编程](#函数式编程)
+        - [高阶函数](#高阶函数)
+            - [`map` / `reduce`](#map--reduce)
+            - [`filter`](#filter)
+            - [`sorted`](#sorted)
+        - [返回函数](#返回函数)
+        - [匿名函数](#匿名函数)
+        - [装饰器](#装饰器)
+        - [偏函数](#偏函数)
+    - [面向对象编程](#面向对象编程)
+        - [类和实例](#类和实例)
+        - [访问限制](#访问限制)
+        - [继承和多态](#继承和多态)
+        - [获取对象信息](#获取对象信息)
+    - [面向对象高级编程](#面向对象高级编程)
+        - [使用 `__slots__`](#使用-__slots__)
+        - [使用 `@property`](#使用-property)
+        - [定制类](#定制类)
+            - [`__str__`](#__str__)
+            - [`__iter__`](#__iter__)
+            - [`__getitem__`](#__getitem__)
+            - [`__getattr__`](#__getattr__)
+            - [`__call__`](#__call__)
+        - [使用枚举类](#使用枚举类)
+        - [使用元类](#使用元类)
+            - [`type()`](#type)
+            - [`metaclass`](#metaclass)
+    - [错误、调试和测试](#错误调试和测试)
+        - [错误处理](#错误处理)
+        - [单元测试](#单元测试)
+        - [文档测试](#文档测试)
+    - [IO编程](#io编程)
+        - [文件读写](#文件读写)
+        - [`StringIO` 和 `BytesIO`](#stringio-和-bytesio)
+        - [操作文件和目录](#操作文件和目录)
+        - [序列化](#序列化)
+            - [通过 `pickle` 进行序列化操作](#通过-pickle-进行序列化操作)
+            - [JSON](#json)
+    - [进程与线程](#进程与线程)
+        - [多进程](#多进程)
+        - [多线程](#多线程)
+        - [`ThreadLocal`](#threadlocal)
+        - [分布式进程](#分布式进程)
+    - [正则表达式](#正则表达式)
+        - [基本](#基本)
+        - [进阶](#进阶)
+        - [re模块](#re模块)
+        - [切分字符串](#切分字符串)
+        - [分组](#分组)
+        - [贪婪匹配](#贪婪匹配)
+        - [编译](#编译)
+
+<!-- /TOC -->
+
 # 基本语法
 
 ## 在unix环境中运行Python脚本
@@ -729,12 +799,26 @@ main()
 print('END')
 ```
 
-##### 单元测试
+如果要抛出错误，首先根据需要，可以定义一个错误的 class，选择好继承关系，然后，用 `raise` 语句抛出一个错误的实例
 
 ```python
+class FooError(ValueError):
+    pass
 
-# 测试类从 unittest.TestCase 继承
+def foo(s):
+    n = int(s)
+    if n==0:
+        raise FooError('invalid value: %s' % s)
+    return 10 / n
 
+foo('0')
+```
+
+### 单元测试
+
+测试类从 `unittest.TestCase` 继承
+
+```python
 import unittest
 
 from mydict import Dict
@@ -766,23 +850,27 @@ class TestDict(unittest.TestCase):
     def test_attrerror(self):
         d = Dict()
         with self.assertRaises(AttributeError):
-            value = d.empty
-            
-# 以 test 开头的为测试方法，不以 test 开头的为非测试方法，测试的时候不会被执行
+            value = d.empty    
 ```
+
+以 `test` 开头的为测试方法，不以 `test` 开头的为非测试方法，测试的时候不会被执行。
+ 执行单元测试有两种方式，一种当作正常 python 脚本进行单元测试，在代码后面添加两行；
 
 ```python
-# 一种当作正常 python 脚本进行单元测试，在代码后面添加两行
 if __name__ == '__main__':
     unittest.main()
-    
-# 另一种，命令行通过参数 -m unittest 直接运行单元测试
 ```
 
-* `setUp()` 测试之前调用
-* `tearDown()` 测试之后调用
+另一种，通过命令行参数直接运行单元测试
 
-##### 文档测试
+```bash
+python -m unittest <测试脚本>
+```
+
+- `setUp()` 测试之前调用
+- `tearDown()` 测试之后调用
+
+### 文档测试
 
 ```python
 #!/usr/bin/env python3
@@ -827,11 +915,12 @@ if __name__=='__main__':
     doctest.testmod()
 ```
 
-#### IO编程
+## IO编程
 
-##### 文件读写
+### 文件读写
 
-* 读文件
+读文件
+
 ```python
 # 使用 with 会自动调用 close()
 
@@ -839,17 +928,16 @@ with open('/path/to/file', 'r') as f:
     print(f.read())
 ```
 
-```python
-for line in f.readlines():
-    print(line.strip()) # 把末尾的'\n'删掉
-```
+调用 `read()` 会一次性读取文件的全部内容，为防止读取过多，可以反复调用 `read(size)` 方法，或者调用 `readline()` 可以每次读取一行内容，，调用 `readlines()` 一次读取所有内容并按行返回 `list`。
 
-* 二进制文件
+二进制文件
+
 ```python
 f = open('/Users/michael/test.jpg', 'rb')
 ```
 
-* 字符编码
+字符编码
+
 ```python
 f = open('/Users/michael/gbk.txt', 'r', encoding='gbk')
 
@@ -857,15 +945,19 @@ f = open('/Users/michael/gbk.txt', 'r', encoding='gbk')
 f = open('/Users/michael/gbk.txt', 'r', encoding='gbk', errors='ignore')
 ```
 
-* 写文件
+写文件
+
 ```python
 with open('/Users/michael/test.txt', 'w') as f:
     f.write('Hello, world!')
 ```
 
-##### `StringIO` 和 `BytesIO`
+以 `w` 模式写入文件时，如果文件已存在，会直接覆盖（相当于删掉后新写入一个文件），可以传入 `a` 以追加（append）模式写入。
 
-* `StringIO`
+### `StringIO` 和 `BytesIO`
+
+`StringIO` 在内存读写 str
+
 ```python
 # 像文件一样读写
 from io import StringIO
@@ -875,6 +967,8 @@ f.write(' ')
 f.write('world!')
 print(f.getvalue())
 ```
+
+可以用 str 初始化 `StringIO` 然后像文件一样读取
 
 ```python
 from io import StringIO
@@ -886,8 +980,8 @@ while True:
     print(s.strip())
 ```
 
-* `BytesIO`   
-`StringIO` 操作的只能是 `str` ，如果要操作二进制数据，就需要使用 `BytesIO`
+ `BytesIO` 操作二进制数据
+
 ```python
 from io import BytesIO
 f = BytesIO()
@@ -895,9 +989,20 @@ f.write('中文'.encode('utf-8'))
 print(f.getvalue())
 ```
 
-##### 操作文件和目录
+### 操作文件和目录
 
-* 操作文件和目录
+环境变量
+
+```python
+# 获取所有环境变量
+os.environ
+
+# 获取具体环境变量
+os.environ.get('path')
+```
+
+操作文件和目录
+
 ```python
 # 查看当前目录的绝对路径
 os.path.abspath('.')
@@ -917,15 +1022,22 @@ os.path.split('/Users/michael/testdir/file.txt')
 # 得到文件扩展名
 os.path.splitext('/path/to/file.txt')
 
+# 对文件重命名
+os.rename('test.txt','test.py')
+
+# 删除文件
+os.remove('test.py')
+
 # 列出后缀名为 .py 的文件
 [x for x in os.listdir('.') if os.path.isfile(x) and os.path.splitext(x)[1]=='.py']
 ```
 
-##### 序列化
+### 序列化
 
-把变量从内存中变成可存储或传输的过程称之为序列化  
+#### 通过 `pickle` 进行序列化操作
 
-* `pickle`
+序列化
+
 ```python
 # 序列化为一个 bytes
 import pickle
@@ -937,24 +1049,29 @@ f = open('dump.txt', 'wb')
 pickle.dump(d, f)
 f.close()
 ```
+
+反序列化
+
 ```python
-# 反序列化
  f = open('dump.txt', 'rb')
 d = pickle.load(f)
 f.close()
 ```
 
-* JSON  
-JSON和Python内置的数据类型对应
+#### JSON
 
-JSON类型 | 	Python类型
---- | --- 
+JSON 和 Python 内置的数据类型对应
+
+JSON类型 |  Python类型
+--- | ---
 {} | `dict`
 [] | `list`
-"string" | 	`str`
-1234.56 | 	`int` 或 `float`
+"string" |  `str`
+1234.56 |   `int` 或 `float`
 true/false | `True` / `False`
-null | 	`None`
+null |  `None`
+
+转化为 json 对象
 
 ```python
 import json
@@ -962,11 +1079,23 @@ d = dict(name='Bob', age=20, score=88)
 json.dumps(d)
 ```
 
-#### 进程与线程
+从 json 对象转化为 python 对象
 
-##### 多进程
+```python
+import json
 
-* 创建进程
+jsonData = '{"a":1,"b":2,"c":3,"d":4,"e":5}';
+
+text = json.loads(jsonData)
+print text
+```
+
+## 进程与线程
+
+### 多进程
+
+创建进程
+
 ```python
 from multiprocessing import Process
 import os
@@ -984,8 +1113,8 @@ if __name__=='__main__':
     print('Child process end.')
 ```
 
-* Pool  
-创建大量子进程，使用线程池
+使用线程池,创建大量子进程
+
 ```python
 from multiprocessing import Pool
 import os, time, random
@@ -1008,7 +1137,30 @@ if __name__=='__main__':
     print('All subprocesses done.')
 ```
 
-* 进程间通信
+调用外部进程
+
+```python
+import subprocess
+
+print('$ nslookup www.python.org')
+r = subprocess.call(['nslookup', 'www.python.org'])
+print('Exit code:', r)
+```
+
+如果需要输入，则通过 `communicate()` 方法输入
+
+```python
+import subprocess
+
+print('$ nslookup')
+p = subprocess.Popen(['nslookup'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+output, err = p.communicate(b'set q=mx\npython.org\nexit\n')
+print(output.decode('utf-8'))
+print('Exit code:', p.returncode)
+```
+
+进程间通信
+
 ```python
 from multiprocessing import Process, Queue
 import os, time, random
@@ -1043,9 +1195,10 @@ if __name__=='__main__':
     pr.terminate()
 ```
 
-##### 多线程
+### 多线程
 
-* 创建多线程
+创建多线程
+
 ```python
 import time, threading
 
@@ -1066,7 +1219,8 @@ t.join()
 print('thread %s ended.' % threading.current_thread().name)
 ```
 
-* 进程锁
+进程锁
+
 ```python
 balance = 0
 lock = threading.Lock()
@@ -1083,7 +1237,8 @@ def run_thread(n):
             lock.release()
 ```
 
-##### `ThreadLocal`
+### `ThreadLocal`
+
 ```python
 import threading
 
@@ -1108,7 +1263,7 @@ t1.join()
 t2.join()
 ```
 
-##### 分布式进程
+### 分布式进程
 
 ```python
 # task_master.py
@@ -1188,66 +1343,71 @@ for i in range(10):
 print('worker exit.')
 ```
 
-#### 正则表达式
+## 正则表达式
 
-##### 基本
+### 基本
 
-* **精确匹配**
-1. `\d`可以匹配一个数字
-2. `\w`可以匹配一个字母或数字
+- `\d` 可以匹配一个数字
+- `\w` 可以匹配一个字母或数字
+- `.` 可以匹配任意字符
 
-**例:**
-* `00\d`可以匹配`007`
-* `\d\d\d`可以匹配`010`
-* `\w\w\d`可以匹配`py3`
+例子：
 
-3. `.`可以匹配任意字符
+1. `00\d` 可以匹配 `007`
+2. `\d\d\d` 可以匹配 `010`
+3. `\w\w\d` 可以匹配 `py3`
+4. `py.` 可以匹配 `pyc` 、 `pyo` 、`py!` 等等
 
-**例:**  
-`py.`可以匹配`pyc`、`pyo`、`py!`等等。
+匹配变长的字符
 
-* **匹配变长的字符**  
-1. `*`表示任意个字符（包括0个）
-2. `+`表示至少一个字符
-3. `?`表示0个或1个字符
-4. `{n}`表示n个字符，用`{n,m}`表示n-m个字符
-5. `\s`可以匹配一个空格，所以`\s+`表示至少有一个空格
+- `*` 表示任意个字符（包括0个）
+- `+` 表示至少一个字符
+- `?` 表示0个或1个字符
+- `{n}` 表示n个字符，用 `{n,m}` 表示 n-m 个字符
+- `\s` 可以匹配一个空格，所以 `\s+` 表示至少有一个空格
 
-##### 进阶
-
-可以用`[]`表示范围
-* `[[0-9a-zA-Z\_]]`可以匹配一个数字、字母或者下划线；
-* `[0-9a-zA-Z\_]+`可以匹配至少由一个数字、字母或者下划线组成的字符串，比如`'a100'`，`'0_Z'`，`'Py3000'`等等;
-* `[a-zA-Z\_][0-9a-zA-Z\_]*`可以匹配由字母或下划线开头，后接任意个由一个数字、字母或者下划线组成的字符串，也就是Python合法的变量；
-* `[a-zA-Z\_][0-9a-zA-Z\_]{0, 19}`更精确地限制了变量的长度是1-20个字符（前面1个字符+后面最多19个字符）。
+### 进阶
 
 1. `A|B`可以匹配A或B，所以`[P|p]ython`可以匹配`'Python'`或者`'python'`。
 2. `^`表示行的开头，`^\d`表示必须以数字开头。
 3. `$`表示行的结束，`\d$`表示必须以数字结束。
 
-##### re模块
+可以用 `[]` 表示范围，比如：
+
+- `[0-9a-zA-Z\_]`可以匹配一个数字、字母或者下划线；
+- `[0-9a-zA-Z\_]+`可以匹配至少由一个数字、字母或者下划线组成的字符串，比如`'a100'`，`'0_Z'`，`'Py3000'`等等；
+- `[a-zA-Z\_][0-9a-zA-Z\_]*`可以匹配由字母或下划线开头，后接任意个由一个数字、字母或者下划线组成的字符串，也就是Python合法的变量；
+- `[a-zA-Z\_][0-9a-zA-Z\_]{0, 19}`更精确地限制了变量的长度是1-20个字符（前面1个字符+后面最多19个字符）。
+
+### re模块
+
 ```python
 s = 'ABC\\-001' # Python的字符串
 # 对应的正则表达式字符串变成：
 # 'ABC\-001'
 ```
-使用`r`前缀，就不用考虑转义
+
+使用 `r` 前缀，就不用考虑转义
+
 ```python
 s = r'ABC\-001' # Python的字符串
 # 对应的正则表达式字符串不变：
 # 'ABC\-001'
 ```
-`match()`方法判断是否匹配，如果匹配成功，返回一个`Match`对象，否则返回`None`
 
-##### 切分字符串
+`match()` 方法判断是否匹配，如果匹配成功，返回一个 `Match` 对象，否则返回 `None`。
 
-* 普通匹配
+### 切分字符串
+
+普通匹配
+
 ```python
 'a b   c'.split(' ')
 #['a', 'b', '', '', 'c']
 ```
 
-* 使用正则表达式
+使用正则表达式
+
 ```python
 re.split(r'\s+', 'a b   c')
 #['a', 'b', 'c']
@@ -1263,9 +1423,9 @@ re.split(r'[\s\,\;]+', 'a,b;; c  d')
 #['a', 'b', 'c', 'd']
 ```
 
-##### 分组
-`()`表示要提取的分组(Group)  
-`^(\d{3})-(\d{3,8})$`分别定义两个分组
+### 分组
+
+`()` 表示要提取的分组（Group），比如：`^(\d{3})-(\d{3,8})$` 分别定义两个分组
 
 ```python
 m = re.match(r'^(\d{3})-(\d{3,8})$', '010-12345')
@@ -1281,9 +1441,7 @@ m.group(2)
 # '12345'
 ```
 
-如果正则表达式中定义了组，就可以在`match`对象上用`group()`方法提取出子串来。
-
-`group(0)`永远是原始字符串，`group(1)`、`group(2)`……表示第1、2、……个子串。
+如果正则表达式中定义了组，就可以在 `Match` 对象上用 `group()` 方法提取出子串来；`group(0)`永远是原始字符串，`group(1)`、`group(2)`……表示第1、2、……个子串。
 
 ```bash
 t = '19:05:30'
@@ -1293,22 +1451,23 @@ m.groups()
 # ('19', '05', '30')
 ```
 
-##### 贪婪匹配
+### 贪婪匹配
 
 ```python
 re.match(r'^(\d+)(0*)$', '102300').groups()
 # ('102300', '')
 ```
 
-由于`\d+`采用贪婪匹配，直接把后面的`0`全部匹配了，结果`0*`只能匹配空字符串了。  
+由于 `\d+` 采用贪婪匹配，直接把后面的 `0` 全部匹配了，结果 `0*` 只能匹配空字符串了。  
+必须让 `\d+` 采用非贪婪匹配（也就是尽可能少匹配），才能把后面的 `0` 匹配出来，加个 `?` 就可以让 `\d+` 采用非贪婪匹配：
 
-必须让`\d+`采用非贪婪匹配（也就是尽可能少匹配），才能把后面的`0`匹配出来，加个`?`就可以让`\d+`采用非贪婪匹配：
 ```python
 re.match(r'^(\d+?)(0*)$', '102300').groups()
 # ('1023', '00')
 ```
 
-##### 编译
+### 编译
+
 ```python
 import re
 re_telephone = re.compile(r'^(\d{3})-(\d{3,8})$')
@@ -1319,5 +1478,3 @@ re_telephone.match('010-12345').groups()
 re_telephone.match('010-8086').groups()
 # ('010', '8086')
 ```
-
-### 第3章 基本模块
