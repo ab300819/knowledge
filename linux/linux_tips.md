@@ -6,6 +6,7 @@
     - [systemd 中 使用 `localectl`](#systemd-中-使用-localectl)
     - [其他便利的设置方式](#其他便利的设置方式)
   - [nginx 编译参数](#nginx-编译参数)
+  - [备份已安装的软件并在新系统上恢复](#备份已安装的软件并在新系统上恢复)
 
 <!-- /TOC -->
 
@@ -99,4 +100,35 @@ dpkg-reconfigure openssh-server
 
 ```bash
 ./configure --with-cc-opt='-g -O2 -fdebug-prefix-map=/build/nginx-0TiIP5/nginx-1.10.3=. -fstack-protector-strong -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2' --with-ld-opt='-Wl,-z,relro -Wl,-z,now' --prefix=/usr/share/nginx --conf-path=/etc/nginx/nginx.conf --http-log-path=/var/log/nginx/access.log --error-log-path=/var/log/nginx/error.log --lock-path=/var/lock/nginx.lock --pid-path=/run/nginx.pid --modules-path=/usr/lib/nginx/modules --http-client-body-temp-path=/var/lib/nginx/body --http-fastcgi-temp-path=/var/lib/nginx/fastcgi --http-proxy-temp-path=/var/lib/nginx/proxy --http-scgi-temp-path=/var/lib/nginx/scgi --http-uwsgi-temp-path=/var/lib/nginx/uwsgi --with-debug --with-pcre-jit --with-http_ssl_module --with-http_stub_status_module --with-http_realip_module --with-http_auth_request_module --with-http_v2_module --with-http_dav_module --with-http_slice_module --with-threads --with-http_addition_module --with-http_geoip_module=dynamic --with-http_gunzip_module --with-http_gzip_static_module --with-http_image_filter_module=dynamic --with-http_sub_module --with-http_xslt_module=dynamic --with-stream=dynamic --with-stream_ssl_module --with-mail=dynamic --with-mail_ssl_module --add-module=../nginx-rtmp-module --with-pcre=../pcre-8.43 --with-zlib=../zlib-1.2.11 --add-dynamic-module=../ngx_http_auth_pam_module --add-dynamic-module=../nginx-dav-ext-module --add-dynamic-module=../echo-nginx-module --add-module=../ngx_http_substitutions_filter_module --add-module=../nginx-upstream-fair
+```
+
+## 备份已安装的软件并在新系统上恢复
+
+安装 `apt-clone`
+
+```bash
+sudo apt install apt-clone
+```
+
+备份
+
+```bash
+sudo apt-clone clone /backup
+
+# 查看备份文件的详细信息
+apt-clone info /backup/apt-clone-state-Ubuntu18.2daygeek.com.tar.gz
+```
+
+恢复
+
+```bash
+sudo apt-clone restore /opt/apt-clone-state-Ubuntu18.2daygeek.com.tar.gz
+```
+
+> 还原将覆盖现有的 `/etc/apt/sources.list` 并安装/删除包
+
+如果只是还原到文件夹而不是真还原，可以使用
+
+```bash
+sudo apt-clone restore /opt/apt-clone-state-Ubuntu18.2daygeek.com.tar.gz --destination /opt/oldubuntu
 ```
