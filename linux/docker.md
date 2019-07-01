@@ -1,35 +1,41 @@
 <!-- TOC -->
 
 - [Docker 笔记](#docker-笔记)
-  - [安装方式](#安装方式)
-  - [基本操作](#基本操作)
-    - [在交互方式中运行容器](#在交互方式中运行容器)
-    - [后台方式运行 Docker 容器](#后台方式运行-docker-容器)
-    - [容器生命周期](#容器生命周期)
-    - [使用 Dockerfile 构建 Docker 镜像](#使用-dockerfile-构建-docker-镜像)
-    - [使用两个链接在一起的容器运行 WordPress 博客程序](#使用两个链接在一起的容器运行-wordpress-博客程序)
-    - [备份在容器中运行的数据库](#备份在容器中运行的数据库)
-    - [在宿主机和容器之间共享数据](#在宿主机和容器之间共享数据)
-    - [在容器间共享数据](#在容器间共享数据)
-    - [对容器进行数据复制](#对容器进行数据复制)
-  - [创建和共享镜像](#创建和共享镜像)
-    - [将对容器的修改提交到镜像](#将对容器的修改提交到镜像)
-    - [将镜像和容器保存为 tar 文件进行共享](#将镜像和容器保存为-tar-文件进行共享)
-    - [编写第一个 Dockerfile](#编写第一个-dockerfile)
-    - [将 Flask 应用打包到镜像](#将-flask-应用打包到镜像)
-    - [根据最佳实践优化 Dockerfile](#根据最佳实践优化-dockerfile)
-    - [通过标签对镜像进行版本管理](#通过标签对镜像进行版本管理)
-    - [使用 ONBUILD 镜像](#使用-onbuild-镜像)
-  - [Docker 网络](#docker-网络)
-    - [查看容器的 IP 地址](#查看容器的-ip-地址)
-      - [Example 1](#example-1)
-      - [Example 2](#example-2)
-      - [Example 3](#example-3)
-    - [将容器端口暴露到主机上](#将容器端口暴露到主机上)
-    - [在 Docker 中进行容器链接](#在-docker-中进行容器链接)
-    - [理解 Docker 容器网络](#理解-docker-容器网络)
-    - [选择容器网络模式](#选择容器网络模式)
-    - [配置 Docker 守护进程 iptables 和 IP 转发设置](#配置-docker-守护进程-iptables-和-ip-转发设置)
+    - [安装方式](#安装方式)
+    - [基本操作](#基本操作)
+        - [在交互方式中运行容器](#在交互方式中运行容器)
+        - [后台方式运行 Docker 容器](#后台方式运行-docker-容器)
+        - [容器生命周期](#容器生命周期)
+            - [`create`](#create)
+            - [`start`](#start)
+            - [`restart`](#restart)
+            - [`stop`](#stop)
+            - [`kill`](#kill)
+            - [`rm`](#rm)
+        - [使用 Dockerfile 构建 Docker 镜像](#使用-dockerfile-构建-docker-镜像)
+        - [使用两个链接在一起的容器运行 WordPress 博客程序](#使用两个链接在一起的容器运行-wordpress-博客程序)
+        - [备份在容器中运行的数据库](#备份在容器中运行的数据库)
+        - [在宿主机和容器之间共享数据](#在宿主机和容器之间共享数据)
+        - [在容器间共享数据](#在容器间共享数据)
+        - [对容器进行数据复制](#对容器进行数据复制)
+    - [创建和共享镜像](#创建和共享镜像)
+        - [将对容器的修改提交到镜像](#将对容器的修改提交到镜像)
+        - [将镜像和容器保存为 tar 文件进行共享](#将镜像和容器保存为-tar-文件进行共享)
+        - [编写第一个 Dockerfile](#编写第一个-dockerfile)
+        - [将 Flask 应用打包到镜像](#将-flask-应用打包到镜像)
+        - [根据最佳实践优化 Dockerfile](#根据最佳实践优化-dockerfile)
+        - [通过标签对镜像进行版本管理](#通过标签对镜像进行版本管理)
+        - [使用 ONBUILD 镜像](#使用-onbuild-镜像)
+    - [Docker 网络](#docker-网络)
+        - [查看容器的 IP 地址](#查看容器的-ip-地址)
+            - [Example 1](#example-1)
+            - [Example 2](#example-2)
+            - [Example 3](#example-3)
+        - [将容器端口暴露到主机上](#将容器端口暴露到主机上)
+        - [在 Docker 中进行容器链接](#在-docker-中进行容器链接)
+        - [理解 Docker 容器网络](#理解-docker-容器网络)
+        - [选择容器网络模式](#选择容器网络模式)
+        - [配置 Docker 守护进程 iptables 和 IP 转发设置](#配置-docker-守护进程-iptables-和-ip-转发设置)
 
 <!-- /TOC -->
 
@@ -532,6 +538,12 @@ docker run -it --rm --net=host ubuntu:18.04 bash
 ```
 
 > 通过 `net=host` 选项启动一个容器可能会比较危险，尤其是同时指定 `privileged=true` 参数启动一个特权容器。
+
+与已经启动的容器共享一个网络命名空间，需要使用 --net=container:CONTAINER_NAME_OR_ID
+
+```bash
+docker run -it --rm --net=container:test ubuntu:18.04 bash
+```
 
 [Docker 容器网络](https://docs.docker.com/network/)
 
