@@ -136,8 +136,51 @@ constexpr int *q = nullptr;     // q 是一个指向整数的常量指针
 
 ### 类型别名
 
-传统 `typedef`
+使用关键字 `typedef` 定义类型别名
 
 ```cpp
-
+typedef double wages;   // wages 是 double 的同义词
+typedef wages base, *p; // base 是 double 的同义词，p 是 double* 的同义词
 ```
+
+在 c++11 中可以使用 `using` 定义类型别名
+
+```cpp
+using SI = char;    // SI 是 char 的同义词
+```
+
+指针、常量和类型别名
+
+```cpp
+typedef char *pstring;
+const pstring cstr = 0; // cstr 是指向 char 的常量指针
+const pstring *ps;      //  ps 是一个指针，它的对象是指向 char 的常量指针
+```
+
+### `decltype` 类型指示符
+
+在 c++11 中，`decltype` 的作用是选择并返回操作数的数据类型。
+
+```cpp
+decltype(f()) sum = x;  // sum 的类型就是 f 的返回类型
+```
+
+如果 `decltype` 使用的表达式是一个变量， 则 `decltype` 返回该变量的类型（包括顶层 `const` 和引用在内）。
+
+```cpp
+const int ci = 0, &cj = ci;
+decltype(cj) x = 0;     // x 的类型是 const int
+decltype(cj) y = x;     // y 的类型是 const int&， y 绑定到变量 x
+decltype(cj) z;         // 错误：z 是一个引用，必须初始化
+```
+
+如果 `decltype` 使用的表达式不是一个变量，则 `decltype` 返回表达式结果对应的类型。
+
+```cpp
+int i = 42, *p = &i, &r = i;
+decltype(r + 0) b;  // 正确：加法的结果是 int，因此 b 是一个（未初始化的）int
+decltype(*p) c;     // 错误：c 是 int&，必须初始化
+```
+
+> `decltype((variable))` （双层括号） 的结果永远是**引用**，而 `decltype(variable)` 结果只有当 *variable* 本身是一个引用时才是引用。
+
