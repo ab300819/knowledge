@@ -121,3 +121,23 @@ const int &r = ci;          // 用于声明引用的 const 都是底层 const
 - 如果 `const` 右结合修饰的为标识符，那这个 `const` 就是一个顶层 `const`。
 
 ### `constexpr` 和常量表达式
+
+c++11 中允许将变量声明为 `constexpr` 类型以便由编译器来验证变量的值是否是一个常量表达式。
+
+```cpp
+constexpr int mf = 20;          // 20 是一个常量表达式
+constexpr int limit = mf + 1;   // mf + 1 是常量表达式
+constexpr int sz = size();      // 只有当 size 是一个 constexpr 函数时才是一条正确的声明语句
+const int *p = nullptr;         // p 是一个指向整形常量的指针
+constexpr int *q = nullptr;     // q 是一个指向整数的常量指针
+```
+
+## 处理类型
+
+### 类型别名
+
+传统 `typedef`
+
+```cpp
+
+```
