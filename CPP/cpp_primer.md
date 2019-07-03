@@ -182,5 +182,98 @@ decltype(r + 0) b;  // 正确：加法的结果是 int，因此 b 是一个（�
 decltype(*p) c;     // 错误：c 是 int&，必须初始化
 ```
 
-> `decltype((variable))` （双层括号） 的结果永远是**引用**，而 `decltype(variable)` 结果只有当 *variable* 本身是一个引用时才是引用。
+> `decltype((variable))` （双层括号） 的结果永远是**引用**，而 `decltype(variable)` 结果只有当 _variable_ 本身是一个引用时才是引用。
 
+### 头文件保护
+
+`#ifdef` 当且仅当变量已定义时为真，`#ifndef` 当且仅当变量未定义时为真。一旦检查结果为真，则执行后续操作直至遇到 `#endif` 为止。
+
+```cpp
+#ifndef TEST_INCLUDE
+#define TEST_INCLUDE
+#include <isotream>
+...
+#endif
+```
+
+## 字符串、向量和数组
+
+### 标准库类型 `string`
+
+`string` 是标准库的一部分定义在命名空间 `std` 中。
+
+```cpp
+#include <string>
+using std::string
+```
+
+初始化 `string` 对象
+
+```cpp
+string s1;              // 默认初始化，s1 是一个空串
+string s2(s1);          // s2 是 s1 的副本
+string s2 = s1;         // 等价于 s2(s1)，s2 是 s1 的副本
+string s3("value");     // s3 是字面值 "value" 的副本
+string s3 = "value";    // 等价于 s3("value")，s3 是字面值 "value" 的副本
+string s4(n, 'c');      // 把 s4 初始化为由连续 n 个字符 c 组成的串
+```
+
+如果使用等号（`=`）初始化一个变量，实际上执行的是**拷贝初始化**，如果不使用等号，则执行的是**直接初始化**。
+
+### `string` 对象上的操作
+
+```cpp
+os<<s           // 将 s 写到输出流 os 当中，返回 os
+is>>s           // 从 is 中读取字符串赋给 s，字符串以空白分隔，返回 is
+getline(is, s)  // 从 is 中读取一行赋给 s，返回 is
+s.empty()       // s 为空返回 true，否则返回 false
+s.size()        // 返回 s 中字符的个数
+s[n]            // 返回 s 中第 n 个字符的引用，位置 n 从 0 计算
+s1 + s2         // 返回 s1 和 s2 链接后的结果
+s1 = s2         // 用 s2 的副本代替 s1 中原来的字符
+s1 == s2        // 判断 s1 和 s2 中所含字符是否完全一样，大小写敏感
+s1 != s2
+<, <=, >, >=    // 根据字典顺序进行比较，大小写敏感
+```
+
+当把 `string` 对象和字符字面值及字符串字面值混在一条语句中使用时，必须确保每个加法运算符（`+`）的两侧的运算对象至少有一个是 `string`。
+
+```cpp
+string s4 = s1 + ",";           // 正确
+string s5 = "hello" + ",";      // 错误
+string s6 = s1 + "," + "world"; // 正确
+string s7 = "hello" + "," + s2; // 错误
+```
+
+> 因为历史原因，也为了兼容 c ，所以 c++ 中字符串字面值不是标准库类型 `string` 的对象。字符串字面值与 `string` 是不同的类型。
+
+isalnum(c)
+isalpha(c)
+iscntrl(c)
+isdigit(c)
+isgraph(c)
+i s I owe r （ c ）
+isprint(c)
+ispunct(c)
+i s s pa c e （ c ）
+i s uppe r （ c ）
+isxdigit(c)
+t 0 上 0 we r （ c ）
+toupper (c)
+表 3 ， 3 ： cctype 头 文 件 中 的 函 数
+是 字 母 或 数 字 时 为 真
+后 c 是 字 母 时 为 真
+当 c 是 控 制 字 符 时 为 真
+0 c 是 数 字 时 为 真
+当 c 不 是 空 格 但 可 打 印 时 为 真
+后 c 是 小 写 字 母 时 为 真
+当 c 是 可 打 印 字 符 时 为 真 （ 即 c 是 空 格 或 c 具 有 可 视 形 式 ）
+当 c 是 标 点 符 号 时 为 真 （ 即 c 不 是 控 制 字 符 、 数 字 、 字 母 、 可 打 印 空
+当 c 是 空 白 时 为 真 （ 即 c 是 空 格 、 横 向 制 表 符 、 纵 向 制 表 符 、 回 车 符 、 换 行
+符 、 进 纸 符 中 的 一 种 ）
+后 c 是 大 写 字 母 时 为 真
+当 c 是 十 六 进 制 数 字 时 为 真
+如 果 c 是 大 写 字 母 ， 输 出 对 应 的 小
+5 字 母 ；
+否 则 原 样 输 出 c
+如 果 c 是 小 写 字 母 ， 输 出 对 应 的 大 写 字 母 ； 否 则 原 样 输 出 c
