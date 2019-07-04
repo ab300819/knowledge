@@ -7,6 +7,9 @@
     - [其他便利的设置方式](#其他便利的设置方式)
   - [nginx 编译参数](#nginx-编译参数)
   - [备份已安装的软件并在新系统上恢复](#备份已安装的软件并在新系统上恢复)
+  - [验证文件正确性](#验证文件正确性)
+  - [动态库解析](#动态库解析)
+  - [`ldconfig` 与 `/etc/ld.so.conf`](#ldconfig-与-etcldsoconf)
 
 <!-- /TOC -->
 
@@ -131,4 +134,89 @@ sudo apt-clone restore /opt/apt-clone-state-Ubuntu18.2daygeek.com.tar.gz
 
 ```bash
 sudo apt-clone restore /opt/apt-clone-state-Ubuntu18.2daygeek.com.tar.gz --destination /opt/oldubuntu
+```
+
+## 验证文件正确性
+
+```shell
+md5sum/sha1sum/sha256sum [-bct] filename
+md5sum/sha1sum/sha256sum [--status|--warn] --check filename
+```
+
+参数选项：
+
+- `-b` 以 binary 方式读取；
+- `-c` 从文件中读取 MD5 的校验值并予以检查；
+- `-t` 以纯文本模式读取(默认)。
+
+```shell
+md5sum ntp-4.2.8p3.tar.gz
+
+# b98b0cbb72f6df04608e1dd5f313808b  ntp-4.2.8p3.tar.gz
+```
+
+## 动态库解析
+
+```shell
+ldd [-vdr] [filename]
+```
+
+参数选项：
+
+- `-v` 列出所有内容信息；
+- `-d` 进程数据重寻址
+- `-r` 进程数据和函数重寻址
+
+範例一：找出 `/usr/bin/passwd` 這個檔案的函式庫資料
+
+```shell
+ldd /usr/bin/passwd
+# ....(前面省略)....
+#         libpam.so.0 => /lib64/libpam.so.0 (0x00007f5e683dd000)            <==PAM 模組
+#         libpam_misc.so.0 => /lib64/libpam_misc.so.0 (0x00007f5e681d8000)
+#         libaudit.so.1 => /lib64/libaudit.so.1 (0x00007f5e67fb1000)        <==SELinux
+#         libselinux.so.1 => /lib64/libselinux.so.1 (0x00007f5e67d8c000)    <==SELinux
+# ....(底下省略)....
+# 我們前言的部分不是一直提到 passwd 有使用到 pam 的模組嗎！怎麼知道？
+# 利用 ldd 察看一下這個檔案，看到 libpam.so 了吧？這就是 pam 提供的函式庫
+```
+
+範例二：找出 `/lib64/libc.so.6` 這個函式的相關其他函式庫！
+
+```shell
+ldd -v /lib64/libc.so.6
+# /lib64/ld-linux-x86-64.so.2 (0x00007f7acc68f000)
+# linux-vdso.so.1 =>  (0x00007fffa975b000)
+
+# Version information:  <==使用 -v 選項，增加顯示其他版本資訊！
+# /lib64/libc.so.6:
+#         ld-linux-x86-64.so.2 (GLIBC_2.3) => /lib64/ld-linux-x86-64.so.2
+#         ld-linux-x86-64.so.2 (GLIBC_PRIVATE) => /lib64/ld-linux-x86-64.so.2
+```
+
+## `ldconfig` 与 `/etc/ld.so.conf`
+
+```shell
+ldconfig [-f conf] [ -C cache]
+ldconfig [-p]
+```
+
+参数选项：
+
+- `-f conf` 那個 `conf` 指的是某個檔案名稱，也就是說，使用 `conf` 作為 libarary 函式庫的取得路徑，而不以 `/etc/ld.so.conf` 為預設值
+- `-C cache` 那個 `cache` 指的是某個檔案名稱，也就是說，使用 `cache` 作為快取暫存的函式庫資料，而不以 `/etc/ld.so.cache` 為預設值
+- `-p` 列出目前有的所有函式庫資料內容 (在 `/etc/ld.so.cache` 內的資料！)
+
+範例一：假設我的 Mariadb 資料庫函式庫在 `/usr/lib64/mysql` 當中，如何讀進 `cache` ？
+
+```shell
+vim /etc/ld.so.conf.d/vbird.conf
+# /usr/lib64/mysql   <==這一行新增的啦！
+
+ldconfig -p
+# 924 libs found in cache `/etc/ld.so.cache'
+#         p11-kit-trust.so (libc6,x86-64) => /lib64/p11-kit-trust.so
+#         libzapojit-0.0.so.0 (libc6,x86-64) => /lib64/libzapojit-0.0.so.0
+# ....(底下省略)....
+# 函式庫名稱 => 該函式庫實際路徑
 ```

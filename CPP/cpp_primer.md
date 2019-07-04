@@ -1,8 +1,41 @@
-# 基础
+<!-- TOC -->
+
+- [c++ note](#c-note)
+  - [变量和基本类型](#变量和基本类型)
+    - [基本内置类型](#基本内置类型)
+      - [算术类型](#算术类型)
+      - [字面值常量](#字面值常量)
+    - [复合类型](#复合类型)
+      - [引用](#引用)
+      - [指针](#指针)
+    - [`const` 限定符](#const-限定符)
+      - [`const` 的引用](#const-的引用)
+      - [顶层 `const`](#顶层-const)
+      - [`constexpr` 和常量表达式](#constexpr-和常量表达式)
+    - [处理类型](#处理类型)
+      - [类型别名](#类型别名)
+      - [`decltype` 类型指示符](#decltype-类型指示符)
+    - [头文件保护](#头文件保护)
+  - [字符串、向量和数组](#字符串向量和数组)
+    - [标准库类型 `string`](#标准库类型-string)
+      - [`string` 对象上的操作](#string-对象上的操作)
+    - [标准库类型 `vector`](#标准库类型-vector)
+      - [定义和初始化 `vector`](#定义和初始化-vector)
+      - [`vector` 操作](#vector-操作)
+    - [迭代器](#迭代器)
+      - [使用迭代器](#使用迭代器)
+    - [数组](#数组)
+  - [表达式](#表达式)
+
+<!-- /TOC -->
+
+# c++ note
 
 ## 变量和基本类型
 
-### 算术类型
+### 基本内置类型
+
+#### 算术类型
 
 | 类型        | 含义           | 最小尺寸      |
 | ----------- | -------------- | ------------- |
@@ -19,9 +52,7 @@
 | double      | 双精度浮点数   | 10 位有效数字 |
 | long double | 扩展精度浮点数 | 10 位有效数字 |
 
-### 类型转换
-
-### 字面值常量
+#### 字面值常量
 
 字符和字符串字面值
 
@@ -47,9 +78,9 @@
 | f 或 F | float       |
 | l 或 F | long double |
 
-## 复合类型
+### 复合类型
 
-### 引用
+#### 引用
 
 1. 定义引用时，程序把引用和它的初始值绑定，而不是将初始值拷贝给引用；
 2. 引用并非对象，相反的，它只是为一个已经存在的对象所起的另外一个名字。
@@ -60,7 +91,7 @@ int &refVal = ival; // refval 指向 ival（是 ival 的另一个名字）
 int &refVal2;       // 报错：引用必须初始化
 ```
 
-### 指针
+#### 指针
 
 指针存放某个对象地址，想要获取该地址，需要使用**取地址符**（`&`）
 
@@ -95,13 +126,13 @@ int &r2 = *p;   // & 是声明的一部分，* 是一个解引用符
 
 `void*` 是一种特殊指针类型，可用于存放任意对象的地址
 
-## `const` 限定符
+### `const` 限定符
 
-### `const` 的引用
+#### `const` 的引用
 
 `const` 引用只是表明，保证不会通过此引用间接的改变被引用的对象
 
-### 顶层 `const`
+#### 顶层 `const`
 
 - 顶层（`const`）表示指针本身是个常量；
 - 底层（`const`）表示指针所指的对象是一个常量。
@@ -120,7 +151,7 @@ const int &r = ci;          // 用于声明引用的 const 都是底层 const
 - 如果 `const` 右结合修饰的为类型或者 `*`，那这个 `const` 就是一个底层 `const`；
 - 如果 `const` 右结合修饰的为标识符，那这个 `const` 就是一个顶层 `const`。
 
-### `constexpr` 和常量表达式
+#### `constexpr` 和常量表达式
 
 c++11 中允许将变量声明为 `constexpr` 类型以便由编译器来验证变量的值是否是一个常量表达式。
 
@@ -132,9 +163,9 @@ const int *p = nullptr;         // p 是一个指向整形常量的指针
 constexpr int *q = nullptr;     // q 是一个指向整数的常量指针
 ```
 
-## 处理类型
+### 处理类型
 
-### 类型别名
+#### 类型别名
 
 使用关键字 `typedef` 定义类型别名
 
@@ -157,7 +188,7 @@ const pstring cstr = 0; // cstr 是指向 char 的常量指针
 const pstring *ps;      //  ps 是一个指针，它的对象是指向 char 的常量指针
 ```
 
-### `decltype` 类型指示符
+#### `decltype` 类型指示符
 
 在 c++11 中，`decltype` 的作用是选择并返回操作数的数据类型。
 
@@ -220,7 +251,7 @@ string s4(n, 'c');      // 把 s4 初始化为由连续 n 个字符 c 组成的�
 
 如果使用等号（`=`）初始化一个变量，实际上执行的是**拷贝初始化**，如果不使用等号，则执行的是**直接初始化**。
 
-### `string` 对象上的操作
+#### `string` 对象上的操作
 
 ```cpp
 os<<s           // 将 s 写到输出流 os 当中，返回 os
@@ -247,33 +278,128 @@ string s7 = "hello" + "," + s2; // 错误
 
 > 因为历史原因，也为了兼容 c ，所以 c++ 中字符串字面值不是标准库类型 `string` 的对象。字符串字面值与 `string` 是不同的类型。
 
-isalnum(c)
-isalpha(c)
-iscntrl(c)
-isdigit(c)
-isgraph(c)
-i s I owe r （ c ）
-isprint(c)
-ispunct(c)
-i s s pa c e （ c ）
-i s uppe r （ c ）
-isxdigit(c)
-t 0 上 0 we r （ c ）
-toupper (c)
-表 3 ， 3 ： cctype 头 文 件 中 的 函 数
-是 字 母 或 数 字 时 为 真
-后 c 是 字 母 时 为 真
-当 c 是 控 制 字 符 时 为 真
-0 c 是 数 字 时 为 真
-当 c 不 是 空 格 但 可 打 印 时 为 真
-后 c 是 小 写 字 母 时 为 真
-当 c 是 可 打 印 字 符 时 为 真 （ 即 c 是 空 格 或 c 具 有 可 视 形 式 ）
-当 c 是 标 点 符 号 时 为 真 （ 即 c 不 是 控 制 字 符 、 数 字 、 字 母 、 可 打 印 空
-当 c 是 空 白 时 为 真 （ 即 c 是 空 格 、 横 向 制 表 符 、 纵 向 制 表 符 、 回 车 符 、 换 行
-符 、 进 纸 符 中 的 一 种 ）
-后 c 是 大 写 字 母 时 为 真
-当 c 是 十 六 进 制 数 字 时 为 真
-如 果 c 是 大 写 字 母 ， 输 出 对 应 的 小
-5 字 母 ；
-否 则 原 样 输 出 c
-如 果 c 是 小 写 字 母 ， 输 出 对 应 的 大 写 字 母 ； 否 则 原 样 输 出 c
+`cctype` 头 文 件 中 的 函 数
+
+```cpp
+isalnum(c)      // 当 c 是字母或数字时为真
+isalpha(c)      // 当 c 是字母时为真
+iscntrl(c)      // 当 c 是控制字符时为真
+isdigit(c)      // 当 c 是数字时为真
+isgraph(c)      // 当 c 不是空格但可打印时为真
+islower(c)      // 当 c 是小写字母时为真
+isprint(c)      // 当 c 是可打印字符时为真（即 c 是空格或 c 具有可视形式）
+ispunct(c)      // 当 c 是标点符号时为真（即 c 不是控制字符、数字、字母、可打印空白中的一种）
+isspace(c)      // 当 c 是空白时为真（即 c 是 空 格、横向制表符、纵向制表符、回车符、换行符、进纸符中的一种）
+isupper(c)      // 后 c 是大写字母时为真
+isxdigit(c)     // 当 c 是十六进制数字时为真
+tolower(c)      // 如果 c 是大写字母，输出对应的小写字母；否则原样输出 c
+toupper(c)      // 如果 c 是小写字母，输出对应的大写字母；否则原样输出 c
+```
+
+### 标准库类型 `vector`
+
+#### 定义和初始化 `vector`
+
+`vector` 是标准库的一部分定义在命名空间 `std` 中。
+
+```cpp
+#include <vector>
+using std::vector;
+```
+
+初始化 `vector` 对象的方法
+
+```cpp
+vector<T> v1                    // v1 是一个空 vector，它潜在的元素是 T 类型的，执行默认初始化
+vector<T> v2(v1)                // v2 中包含有 v1 所有元素的副本
+vector<T> v2 = v2               // 等价于 v2(v1)，v2 中包含有 v1 所有元素的副本
+vector<T> v3(n, val)            // v3 包含了 n 个重复的元素，每个元素的值都是 val
+vector<T> v4(n)                 // v4 包含了 n 个重复地执行了值初始化的对象
+vector<T> v5{a, b, c ...}       // v5 包含了初始值个数的元素，每个元素被赋了相应的初始值
+vector<T> v5 = {a, b, c ...}    // 等价于v5{a, b, c...}
+```
+
+#### `vector` 操作
+
+```cpp
+v.empty()           // 如果 v 不含有任何元素，返回真：否则返回假
+v.size()            // 返回 v 中元素的个数
+v.push_back(t)      // 向 v 的尾端添加一个值为 t 的元素
+v[n]                // 返回 v 中第 n 个位置上元素的引用
+v1 = v2             // 用 v2 中元素的拷贝替换 v1 中的元素
+v1 = {a, b, c...}   // 用列表中元素的拷贝替换 v1 中的元素
+v1 == v2            // v1 和 v2 相等当且仅当它们的元素数量相同且对应位置的元素值都相同
+v1 != v2
+<, <=, >, >=        // 顾名思义，以字典顺序进行比较
+```
+
+如果要使用 `size_type`，首先需要指定它是由哪种类型定义的。
+
+```cpp
+vector<int>::size_type  // 争取
+vector::size_type       // 错误
+```
+
+### 迭代器
+
+#### 使用迭代器
+
+`begin` 指向第一个元素的迭代器；`end` 则返回指向容器“尾元素的下一个位置”
+
+```cpp
+*iter           // 返回迭代器 iter 所指元素的引用
+iter -> mem     // 解引用 iter 并获取该元素的名为 mem 的成员，等价于 (*iter).mem
+++iter          // 令 iter 指示容器中的下一个元素
+--iter          // 令 iter 指示容器中的上一个元素
+iter1 == iter2  // 判断两个迭代器是否相等（不相等），如果两个迭代器指示的是同一个元素或者它们是同一个容器的尾迭代器，则相等；反之，不等
+iter1 != iter2  //
+```
+
+迭代器类型
+
+```cpp
+vector<int>::iterator it;           // it 能读写 vector<int> 的元素
+string::iterator it2;               // it2 能读写 string 对象中的字符
+
+vector<int>::const_iterator it3;    // it3 只能读元素，不能写元素
+string::const_iterator it4;         // it4 只能读字符，不能写字符
+```
+
+`const_iterator` 和常量指针差不多，能读取但不能修改它所指的元素值。
+
+`begin` 和 `end` 返回的具体类型由对象是否是常量决定的，如果对象是常量，`begin` 和 `end` 返回 `const_iterator`；如果对象不是常量，返回 `iterator`。
+
+```cpp
+vector<int> v;
+const vector<int> cv;
+
+auto it1 = v.begin();   // it1 的类型是 vector<int>::iterator
+auto it2 = cv.begin();  // it2 的类型是 vector<int>::const_iterator
+```
+
+为了专门得到 `const_iterator` 类型，在 c++11 中可以用 `cbegin` 和 `cend` 获取；
+
+```cpp
+auto it3 = v.cbegin();
+```
+
+### 数组
+
+复杂数组声明
+
+```cpp
+int *ptrs[10];              // ptrs是含有10个整形指针的数组
+int (*Parray)[10] = &arr;   // Parray指向一个含有10个整数的数组
+int *(&arry)[10] = ptrs;    // arry是数组的引用，该数组含有10个指针
+int (&arrRef)[10] = arr;    // arrRef引用一个含有10个整形的数组
+```
+
+标准库函数 `begin` 和 `end`
+
+```cpp
+int ia[] = {0, 1, 3, 4, 5, 6, 7, 8, 9}; // ia 是一个含有 10 个整数的数组
+int *beg = begin(ia);   // 指向 ia 首元素的指针
+int *last = end(ia);    // 只想 arr 尾元素的下一位置的指针
+```
+
+## 表达式
