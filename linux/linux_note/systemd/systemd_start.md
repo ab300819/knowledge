@@ -1,20 +1,22 @@
 # 命令篇
 
-## 二、Systemd 概述
+## 二、systemd 概述
 
-* 查看 Systemd 的版本  
-```bash
-$ systemctl --version
+查看 systemd 的版本
+
+```shell
+systemctl --version
 ```
 
-* Systemd 架构图  
+systemd 架构图
+
 ![image](http://www.ruanyifeng.com/blogimg/asset/2016/bg2016030703.png)
 
 ## 三、系统管理
 
 ### 3.1 `systemctl`
 
-`systemctl` 是 Systemd 的主命令，用于管理系统。
+`systemctl` 是 systemd 的主命令，用于管理系统。
 
 ```bash
 # 重启系统
@@ -45,7 +47,7 @@ $ sudo systemctl rescue
 
 ```bash
 # 查看启动耗时
-$ systemd-analyze                                                                                       
+$ systemd-analyze
 
 # 查看每个服务的启动耗时
 $ systemd-analyze blame
@@ -91,7 +93,7 @@ $ sudo localectl set-keymap en_GB
 $ timedatectl
 
 # 显示所有可用的时区
-$ timedatectl list-timezones                                                                                   
+$ timedatectl list-timezones
 
 # 设置当前时区
 $ sudo timedatectl set-timezone America/New_York
@@ -119,20 +121,20 @@ $ loginctl show-user ruanyf
 ### 4.1 含义
 
 Systemd 可以管理所有系统资源。不同的资源统称为 Unit（单位）。  
-Unit 一共分成12种。
+Unit 一共分成 12 种。
 
-* Service unit：系统服务
-* Target unit：多个 Unit 构成的一个组
-* Device Unit：硬件设备
-* Mount Unit：文件系统的挂载点
-* Automount Unit：自动挂载点
-* Path Unit：文件或路径
-* Scope Unit：不是由 Systemd 启动的外部进程
-* Slice Unit：进程组
-* Snapshot Unit：Systemd 快照，可以切回某个快照
-* Socket Unit：进程间通信的 socket
-* Swap Unit：swap 文件
-* Timer Unit：定时器
+- Service unit：系统服务
+- Target unit：多个 Unit 构成的一个组
+- Device Unit：硬件设备
+- Mount Unit：文件系统的挂载点
+- Automount Unit：自动挂载点
+- Path Unit：文件或路径
+- Scope Unit：不是由 Systemd 启动的外部进程
+- Slice Unit：进程组
+- Snapshot Unit：Systemd 快照，可以切回某个快照
+- Socket Unit：进程间通信的 socket
+- Swap Unit：swap 文件
+- Timer Unit：定时器
 
 `systemctl list-units` 命令可以查看当前系统的所有 Unit 。
 
@@ -234,7 +236,7 @@ $ systemctl list-dependencies --all nginx.service
 ### 5.1 概述
 
 每一个 Unit 都有一个配置文件，告诉 Systemd 怎么启动这个 Unit 。  
-Systemd 默认从目录`/etc/systemd/system/`读取配置文件。但是，里面存放的大部分文件都是符号链接，指向目录`/usr/lib/systemd/system/`，真正的配置文件存放在那个目录。    
+Systemd 默认从目录`/etc/systemd/system/`读取配置文件。但是，里面存放的大部分文件都是符号链接，指向目录`/usr/lib/systemd/system/`，真正的配置文件存放在那个目录。  
 `systemctl enable`命令用于在上面两个目录之间，建立符号链接关系。
 
 ```bash
@@ -275,11 +277,12 @@ clamd@scan.service     disabled
 ```
 
 这个列表显示每个配置文件的状态，一共有四种
-  * `enabled`：已建立启动链接
-  * `disabled`：没建立启动链接
-  * `static`：该配置文件没有[Install]部分（无法执行），只能作为其他配置文件的依赖
-  * `masked`：该配置文件被禁止建立启动链接
-  
+
+- `enabled`：已建立启动链接
+- `disabled`：没建立启动链接
+- `static`：该配置文件没有[Install]部分（无法执行），只能作为其他配置文件的依赖
+- `masked`：该配置文件被禁止建立启动链接
+
 注意，从配置文件的状态无法看出，该 Unit 是否正在运行。这必须执行前面提到的`systemctl status`命令。
 
 ```bash
@@ -294,6 +297,7 @@ $ sudo systemctl restart httpd.service
 ```
 
 ### 5.3 配置文件的格式
+
 配置文件就是普通的文本文件，可以用文本编辑器打开。  
 `systemctl cat`命令可以查看配置文件的内容。
 
@@ -323,52 +327,57 @@ Directive2=value
 . . .
 ```
 
-注意，键值对的等号两侧不能有空格。  
+注意，键值对的等号两侧不能有空格。
 
 ### 5.4 配置文件的区块
+
 `[Unit]`区块通常是配置文件的第一个区块，用来定义 Unit 的元数据，以及配置与其他 Unit 的关系。它的主要字段如下
-* Description：简短描述
-* Documentation：文档地址
-* Requires：当前 Unit 依赖的其他 Unit，如果它们没有运行，当前 Unit 会启动失败
-* Wants：与当前 Unit 配合的其他 Unit，如果它们没有运行，当前 Unit 不会启动失败
-* BindsTo：与Requires类似，它指定的 Unit 如果退出，会导致当前 Unit 停止运行
-* Before：如果该字段指定的 Unit 也要启动，那么必须在当前 Unit 之后启动
-* After：如果该字段指定的 Unit 也要启动，那么必须在当前 Unit 之前启动
-* Conflicts：这里指定的 Unit 不能与当前 Unit 同时运行
-* Condition...：当前 Unit 运行必须满足的条件，否则不会运行
-* Assert...：当前 Unit 运行必须满足的条件，否则会报启动失败
+
+- Description：简短描述
+- Documentation：文档地址
+- Requires：当前 Unit 依赖的其他 Unit，如果它们没有运行，当前 Unit 会启动失败
+- Wants：与当前 Unit 配合的其他 Unit，如果它们没有运行，当前 Unit 不会启动失败
+- BindsTo：与 Requires 类似，它指定的 Unit 如果退出，会导致当前 Unit 停止运行
+- Before：如果该字段指定的 Unit 也要启动，那么必须在当前 Unit 之后启动
+- After：如果该字段指定的 Unit 也要启动，那么必须在当前 Unit 之前启动
+- Conflicts：这里指定的 Unit 不能与当前 Unit 同时运行
+- Condition...：当前 Unit 运行必须满足的条件，否则不会运行
+- Assert...：当前 Unit 运行必须满足的条件，否则会报启动失败
 
 `[Install]`通常是配置文件的最后一个区块，用来定义如何启动，以及是否开机启动。它的主要字段如下
-* WantedBy：它的值是一个或多个 Target，当前 Unit 激活时（enable）符号链接会放入/etc/systemd/system目录下面以 Target 名 + .wants后缀构成的子目录中
-* RequiredBy：它的值是一个或多个 Target，当前 Unit 激活时，符号链接会放入/etc/systemd/system目录下面以 Target 名 + .required后缀构成的子目录中
-* Alias：当前 Unit 可用于启动的别名
-* Also：当前 Unit 激活（enable）时，会被同时激活的其他 Unit
+
+- WantedBy：它的值是一个或多个 Target，当前 Unit 激活时（enable）符号链接会放入/etc/systemd/system 目录下面以 Target 名 + .wants 后缀构成的子目录中
+- RequiredBy：它的值是一个或多个 Target，当前 Unit 激活时，符号链接会放入/etc/systemd/system 目录下面以 Target 名 + .required 后缀构成的子目录中
+- Alias：当前 Unit 可用于启动的别名
+- Also：当前 Unit 激活（enable）时，会被同时激活的其他 Unit
 
 `[Service]`区块用来 Service 的配置，只有 Service 类型的 Unit 才有这个区块。它的主要字段如下
-* Type：定义启动时的进程行为。它有以下几种值。
-* Type=simple：默认值，执行ExecStart指定的命令，启动主进程
-* Type=forking：以 fork 方式从父进程创建子进程，创建后父进程会立即退出
-* Type=oneshot：一次性进程，Systemd 会等当前服务退出，再继续往下执行
-* Type=dbus：当前服务通过D-Bus启动
-* Type=notify：当前服务启动完毕，会通知Systemd，再继续往下执行
-* Type=idle：若有其他任务执行完毕，当前服务才会运行
-* ExecStart：启动当前服务的命令
-* ExecStartPre：启动当前服务之前执行的命令
-* ExecStartPost：启动当前服务之后执行的命令
-* ExecReload：重启当前服务时执行的命令
-* ExecStop：停止当前服务时执行的命令
-* ExecStopPost：停止当其服务之后执行的命令
-* RestartSec：自动重启当前服务间隔的秒数
-* Restart：定义何种情况 Systemd 会自动重启当前服务，可能的值包括always（总是重启）、on-success、on-failure、on-abnormal、on-abort、on-watchdog
-* TimeoutSec：定义 Systemd 停止当前服务之前等待的秒数
-* Environment：指定环境变量
+
+- Type：定义启动时的进程行为。它有以下几种值。
+- Type=simple：默认值，执行 ExecStart 指定的命令，启动主进程
+- Type=forking：以 fork 方式从父进程创建子进程，创建后父进程会立即退出
+- Type=oneshot：一次性进程，Systemd 会等当前服务退出，再继续往下执行
+- Type=dbus：当前服务通过 D-Bus 启动
+- Type=notify：当前服务启动完毕，会通知 Systemd，再继续往下执行
+- Type=idle：若有其他任务执行完毕，当前服务才会运行
+- ExecStart：启动当前服务的命令
+- ExecStartPre：启动当前服务之前执行的命令
+- ExecStartPost：启动当前服务之后执行的命令
+- ExecReload：重启当前服务时执行的命令
+- ExecStop：停止当前服务时执行的命令
+- ExecStopPost：停止当其服务之后执行的命令
+- RestartSec：自动重启当前服务间隔的秒数
+- Restart：定义何种情况 Systemd 会自动重启当前服务，可能的值包括 always（总是重启）、on-success、on-failure、on-abnormal、on-abort、on-watchdog
+- TimeoutSec：定义 Systemd 停止当前服务之前等待的秒数
+- Environment：指定环境变量
 
 Unit 配置文件的完整字段清单，请参考[官方文档](https://www.freedesktop.org/software/systemd/man/systemd.unit.html)。
 
 ## 六、Target
+
 启动计算机的时候，需要启动大量的 Unit。如果每一次启动，都要一一写明本次启动需要哪些 Unit，显然非常不方便。Systemd 的解决方案就是 Target。  
-简单说，Target 就是一个 Unit 组，包含许多相关的 Unit 。启动某个 Target 的时候，Systemd 就会启动里面所有的 Unit。从这个意义上说，Target 这个概念类似于"状态点"，启动某个 Target 就好比启动到某种状态。 
-传统的init启动模式里面，有 RunLevel 的概念，跟 Target 的作用很类似。不同的是，RunLevel 是互斥的，不可能多个 RunLevel 同时启动，但是多个 Target 可以同时启动。  
+简单说，Target 就是一个 Unit 组，包含许多相关的 Unit 。启动某个 Target 的时候，Systemd 就会启动里面所有的 Unit。从这个意义上说，Target 这个概念类似于"状态点"，启动某个 Target 就好比启动到某种状态。
+传统的 init 启动模式里面，有 RunLevel 的概念，跟 Target 的作用很类似。不同的是，RunLevel 是互斥的，不可能多个 RunLevel 同时启动，但是多个 Target 可以同时启动。
 
 ```bash
 # 查看当前系统的所有 Target
@@ -403,13 +412,15 @@ Runlevel 5           |    runlevel5.target -> graphical.target
 Runlevel 6           |    runlevel6.target -> reboot.target
 ```
 
-它与init进程的主要差别如下。
+它与 init 进程的主要差别如下。
+
 1. 默认的 RunLevel（在`/etc/inittab`文件设置）现在被默认的 Target 取代，位置是`/etc/systemd/system/default.target`，通常符号链接到`graphical.target`（图形界面）或者`multi-user.target`（多用户命令行）。
 2. 启动脚本的位置，以前是`/etc/init.d`目录，符号链接到不同的 RunLevel 目录 （比如`/etc/rc3.d`、`/etc/rc5.d`等），现在则存放在`/lib/systemd/system`和`/etc/systemd/system`目录。
 3. 配置文件的位置，以前`init`进程的配置文件是`/etc/inittab`，各种服务的配置文件存放在`/etc/sysconfig`目录。现在的配置文件主要存放在`/lib/systemd`目录，在`/etc/systemd`目录里面的修改可以覆盖原始设置。
 
 ## 七、日志管理
-Systemd 统一管理所有 Unit 的启动日志。带来的好处就是，可以只用`journalctl`一个命令，查看所有日志（内核日志和应用日志）。日志的配置文件是`/etc/systemd/journald.conf`    
+
+Systemd 统一管理所有 Unit 的启动日志。带来的好处就是，可以只用`journalctl`一个命令，查看所有日志（内核日志和应用日志）。日志的配置文件是`/etc/systemd/journald.conf`
 
 `journalctl`功能强大，用法非常多。
 
@@ -507,10 +518,11 @@ $ sudo journalctl --vacuum-time=1years
 $ sudo systemctl enable httpd
 ```
 
-上面的命令相当于在`/etc/systemd/system`目录添加一个符号链接，指向`/usr/lib/systemd/system`里面的`httpd.service`文件。   
-这是因为开机时，Systemd只执行`/etc/systemd/system`目录里面的配置文件。这也意味着，如果把修改后的配置文件放在该目录，就可以达到覆盖原始配置的效果。
+上面的命令相当于在`/etc/systemd/system`目录添加一个符号链接，指向`/usr/lib/systemd/system`里面的`httpd.service`文件。  
+这是因为开机时，Systemd 只执行`/etc/systemd/system`目录里面的配置文件。这也意味着，如果把修改后的配置文件放在该目录，就可以达到覆盖原始配置的效果。
 
 ## 二、启动服务
+
 设置开机启动以后，软件并不会立即启动，必须等到下一次开机。如果想现在就运行该软件，那么要执行`systemctl start`命令。
 
 ```bash
@@ -542,12 +554,12 @@ httpd.service - The Apache HTTP Server
 
 上面的输出结果含义如下
 
-* Loaded行：配置文件的位置，是否设为开机启动
-* Active行：表示正在运行
-* Main PID行：主进程ID
-* Status行：由应用本身（这里是 httpd ）提供的软件当前状态
-* CGroup块：应用的所有子进程
-* 日志块：应用的日志
+- Loaded 行：配置文件的位置，是否设为开机启动
+- Active 行：表示正在运行
+- Main PID 行：主进程 ID
+- Status 行：由应用本身（这里是 httpd ）提供的软件当前状态
+- CGroup 块：应用的所有子进程
+- 日志块：应用的日志
 
 ## 三、停止服务
 
@@ -557,7 +569,7 @@ httpd.service - The Apache HTTP Server
 $ sudo systemctl stop httpd.service
 ```
 
-有时候，该命令可能没有响应，服务停不下来。这时候就不得不"杀进程"了，向正在运行的进程发出kill信号。
+有时候，该命令可能没有响应，服务停不下来。这时候就不得不"杀进程"了，向正在运行的进程发出 kill 信号。
 
 ```bash
 $ sudo systemctl kill httpd.service
@@ -571,9 +583,9 @@ $ sudo systemctl restart httpd.service
 
 ## 四、读懂配置文件
 
-一个服务怎么启动，完全由它的配置文件决定。下面就来看，配置文件有些什么内容。  
+一个服务怎么启动，完全由它的配置文件决定。下面就来看，配置文件有些什么内容。
 
-前面说过，配置文件主要放在`/usr/lib/systemd/system`目录，也可能在`/etc/systemd/system`目录。找到配置文件以后，使用文本编辑器打开即可。  
+前面说过，配置文件主要放在`/usr/lib/systemd/system`目录，也可能在`/etc/systemd/system`目录。找到配置文件以后，使用文本编辑器打开即可。
 
 `systemctl cat`命令可以用来查看配置文件，下面以`sshd.service`文件为例，它的作用是启动一个 SSH 服务器，供其他用户以 SSH 方式登录。
 
@@ -600,15 +612,14 @@ WantedBy=multi-user.target
 ```
 
 可以看到，配置文件分成几个区块，每个区块包含若干条键值对。  
-下面依次解释每个区块的内容。  
+下面依次解释每个区块的内容。
 
 ## 五、 [Unit] 区块：启动顺序与依赖关系
 
-Unit区块的Description字段给出当前服务的简单描述，Documentation字段给出文档位置。  
-接下来的设置是启动顺序和依赖关系，这个比较重要。  
+Unit 区块的 Description 字段给出当前服务的简单描述，Documentation 字段给出文档位置。  
+接下来的设置是启动顺序和依赖关系，这个比较重要。
 
 > `After`字段：表示如果 `network.target` 或 `sshd-keygen.service` 需要启动，那么 `sshd.service` 应该在它们之后启动。
-
 
 相应地，还有一个`Before`字段，定义`sshd.service`应该在哪些服务之前启动。  
 注意，`After`和`Before`字段只涉及启动顺序，不涉及依赖关系。  
@@ -628,22 +639,22 @@ Unit区块的Description字段给出当前服务的简单描述，Documentation�
 
 许多软件都有自己的环境参数文件，该文件可以用`EnvironmentFile`字段读取。
 
-> EnvironmentFile字段：指定当前服务的环境参数文件。该文件内部的key=value键值对，可以用$key的形式，在当前配置文件中获取。
+> EnvironmentFile 字段：指定当前服务的环境参数文件。该文件内部的 key=value 键值对，可以用\$key 的形式，在当前配置文件中获取。
 
 上面的例子中，`sshd` 的环境参数文件是`/etc/sysconfig/sshd`
 
 配置文件里面最重要的字段是`ExecStart`
 
-> ExecStart字段：定义启动进程时执行的命令。
+> ExecStart 字段：定义启动进程时执行的命令。
 
 上面的例子中，启动`sshd`，执行的命令是`/usr/sbin/sshd -D $OPTIONS`，其中的变量`$OPTIONS`就来自`EnvironmentFile`字段指定的环境参数文件。
-与之作用相似的，还有如下这些字段。 
+与之作用相似的，还有如下这些字段。
 
-* ExecReload字段：重启服务时执行的命令
-* ExecStop字段：停止服务时执行的命令
-* ExecStartPre字段：启动服务之前执行的命令
-* ExecStartPost字段：启动服务之后执行的命令
-* ExecStopPost字段：停止服务之后执行的命令
+- ExecReload 字段：重启服务时执行的命令
+- ExecStop 字段：停止服务时执行的命令
+- ExecStartPre 字段：启动服务之前执行的命令
+- ExecStartPost 字段：启动服务之后执行的命令
+- ExecStopPost 字段：停止服务之后执行的命令
 
 请看下面的例子。
 
@@ -670,12 +681,12 @@ post2
 
 `Type`字段定义启动类型。它可以设置的值如下。
 
- * simple（默认值）：ExecStart字段启动的进程为主进程
- * forking：ExecStart字段将以fork()方式启动，此时父进程将会退出，子进程将成为主进程
- * oneshot：类似于simple，但只执行一次，Systemd 会等它执行完，才启动其他服务
- * dbus：类似于simple，但会等待 D-Bus 信号后启动
- * notify：类似于simple，启动结束后会发出通知信号，然后 Systemd 再启动其他服务
- * idle：类似于simple，但是要等到其他任务都执行完，才会启动该服务。一种使用场合是为让该服务的输出，不与其他服务的输出相混合
+- simple（默认值）：ExecStart 字段启动的进程为主进程
+- forking：ExecStart 字段将以 fork()方式启动，此时父进程将会退出，子进程将成为主进程
+- oneshot：类似于 simple，但只执行一次，Systemd 会等它执行完，才启动其他服务
+- dbus：类似于 simple，但会等待 D-Bus 信号后启动
+- notify：类似于 simple，启动结束后会发出通知信号，然后 Systemd 再启动其他服务
+- idle：类似于 simple，但是要等到其他任务都执行完，才会启动该服务。一种使用场合是为让该服务的输出，不与其他服务的输出相混合
 
 下面是一个`oneshot`的例子，笔记本电脑启动时，要把触摸板关掉，配置文件可以这样写。
 
@@ -716,42 +727,43 @@ WantedBy=multi-user.target
 
 > `KillMode`字段：定义 Systemd 如何停止 sshd 服务。
 
-上面这个例子中，将`KillMode`设为`process`，表示只停止主进程，不停止任何sshd 子进程，即子进程打开的 SSH session 仍然保持连接。这个设置不太常见，但对 sshd 很重要，否则你停止服务的时候，会连自己打开的 SSH session 一起杀掉。  
+上面这个例子中，将`KillMode`设为`process`，表示只停止主进程，不停止任何 sshd 子进程，即子进程打开的 SSH session 仍然保持连接。这个设置不太常见，但对 sshd 很重要，否则你停止服务的时候，会连自己打开的 SSH session 一起杀掉。  
 `KillMode`字段可以设置的值如下。
 
-* control-group（默认值）：当前控制组里面的所有子进程，都会被杀掉
-* process：只杀主进程
-* mixed：主进程将收到 SIGTERM 信号，子进程收到 SIGKILL 信号
-* none：没有进程会被杀掉，只是执行服务的 stop 命令。
+- control-group（默认值）：当前控制组里面的所有子进程，都会被杀掉
+- process：只杀主进程
+- mixed：主进程将收到 SIGTERM 信号，子进程收到 SIGKILL 信号
+- none：没有进程会被杀掉，只是执行服务的 stop 命令。
 
 接下来是`Restart`字段。
 
 > `Restart`字段：定义了 sshd 退出后，Systemd 的重启方式。
 
-上面的例子中，`Restart`设为`on-failure`，表示任何意外的失败，就将重启sshd。如果 sshd 正常停止（比如执行`systemctl stop`命令），它就不会重启。  
+上面的例子中，`Restart`设为`on-failure`，表示任何意外的失败，就将重启 sshd。如果 sshd 正常停止（比如执行`systemctl stop`命令），它就不会重启。  
 `Restart`字段可以设置的值如下。
 
-* no（默认值）：退出后不会重启
-* on-success：只有正常退出时（退出状态码为0），才会重启
-* on-failure：非正常退出时（退出状态码非0），包括被信号终止和超时，才会重启
-* on-abnormal：只有被信号终止和超时，才会重启
-* on-abort：只有在收到没有捕捉到的信号终止时，才会重启
-* on-watchdog：超时退出，才会重启
-* always：不管是什么退出原因，总是重启
+- no（默认值）：退出后不会重启
+- on-success：只有正常退出时（退出状态码为 0），才会重启
+- on-failure：非正常退出时（退出状态码非 0），包括被信号终止和超时，才会重启
+- on-abnormal：只有被信号终止和超时，才会重启
+- on-abort：只有在收到没有捕捉到的信号终止时，才会重启
+- on-watchdog：超时退出，才会重启
+- always：不管是什么退出原因，总是重启
 
 对于守护进程，推荐设为`on-failure`。对于那些允许发生错误退出的服务，可以设为`on-abnormal`。
 最后是`RestartSec`字段。
 
-> `RestartSec`字段：表示 Systemd 重启服务之前，需要等待的秒数。上面的例子设为等待42秒。
+> `RestartSec`字段：表示 Systemd 重启服务之前，需要等待的秒数。上面的例子设为等待 42 秒。
 
 ## 七、[Install] 区块
 
 `Install`区块，定义如何安装这个配置文件，即怎样做到开机启动。
+
 > `WantedBy`字段：表示该服务所在的 Target。
 
-`Target`的含义是服务组，表示一组服务。`WantedBy=multi-user.target`指的是，sshd 所在的 Target 是`multi-user.target`。  
+`Target`的含义是服务组，表示一组服务。`WantedBy=multi-user.target`指的是，sshd 所在的 Target 是`multi-user.target`。
 
-这个设置非常重要，因为执行systemctl `enable sshd.service`命令时，`sshd.service`的一个符号链接，就会放在`/etc/systemd/system`目录下面的`multi-user.target.wants`子目录之中。  
+这个设置非常重要，因为执行 systemctl `enable sshd.service`命令时，`sshd.service`的一个符号链接，就会放在`/etc/systemd/system`目录下面的`multi-user.target.wants`子目录之中。  
 Systemd 有默认的启动 Target。
 
 ```bash
@@ -759,8 +771,8 @@ $ systemctl get-default
 multi-user.target
 ```
 
-上面的结果表示，默认的启动 Target 是multi-user.target。在这个组里的所有服务，都将开机启动。这就是为什么systemctl enable命令能设置开机启动的原因。
-使用 Target 的时候，systemctl list-dependencies命令和systemctl isolate命令也很有用。
+上面的结果表示，默认的启动 Target 是 multi-user.target。在这个组里的所有服务，都将开机启动。这就是为什么 systemctl enable 命令能设置开机启动的原因。
+使用 Target 的时候，systemctl list-dependencies 命令和 systemctl isolate 命令也很有用。
 
 ```bash
 # 查看 multi-user.target 包含的所有服务
@@ -791,11 +803,11 @@ AllowIsolate=yes
 
 注意，Target 配置文件里面没有启动命令。  
 上面输出结果中，主要字段含义如下。
-  
-* `Requires` ：要求basic.target一起运行。
-* `Conflicts` ：冲突字段。如果rescue.service或rescue.target正在运行，multi-user.target就不能运行，反之亦然。
-* `After`：表示multi-user.target在basic.target 、 rescue.service、 rescue.target之后启动，如果它们有启动的话。
-* `AllowIsolate`：允许使用systemctl isolate命令切换到multi-user.target。
+
+- `Requires` ：要求 basic.target 一起运行。
+- `Conflicts` ：冲突字段。如果 rescue.service 或 rescue.target 正在运行，multi-user.target 就不能运行，反之亦然。
+- `After`：表示 multi-user.target 在 basic.target 、 rescue.service、 rescue.target 之后启动，如果它们有启动的话。
+- `AllowIsolate`：允许使用 systemctl isolate 命令切换到 multi-user.target。
 
 ## 九、修改配置文件后重启
 
@@ -809,7 +821,7 @@ $ sudo systemctl daemon-reload
 $ sudo systemctl restart foobar
 ```
 
-> 资料：[archlinux systemd wiki](https://wiki.archlinux.org/index.php/systemd_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87))、[archlinux Systemd FAQ](https://wiki.archlinux.org/index.php/Systemd_FAQ_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87))
+> 资料：[archlinux systemd wiki](<https://wiki.archlinux.org/index.php/systemd_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)>)、[archlinux Systemd FAQ](<https://wiki.archlinux.org/index.php/Systemd_FAQ_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)>)
 
 # Systemd 定时器
 
@@ -825,9 +837,9 @@ echo "This is the body" | /usr/bin/mail -s "Subject" someone@example.com
 
 每个单元都有一个单元描述文件，它们分散在三个目录：
 
-* **/lib/systemd/system** 系统默认单元文件
-* **/etc/systemd/system** 用户安装的软件的单元文件
-* **/usr/lib/systemd/system** 用户自己定义的单元文件
+- **/lib/systemd/system** 系统默认单元文件
+- **/etc/systemd/system** 用户安装的软件的单元文件
+- **/usr/lib/systemd/system** 用户自己定义的单元文件
 
 ```bash
 # 查看所有单元
@@ -879,14 +891,14 @@ ExecStart=/bin/bash /path/to/mail.sh
 
 Service 单元文件分成两部分：
 
-* `[Unit]` 介绍单元基本信息，`Description` 字段给出单元简单介绍
-* `[Service]` 用来定制行为:
-  * `ExecStart` : `systemctl start` 所要执行的命令
-  * `ExecStop` : `systemctl stop` 所要执行的命令
-  * `ExecReload` : `systemctl reload` 所要执行的命令
-  * `ExecStartPre` : `ExecStart` 之前自动执行的命令
-  * `ExecStartPost` : `ExecStart` 之后自动执行的命令
-  * `ExecStopPost` : `ExecStop` 之后自动执行的命令
+- `[Unit]` 介绍单元基本信息，`Description` 字段给出单元简单介绍
+- `[Service]` 用来定制行为:
+  - `ExecStart` : `systemctl start` 所要执行的命令
+  - `ExecStop` : `systemctl stop` 所要执行的命令
+  - `ExecReload` : `systemctl reload` 所要执行的命令
+  - `ExecStartPre` : `ExecStart` 之前自动执行的命令
+  - `ExecStartPost` : `ExecStart` 之后自动执行的命令
+  - `ExecStopPost` : `ExecStop` 之后自动执行的命令
 
 ## 六、Timer 单元
 
@@ -906,18 +918,18 @@ Unit=mytimer.service
 WantedBy=multi-user.target
 ```
 
-* `[Unit]` 定义元数据
-* `[Timer]` 定制定时器
-  * `OnActiveSec` : 定时器生效后，多少时间开始执行任务
-  * `OnBootSec` : 系统启动后，多少时间开始执行任务
-  * `OnStartupSec` : Systemd 进程启动后，多少时间开始执行任务
-  * `OnUnitActiveSec` : 该单元上次执行后，等多少时间再次执行
-  * `OnUnitInactiveSec` :  定时器上次关闭后多少时间，再次执行
-  * `OnCalendar` : 基于绝对时间，而不是相对时间执行
-  * `AccuracySec` : 如果因为各种原因，任务必须推迟执行，推迟的最大秒数，默认是60秒
-  * `Unit` : 真正要执行的任务，默认是同名的带有 **.service** 后缀的单元
-  * `Persistent` : 如果设置了该字段，即使定时器到时没有启动，也会自动执行相应的单元
-  * `WakeSystem` : 如果系统休眠，是否自动唤醒系统
+- `[Unit]` 定义元数据
+- `[Timer]` 定制定时器
+  - `OnActiveSec` : 定时器生效后，多少时间开始执行任务
+  - `OnBootSec` : 系统启动后，多少时间开始执行任务
+  - `OnStartupSec` : Systemd 进程启动后，多少时间开始执行任务
+  - `OnUnitActiveSec` : 该单元上次执行后，等多少时间再次执行
+  - `OnUnitInactiveSec` : 定时器上次关闭后多少时间，再次执行
+  - `OnCalendar` : 基于绝对时间，而不是相对时间执行
+  - `AccuracySec` : 如果因为各种原因，任务必须推迟执行，推迟的最大秒数，默认是 60 秒
+  - `Unit` : 真正要执行的任务，默认是同名的带有 **.service** 后缀的单元
+  - `Persistent` : 如果设置了该字段，即使定时器到时没有启动，也会自动执行相应的单元
+  - `WakeSystem` : 如果系统休眠，是否自动唤醒系统
 
 上面的脚本里面，`OnUnitActiveSec=1h` 表示一小时执行一次任务。其他的写法还有 `OnUnitActiveSec=*-*-* 02:00:00` 表示每天凌晨两点执行，`OnUnitActiveSec=Mon *-*-* 02:00:00` 表示每周一凌晨两点执行
 
@@ -929,7 +941,7 @@ WantedBy=multi-user.target
 
 上面脚本中，`[Install]` 部分只写了一个字段，即`WantedBy=multi-user.target`。它的意思是，如果执行了`systemctl enable mytimer.timer`（只要开机，定时器自动生效），那么该定时器归属于 `multi-user.target`。
 
-所谓 Target 指的是一组相关进程，有点像 init 进程模式下面的启动级别。启动某个Target 的时候，属于这个 Target 的所有进程都会全部启动。
+所谓 Target 指的是一组相关进程，有点像 init 进程模式下面的启动级别。启动某个 Target 的时候，属于这个 Target 的所有进程都会全部启动。
 
 `multi-user.target` 是一个最常用的 Target，意为多用户模式。也就是说，当系统以多用户模式启动时，就会一起启动 `mytimer.timer` 。它背后的操作其实很简单，执行 `systemctl enable mytimer.timer` 命令时，就会在 `multi-user.target.wants` 目录里面创建一个符号链接，指向 `mytimer.timer`。
 
