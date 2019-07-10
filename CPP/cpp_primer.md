@@ -27,6 +27,11 @@
         - [数组](#数组)
     - [表达式](#表达式)
         - [`sizeof` 运算符](#sizeof-运算符)
+        - [显示转换](#显示转换)
+    - [函数](#函数)
+        - [可变形参的函数](#可变形参的函数)
+        - [返回数组指针](#返回数组指针)
+        - [函数重载](#函数重载)
 
 <!-- /TOC -->
 
@@ -425,3 +430,65 @@ sizeof Scale_data::revenue; // 另一种获取 revenue 大小的方式
 - 对解引用指针执行 `sizeof` 运算得到指针指向的对象所占空间的大小，指针不需有效；
 - 对数组执行 `sizeof` 运算得到整个数组所占空间的大小，等价于对数组中所有的元素各执行一次 `sizeof` 运算并将所得结果求和。注意，`sizeof` 运算不会把数组转换成指针来处理；
 - 对 `string` 对象或 `vector` 对象执行 `sizeof` 运算只返回该类型固定部分的大小，不会计算对象中的元素占用了多少空间。
+
+### 显示转换
+
+`static_cast` 可以用于任何具有明确定义的类型转换，只要不包含底层 `const`。
+
+`consta_cast` 用于运算对象的底层 `const`：
+
+- 常量指针被转化成非常量的指针，并且仍然指向原来的对象；
+- 常量引用被转换成非常量的引用，并且仍然指向原来的对象；
+- `const_cast`一般用于修改底指针。
+
+## 函数
+
+### 可变形参的函数
+
+```cpp
+void error_msg(initializer_list<string> il);
+```
+
+`initializer_list` 对象中的元素永远是常量值。
+
+`initializer_list` 常用操作
+
+```cpp
+initializer_list<T> lst;                // 默认初始化：T 类型元素的空列表
+initializer_list<T> lst{a, b, c...};    // lst 的元素数量和初始值一样多：lst 的元素是对应初始值的副本；列表中的元素是 const
+lst2(lst)   // 拷贝或赋值一个 `initializer_list` 对象不会拷贝列表中的元素；拷贝后，原始列表和副本共享元素
+lst.size()  // 列表中的元素数量
+lst.begin() // 返回指向 lst 中首元素的指针
+lst.end()   // 返回指向 lst 中尾元素下一位置的指针
+```
+
+### 返回数组指针
+
+声明一个返回数组指针的函数
+
+```cpp
+// Type (*function(parameter_list))[dimension]
+int (*func(int i))[10]
+```
+
+使用尾置返回类型
+
+```cpp
+auto func(int i) -> int(*)[10];
+```
+
+使用 `decltype`
+
+```cpp
+int odd[] = {1, 3, 5, 7, 9};
+int even[] = {0, 2, 4, 6, 8};
+decltype(odd) *arrPtr(int i)
+{
+    return (i % 2)? &odd : &even;
+}
+```
+
+### 函数重载
+
+顶层 `const` 不能重载，底层 `const` 能重载。
+
