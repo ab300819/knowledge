@@ -32,6 +32,8 @@
         - [可变形参的函数](#可变形参的函数)
         - [返回数组指针](#返回数组指针)
         - [函数重载](#函数重载)
+        - [内联函数和 `constexpr` 函数](#内联函数和-constexpr-函数)
+        - [函数指针](#函数指针)
 
 <!-- /TOC -->
 
@@ -492,3 +494,81 @@ decltype(odd) *arrPtr(int i)
 
 顶层 `const` 不能重载，底层 `const` 能重载。
 
+### 内联函数和 `constexpr` 函数
+
+在函数的返回类型前面加上关键字 `inline`，这样就可以声明一个内联函数。内联函数可避免函数调用的开销。
+
+`constexpr` 函数是指能用于常量表达式的函数。需要遵守几项约定：
+
+1. 函数的返回类型及所有形参的类型都得是字面值类型；
+2. 函数体中必须有且只有一条 `return` 语句。
+
+### 函数指针
+
+定义函数指针
+
+```cpp
+bool lengthCompare(const string &, const string &);
+
+// 定义函数指针
+bool (*pf)(const string &, const string &);
+```
+
+使用函数指针
+
+```cpp
+pf = lengthCompare;                           // pf 指向 lengthCompare 的函数
+pf = &lengthCompare;                          // 等价赋值语句：取地符可选
+
+bool b1 = pf("hello", "goodbye");             // 调用 lengthCompare 函数
+bool b2 = (*pf)("hello", "goodbye");          // 一个等价调用
+bool b3 = lengthCompare("hello", "goodbye");  // 一个等价调用
+```
+
+重载函数的指针
+
+```cpp
+void ff(int *);
+void ff(unsigned int);
+
+void (*pf1)(unsigned int) = ff; // pf1 指向 ff(unsigned)
+// 指针类型必须与重载函数中的某一个精确匹配
+```
+
+函数指针形参
+
+```cpp
+void useBigger(const string &s1, const string &s2, bool pf(const string &, const string &));
+void useBigger(const string &s1, const string &s2, bool (*pf)(const string &, const string &));
+```
+
+返回指向函数的指针
+
+```cpp
+using F = int(int*, int);
+using PF = int(*)(int*, int);
+
+PF f1(int); // 正确：PF 是指向函数的指针，f1 返回指向函数的指针
+F f1(int);  // 错误：F 是函数类型，f1 不能返回一个函数
+F *f1(int); // 正确：显示地指定返回类型是指向函数的指针
+
+int (*f1(int))(int*, int);  // 直接声明
+```
+
+也可以使用尾置返回类型
+
+```cpp
+auto f1(int) -> int(*)(int*, int);
+```
+
+将 `decltype` 用于函数指针类型
+
+```cpp
+string::size_type sumLength(const string&, const string&);
+string::size_type largerLength(const string&, const string&);
+
+// 根据其形参的取值，getFcn 函数返回指向 sumLength 或者 largerLength 的指针
+decltype(sumLength) *getFunc(const string &);
+```
+
+> `decltype` 作用于某个函数时，它返回函数类型而非指针类型，需要显式加上 `*` 表明需要返回的指针
