@@ -1,15 +1,16 @@
 <!-- TOC -->
 
 - [Linux Tips](#linux-tips)
-  - [移除 Ubuntu 上陈旧的 PPA 仓库](#移除-ubuntu-上陈旧的-ppa-仓库)
-  - [linux 区域和语言设置](#linux-区域和语言设置)
-    - [systemd 中 使用 `localectl`](#systemd-中-使用-localectl)
-    - [其他便利的设置方式](#其他便利的设置方式)
-  - [nginx 编译参数](#nginx-编译参数)
-  - [备份已安装的软件并在新系统上恢复](#备份已安装的软件并在新系统上恢复)
-  - [验证文件正确性](#验证文件正确性)
-  - [动态库解析](#动态库解析)
-  - [`ldconfig` 与 `/etc/ld.so.conf`](#ldconfig-与-etcldsoconf)
+    - [移除 Ubuntu 上陈旧的 PPA 仓库](#移除-ubuntu-上陈旧的-ppa-仓库)
+    - [linux 区域和语言设置](#linux-区域和语言设置)
+        - [systemd 中 使用 `localectl`](#systemd-中-使用-localectl)
+        - [其他便利的设置方式](#其他便利的设置方式)
+    - [nginx 编译参数](#nginx-编译参数)
+    - [备份已安装的软件并在新系统上恢复](#备份已安装的软件并在新系统上恢复)
+    - [验证文件正确性](#验证文件正确性)
+    - [动态库解析](#动态库解析)
+    - [`ldconfig` 与 `/etc/ld.so.conf`](#ldconfig-与-etcldsoconf)
+    - [更改默认配置](#更改默认配置)
 
 <!-- /TOC -->
 
@@ -219,4 +220,15 @@ ldconfig -p
 #         libzapojit-0.0.so.0 (libc6,x86-64) => /lib64/libzapojit-0.0.so.0
 # ....(底下省略)....
 # 函式庫名稱 => 該函式庫實際路徑
+```
+
+## 更改默认配置
+
+```shell
+sudo update-alternatives --config
+
+# 例
+sudo update-alternatives --config cc
+sudo update-alternatives --config c++
+sudo update-alternatives --config gcc
 ```
