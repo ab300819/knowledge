@@ -176,3 +176,11 @@ public int minWithout(int a, int b) {
     return (int) (((long) a + (long) +b - Math.abs((long) a - (long) b)) / 2);
 }
 ```
+
+## Tomcat 控制台乱码
+
+编辑 `conf\logging.properties` 文件，添加
+
+```txt
+java.util.logging.ConsoleHandler.encoding=utf-8
+```
