@@ -18,8 +18,36 @@
 
 ## 将常量集中到一个文件
 
-```py
+首先定义一个 const 模块
 
+```py
+import sys
+
+
+class _const:
+    class ConstError(TypeError):
+        pass
+
+    def __setattr__(self, name, value):
+        if name in self.__dict__.keys():
+            raise self.ConstError("Can't rebind const(%s)" % name)
+        self.__dict__[name] = value
+
+    def __delattr__(self, name):
+        if name in self.__dict__:
+            raise self.ConstError("Can't unbind const(%s)" % name)
+        raise NameError(name)
+
+
+sys.modules[__name__] = _const()
+```
+
+引入 const 模块，定义常量
+
+```py
+import const
+
+const.TEST_VALUE = 'test value'
 ```
 
 ## 让代码既可以被导入又可以被执行
