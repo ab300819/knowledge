@@ -36,6 +36,7 @@
         - [理解 Docker 容器网络](#理解-docker-容器网络)
         - [选择容器网络模式](#选择容器网络模式)
         - [配置 Docker 守护进程 iptables 和 IP 转发设置](#配置-docker-守护进程-iptables-和-ip-转发设置)
+        - [查看容器 ip 地址](#查看容器-ip-地址)
 
 <!-- /TOC -->
 
@@ -548,3 +549,9 @@ docker run -it --rm --net=container:test ubuntu:18.04 bash
 [Docker 容器网络](https://docs.docker.com/network/)
 
 ### 配置 Docker 守护进程 iptables 和 IP 转发设置
+
+### 查看容器 ip 地址
+
+```shell
+docker inspect --format '{{ .NetworkSettings.IPAddress }}' <container-ID>
+```
