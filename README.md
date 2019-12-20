@@ -1,3 +1,5 @@
+[![CC BY-SA 4.0][cc-by-sa-shield]][cc-by-sa]
+
 # 学习、工作笔记本及积累
 
 ## 🖖 Language
@@ -31,3 +33,5 @@
 * [LeetCode Solution](leetcode/README.md)
 
 ## 👽 AI
+
+[![CC BY-SA 4.0][cc-by-sa-image]][cc-by-sa]
