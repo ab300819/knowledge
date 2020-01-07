@@ -11,6 +11,7 @@
     - [动态库解析](#动态库解析)
     - [`ldconfig` 与 `/etc/ld.so.conf`](#ldconfig-与-etcldsoconf)
     - [更改默认配置](#更改默认配置)
+    - [挂载 LVM 分区](#挂载-lvm-分区)
 
 <!-- /TOC -->
 
@@ -231,4 +232,24 @@ sudo update-alternatives --config
 sudo update-alternatives --config cc
 sudo update-alternatives --config c++
 sudo update-alternatives --config gcc
+```
+
+## 挂载 LVM 分区
+
+1.查看服务器物理分区，逻辑卷的信息
+
+```shell
+fdisk -l
+```
+
+2.查看逻辑卷的具体信息
+
+```shell
+lvdisplay
+```
+
+3.挂载
+
+```shell
+mount /dev/VolGroup/lv_home /media/lvm
 ```
