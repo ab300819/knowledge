@@ -1,3 +1,7 @@
+# jupyter 
+
+## 安装
+
 1. 安装
 ```
 pip install jupyter
@@ -45,3 +49,40 @@ jupyter notebook --ip=0.0.0.0 #外部访问
 
 #常用：jupyter notebook --no-browser --port 5000 --ip=0.0.0.0 
 ```
+
+## 安装扩展
+
+
+
+## 设置主题
+
+安装 `jupyterthemes`
+
+```shell
+pip install jupyterthemes
+conda install jupyterthemes
+```
+
+参数    |   说明    |   例子
+--- |   --- |   ---
+-t  |   主题选项    |   -t chesterish
+-l  |   查看可用主题   |	
+-f  |   字体选项   |   -f consolamono
+-fs |   字体大小   |   -fs 12
+-nf |   notebook的字体选项 |   -nf code
+-nfs    |   notebook的字体大小  |   -nfs 10
+-dfs    |   pandas 数据库的字体大小 |   -dfs 9
+-ofs    |   输出文本的字体大小  |   -ofs 9
+-r  |   重置默认主题    |
+-dfonts |   重置默认字体    |
+
+```shell
+jt -t solarizedd -T -N -kl
+```
+
+* 可见工具栏 `-T`
+* 名称和徽标可见 `-N`
+* 内核徽标可见 `-kl`
+* 它们的默认设置为无
+
+notebook 中使用，命令前加 `%system`
