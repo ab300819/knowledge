@@ -103,3 +103,46 @@ print('\033[0m')
 python -m SimpleHTTPServer 8000
 python3 -m http.server 8000
 ```
+
+## Use Boost Python on macos
+
+### Boost code
+
+```cpp
+#include <boost/python.hpp>
+
+char const* greet()
+{
+   return "Greetings!";
+}
+
+BOOST_PYTHON_MODULE(hello_ext)
+{
+    using namespace boost::python;
+    def("greet", greet);
+}
+```
+
+### Python code
+
+```py
+from distutils.core import setup
+from distutils.extension import Extension
+
+hello_ext = Extension(
+    'hello_ext',
+    sources=['hello_ext.cpp'],
+    libraries=['boost_python-mt'],
+)
+
+setup(
+    name='hello-world',
+    version='0.1',
+    ext_modules=[hello_ext])
+```
+
+### Compiling
+
+```shell
+python setup.py build_ext --inplace
+```
