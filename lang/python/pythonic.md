@@ -2,10 +2,13 @@
 
 - [Pythonic](#pythonic)
     - [将常量集中到一个文件](#将常量集中到一个文件)
+    - [利用 `assert` 语句来发现问题](#利用-assert-语句来发现问题)
+    - [数据交换值的时候不推荐使用中间变量](#数据交换值的时候不推荐使用中间变量)
+    - [不推荐使用 `type` 来进行类型检查](#不推荐使用-type-来进行类型检查)
+    - [警惕 `eval()` 安全漏洞](#警惕-eval-安全漏洞)
     - [让代码既可以被导入又可以被执行](#让代码既可以被导入又可以被执行)
     - [用下面的方式判断逻辑“真”或“假”](#用下面的方式判断逻辑真或假)
     - [使用 `in` 运算符](#使用-in-运算符)
-    - [不使用临时变量交换两个值](#不使用临时变量交换两个值)
     - [用序列构建字符串](#用序列构建字符串)
     - [EAFP 优于 LBYL](#eafp-优于-lbyl)
     - [使用 `enumerate` 进行迭代](#使用-enumerate-进行迭代)
@@ -49,6 +52,45 @@ import const
 
 const.TEST_VALUE = 'test value'
 ```
+
+## 利用 `assert` 语句来发现问题
+
+```py
+x = 1
+y = 2
+assert x==y, 'not equals'
+```
+
+使用 `assert` 相当于使用
+
+```py
+if __debug__ and not x == y:
+    raise AssertionError('not equals')
+```
+
+运行时加上 `-O` 可禁用断言。
+
+使用断言需要注意：
+
+1. 不要滥用，断言不是用来捕捉程序本身错误的；
+2. 如果 Python 本身的异常能够处理就不要再使用断言；
+3. 不要使用断言来检查用户的输入；
+4. 在函数调用后，当需要确认返回值是否合理时可以使用断言；
+5. 当条件是业务逻辑继续下去的先决条件时可以使用断言。
+
+## 数据交换值的时候不推荐使用中间变量
+
+```py
+a, b = b, a
+```
+
+## 不推荐使用 `type` 来进行类型检查
+
+对于内建的基本类型使用 `type()` 进行类型检查问题不大，否则可以使用 `isinstance()` 进行检查 
+
+## 警惕 `eval()` 安全漏洞
+
+在需要使用 `eval` 的地方可以用安全性更好的 `ast.literal_eval`。
 
 ## 让代码既可以被导入又可以被执行
 
@@ -106,12 +148,6 @@ if name.find('L') != -1:
     print('This name has an L in it!')
 ```
 
-## 不使用临时变量交换两个值
-
-```py
-a, b = b, a
-```
-
 ## 用序列构建字符串
 
 **好**
@@ -166,7 +202,7 @@ else:
 ```py
 fruits = ['orange', 'grape', 'pitaya', 'blueberry']
 for index, fruit in enumerate(fruits):
-print(index, ':', fruit)
+    print(index, ':', fruit)
 ```
 
 **不好**
