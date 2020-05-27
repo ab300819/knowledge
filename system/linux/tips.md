@@ -12,6 +12,7 @@
     - [`ldconfig` 与 `/etc/ld.so.conf`](#ldconfig-与-etcldsoconf)
     - [更改默认配置](#更改默认配置)
     - [挂载 LVM 分区](#挂载-lvm-分区)
+    - [编程语言多版本切换](#编程语言多版本切换)
 
 <!-- /TOC -->
 
@@ -258,4 +259,11 @@ lvdisplay
 
 ```shell
 mount /dev/VolGroup/lv_home /media/lvm
+```
+
+## 编程语言多版本切换
+
+```shell
+sudo update-alternatives --display [cc|java]
+sudo update-alternatives --config [cc|java]
 ```
