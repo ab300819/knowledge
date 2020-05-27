@@ -40,3 +40,9 @@ http://yuml.me/diagram/scruffy/class/[User]
 ```
 
 ![image](http://yuml.me/diagram/scruffy/class/[User])
+
+## `git clone` 时使用 `--depth` 后，再次拉取全部历史记录
+
+```shell
+git pull --unshallow
+```
