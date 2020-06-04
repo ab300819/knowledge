@@ -5,6 +5,11 @@
     - [新建代码库](#新建代码库)
     - [增加/删除文件](#增加删除文件)
     - [代码提交](#代码提交)
+    - [补丁](#补丁)
+        - [diff 方式](#diff-方式)
+        - [patch 方式](#patch-方式)
+        - [应用 diff 或 patch](#应用-diff-或-patch)
+        - [解决冲突](#解决冲突)
     - [分支](#分支)
     - [标签](#标签)
     - [查看信息](#查看信息)
@@ -167,6 +172,89 @@ git commit --amend -m [message]
 
 ```shell
 git commit --amend [file1] [file2] ...
+```
+
+## 补丁
+
+git 提供了两种补丁方案，一种是通过 `git diff` 生成的 `.diff` 文件，第二种是通过 `git format-patch` 生成的 `.patch` 文件。
+
+### diff 方式
+
+指定未提交文件
+
+```shell
+git diff Test.java > test.diff
+```
+
+根据提交 id
+
+```shell
+git diff [commit sha1 id] [commit sha1 id] > [diff文件名]
+```
+
+### patch 方式
+
+某次提交（含）之前的几次提交
+
+```shell
+git format-patch [commit sha1 id] -n
+```
+
+某个提交的 patch
+
+```shell
+git format-patch [commit sha1 id] -1
+```
+
+某两次提交之间的所有 patch
+
+```shell
+git format-patch [commit sha1 id]..[commit sha1 id]
+```
+
+### 应用 diff 或 patch
+
+检查 diff/patch 是否能正常打入
+
+```shell
+git apply --stat xxx.diff/patch
+git apply --check xxx.diff/patch
+```
+
+打入补丁
+
+```shell
+git apply xxx.diff/patch
+# 或
+git am xxx.diff/patch
+```
+
+### 解决冲突
+
+使用 `--reject` 自动合入不冲突的代码改动，同时保留冲突部分
+
+```shell
+git  apply --reject  xxxx.patch
+```
+
+解决冲突后
+
+```shell
+git am --resolved
+# 或
+git am --continue
+```
+
+如果要跳过这次冲突
+
+```shell
+git am --skip
+```
+
+也可以回退打入 patch 操作，还原到操作前状态
+
+```shell
+git am --abort
 ```
 
 ## 分支
