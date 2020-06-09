@@ -31,7 +31,7 @@ try {
     e.printStackTrace();
 } finally {
     try {
-        
+
         if (resultSet != null)
             resultSet.close();
 
@@ -47,9 +47,9 @@ try {
 }
 ```
 
-## JDK动态代理
+## JDK 动态代理
 
-**写法一**
+### 写法一
 
 ```java
 InvocationHandler invocationHandler = (proxy, method, args) -> {
@@ -72,7 +72,7 @@ Subject subject = (Subject) proxyClass
 subject.reversalInput("Hello");
 ```
 
-**写法二**
+### 写法二
 
 ```java
 InvocationHandler invocationHandler = (proxy, method, args) -> {
