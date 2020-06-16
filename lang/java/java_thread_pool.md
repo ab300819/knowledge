@@ -1,3 +1,22 @@
+<!-- TOC -->
+
+- [Java Thread Pool](#java-thread-pool)
+    - [`ThreadPoolExecutor` 构造方法参数](#threadpoolexecutor-构造方法参数)
+        - [线程池大小](#线程池大小)
+        - [适当的阻塞队列](#适当的阻塞队列)
+        - [明确拒绝策略](#明确拒绝策略)
+        - [`Executors` 提供的4种线程池](#executors-提供的4种线程池)
+    - [`Runnable` 和 `Callable`](#runnable-和-callable)
+        - [`Runnable`](#runnable)
+        - [`Callable`](#callable)
+        - [##`Future`](#future)
+        - [##`FutureTask`](#futuretask)
+    - [#线程安全的集合](#线程安全的集合)
+        - [##高效的映射表、集合和队列](#高效的映射表集合和队列)
+        - [##较早的线程安全集合](#较早的线程安全集合)
+
+<!-- /TOC -->
+
 # Java Thread Pool
 
 ## `ThreadPoolExecutor` 构造方法参数
