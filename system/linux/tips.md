@@ -13,6 +13,7 @@
     - [更改默认配置](#更改默认配置)
     - [挂载 LVM 分区](#挂载-lvm-分区)
     - [编程语言多版本切换](#编程语言多版本切换)
+    - [挂载 samba 共享文件夹](#挂载-samba-共享文件夹)
 
 <!-- /TOC -->
 
@@ -266,4 +267,10 @@ mount /dev/VolGroup/lv_home /media/lvm
 ```shell
 sudo update-alternatives --display [cc|java]
 sudo update-alternatives --config [cc|java]
+```
+
+## 挂载 samba 共享文件夹
+
+```shell
+mount -t cifs //ip/dir /path/to/local -o user=[username],pass=[password],rw,file_mode=0777,dir_mode=0777
 ```
