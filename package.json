@@ -1,0 +1,23 @@
+{
+  "name": "knowledge",
+  "version": "1.0.0",
+  "description": "a collection of knowledge for develop",
+  "main": "index.js",
+  "scripts": {
+    "docs:dev": "vuepress dev docs",
+    "docs:build": "vuepress build docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ab300819/knowledge.git"
+  },
+  "author": "mason",
+  "license": "CC-BY-SA-4.0",
+  "bugs": {
+    "url": "https://github.com/ab300819/knowledge/issues"
+  },
+  "homepage": "https://github.com/ab300819/knowledge#readme",
+  "devDependencies": {
+    "vuepress": "^1.7.1"
+  }
+}
