@@ -66,11 +66,11 @@ startActivity(new Intent(MainActivity.this,Main2Activity.class));
 根据 `action` 和 `category` 等信息来启动
 
 ```xml
-<activity android:name=". SecondActivity"> 
-    <intent-filter> 
-        <action android:name=" com.example.activitytest.ACTION_START"/> 
-        <category android:name="android.intent.category.DEFAULT"/> 
-    </intent-filter> 
+<activity android:name=". SecondActivity">
+    <intent-filter>
+        <action android:name=" com.example.activitytest.ACTION_START"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+    </intent-filter>
 </activity>
 ```
 
@@ -475,3 +475,8 @@ recyclerView.setAdapter(fruitRecyclerAdapter);
 
 ## Boardcast
 
+### 接受系统广播
+
+#### 动态注册
+
+#### 静态注册
