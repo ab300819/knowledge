@@ -105,7 +105,7 @@ EmbeddedValueResolverAware  |   获取 `StringValueResolver` 对象，用于占�
 private User user;
 ```
 
-```
+```txt
 org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor#postProcessMergedBeanDefinition
 
 org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor#postProcessProperties
@@ -128,7 +128,7 @@ org.springframework.beans.factory.config.DependencyDescriptor#resolveCandidate
 private Map<String,User> userMap;
 ```
 
-```
+```txt
 org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor#postProcessMergedBeanDefinition
 
 org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor#postProcessProperties
@@ -144,7 +144,7 @@ org.springframework.beans.factory.support.DefaultListableBeanFactory#resolveMult
 
 ### 处理 JSR-330 `@Inject` 注解
 
-```
+```txt
 org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor#AutowiredAnnotationBeanPostProcessor
 ```
 
@@ -158,7 +158,7 @@ org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcesso
     - `javax.annotation.PostConstruct`
     - `javax.annotation.PreDestroy`
 
-```
+```txt
 (包含生命周期的处理)
 org.springframework.context.annotation.CommonAnnotationBeanPostProcessor#postProcessMergedBeanDefinition
 
@@ -196,4 +196,3 @@ public static AutowiredAnnotationBeanPostProcessor beanPostProcessor() {
 ```
 
 加 `static` 提前实例化 [官方文档](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Bean.html)
-
