@@ -1,5 +1,18 @@
 # 一些技巧
 
+## 清理 time machine 本地备份
+
+```bash
+sudo tmutil listlocalsnapshots /
+tmutil deletelocalsnapshots 2017-11-27-005359
+```
+
+## 查询电池数据
+
+```bash
+ioreg -rn AppleSmartBattery | grep -i capacity
+```
+
 ## vscode 手动安装 nupkg 插件
 
 - Open Python extension sources folder in VS Code (there is `Open Extensions Folder` command)
