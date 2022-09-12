@@ -1,7 +1,7 @@
 ---
 home: true
 heroText: Mason's blog
-tagline: print('Hello World!')
+tagline: jmp 0x7c00
 bannerBg: none
 postList: detailed
 title: index
@@ -10,7 +10,4 @@ permalink: /
 author: 
   name: Mason
   link: https://github.com/ab300819
-categories: []
-tags: 
-  - 
 ---
