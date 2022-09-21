@@ -20,7 +20,7 @@ jobs:
         
       # Runs a set of commands using the runners shell
       - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@main
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: web/.vuepress/dist # The folder the action should deploy.
           token: ${{ secrets.ACCESS_TOKEN }}
