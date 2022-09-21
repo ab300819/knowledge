@@ -3,6 +3,7 @@
 node_modules/
 web/.vuepress/.cache/
 web/.vuepress/.temp/
+web/.vuepress/dist/
 _book
 .DS_Store
 package-lock.json
