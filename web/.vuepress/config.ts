@@ -3,7 +3,7 @@ import {VdoingThemeConfig} from 'vuepress-theme-vdoing/types'
 import dayjs from 'dayjs'
 import baiduCode from './config/baiduCode' // 百度统计hm码
 
-const DOMAIN_NAME = 'xugaoyi.com' // 域名 (不带https)
+const DOMAIN_NAME = 'ab300819.github.io' // 域名 (不带https)
 const WEB_SITE = `https://${DOMAIN_NAME}` // 网址
 
 export default defineConfig4CustomTheme<VdoingThemeConfig>({
@@ -12,7 +12,7 @@ export default defineConfig4CustomTheme<VdoingThemeConfig>({
         '/': {
             lang: 'zh-CN',
             title: "Knowledge",
-            description: 'to-do',
+            description: 'jmp 0x7c00',
         }
     },
     // base: '/', // 默认'/'。如果你想将你的网站部署到如 https://foo.github.io/bar/，那么 base 应该被设置成 "/bar/",（否则页面将失去样式等文件）
@@ -23,96 +23,96 @@ export default defineConfig4CustomTheme<VdoingThemeConfig>({
         nav: [
             {text: '首页', link: '/'},
             {
-                text: '前端',
-                link: '/web/', //目录页链接，此处link是vdoing主题新增的配置项，有二级导航时，可以点击一级导航跳到目录页
-                items: [
-                    // 说明：以下所有link的值只是在相应md文件头部定义的永久链接（不是什么特殊编码）。另外，注意结尾是有斜杠的
-                    {
-                        text: '前端文章',
-                        items: [
-                            {text: 'JavaScript', link: '/pages/8143cc480faf9a11/'},
-                        ],
-                    },
-                    {
-                        text: '学习笔记',
-                        items: [
-                            {text: '《JavaScript教程》', link: '/note/javascript/'},
-                            {text: '《JavaScript高级程序设计》', link: '/note/js/'},
-                            {text: '《ES6 教程》', link: '/note/es6/'},
-                            {text: '《Vue》', link: '/note/vue/'},
-                            {text: '《React》', link: '/note/react/'},
-                            {
-                                text: '《TypeScript 从零实现 axios》',
-                                link: '/note/typescript-axios/',
-                            },
-                            {
-                                text: '《Git》',
-                                link: '/note/git/',
-                            },
-                            {
-                                text: 'TypeScript',
-                                link: '/pages/51afd6/',
-                            },
-                            {
-                                text: 'JS设计模式总结',
-                                link: '/pages/4643cd/',
-                            },
-                        ],
-                    },
-                ],
-            },
-            {
-                text: '页面',
-                link: '/ui/',
-                items: [
-                    {text: 'HTML', link: '/pages/8309a5b876fc95e3/'},
-                    {text: 'CSS', link: '/pages/0a83b083bdf257cb/'},
-                ],
-            },
-            {
-                text: '技术',
-                link: '/technology/',
-                items: [
-                    {text: '技术文档', link: '/pages/9a7ee40fc232253e/'},
-                    {text: 'GitHub技巧', link: '/pages/4c778760be26d8b3/'},
-                    {text: 'Nodejs', link: '/pages/117708e0af7f0bd9/'},
-                    {text: '博客搭建', link: '/pages/41f87d890d0a02af/'},
-                ],
-            },
-            {
-                text: '更多',
-                link: '/more/',
-                items: [
-                    {text: '学习', link: '/pages/f2a556/'},
-                    {text: '面试', link: '/pages/aea6571b7a8bae86/'},
-                    {text: '心情杂货', link: '/pages/2d615df9a36a98ed/'},
-                    {text: '实用技巧', link: '/pages/baaa02/'},
-                    {text: '友情链接', link: '/friends/'},
-                ],
-            },
-            {text: '关于', link: '/about/'},
-            {
-                text: '收藏',
-                link: '/pages/beb6c0bd8a66cea6/',
+                text: '服务端',
+                link: '/server/', //目录页链接，此处link是vdoing主题新增的配置项，有二级导航时，可以点击一级导航跳到目录页
                 // items: [
-                //   { text: '网站', link: '/pages/beb6c0bd8a66cea6/' },
-                //   { text: '资源', link: '/pages/eee83a9211a70f9d/' },
-                //   { text: 'Vue资源', link: '/pages/12df8ace52d493f6/' },
+                //     // 说明：以下所有link的值只是在相应md文件头部定义的永久链接（不是什么特殊编码）。另外，注意结尾是有斜杠的
+                //     {
+                //         text: '前端文章',
+                //         items: [
+                //             {text: 'JavaScript', link: '/pages/8143cc480faf9a11/'},
+                //         ],
+                //     },
+                //     {
+                //         text: '学习笔记',
+                //         items: [
+                //             {text: '《JavaScript教程》', link: '/note/javascript/'},
+                //             {text: '《JavaScript高级程序设计》', link: '/note/js/'},
+                //             {text: '《ES6 教程》', link: '/note/es6/'},
+                //             {text: '《Vue》', link: '/note/vue/'},
+                //             {text: '《React》', link: '/note/react/'},
+                //             {
+                //                 text: '《TypeScript 从零实现 axios》',
+                //                 link: '/note/typescript-axios/',
+                //             },
+                //             {
+                //                 text: '《Git》',
+                //                 link: '/note/git/',
+                //             },
+                //             {
+                //                 text: 'TypeScript',
+                //                 link: '/pages/51afd6/',
+                //             },
+                //             {
+                //                 text: 'JS设计模式总结',
+                //                 link: '/pages/4643cd/',
+                //             },
+                //         ],
+                //     },
                 // ],
             },
-            {
-                text: '索引',
-                link: '/archives/',
-                items: [
-                    {text: '分类', link: '/categories/'},
-                    {text: '标签', link: '/tags/'},
-                    {text: '归档', link: '/archives/'},
-                ],
-            },
+            // {
+            //     text: '页面',
+            //     link: '/ui/',
+            //     items: [
+            //         {text: 'HTML', link: '/pages/8309a5b876fc95e3/'},
+            //         {text: 'CSS', link: '/pages/0a83b083bdf257cb/'},
+            //     ],
+            // },
+            // {
+            //     text: '技术',
+            //     link: '/technology/',
+            //     items: [
+            //         {text: '技术文档', link: '/pages/9a7ee40fc232253e/'},
+            //         {text: 'GitHub技巧', link: '/pages/4c778760be26d8b3/'},
+            //         {text: 'Nodejs', link: '/pages/117708e0af7f0bd9/'},
+            //         {text: '博客搭建', link: '/pages/41f87d890d0a02af/'},
+            //     ],
+            // },
+            // {
+            //     text: '更多',
+            //     link: '/more/',
+            //     items: [
+            //         {text: '学习', link: '/pages/f2a556/'},
+            //         {text: '面试', link: '/pages/aea6571b7a8bae86/'},
+            //         {text: '心情杂货', link: '/pages/2d615df9a36a98ed/'},
+            //         {text: '实用技巧', link: '/pages/baaa02/'},
+            //         {text: '友情链接', link: '/friends/'},
+            //     ],
+            // },
+            // {text: '关于', link: '/about/'},
+            // {
+            //     text: '收藏',
+            //     link: '/pages/beb6c0bd8a66cea6/',
+            //     // items: [
+            //     //   { text: '网站', link: '/pages/beb6c0bd8a66cea6/' },
+            //     //   { text: '资源', link: '/pages/eee83a9211a70f9d/' },
+            //     //   { text: 'Vue资源', link: '/pages/12df8ace52d493f6/' },
+            //     // ],
+            // },
+            // {
+            //     text: '索引',
+            //     link: '/archives/',
+            //     items: [
+            //         {text: '分类', link: '/categories/'},
+            //         {text: '标签', link: '/tags/'},
+            //         {text: '归档', link: '/archives/'},
+            //     ],
+            // },
         ],
         sidebarDepth: 2, // 侧边栏显示深度，默认1，最大2（显示到h3标题）
         // logo: '/img/logo.png', // 导航栏logo
-        repo: 'xugaoyi/vuepress-theme-vdoing', // 导航栏右侧生成Github链接
+        repo: 'https://github.com/ab300819', // 导航栏右侧生成Github链接
         searchMaxSuggestions: 10, // 搜索结果显示最大数
         lastUpdated: 'updated', // 开启更新时间，并配置前缀文字   string | boolean (取值为git提交时间)
         docsDir: 'docs', // 编辑的文件夹
@@ -165,9 +165,9 @@ export default defineConfig4CustomTheme<VdoingThemeConfig>({
 
         // 博主信息 (显示在首页侧边栏)
         blogger: {
-            avatar: 'https://fastly.jsdelivr.net/gh/xugaoyi/image_store/blog/20200103123203.jpg',
+            avatar: '/img/avatar.webp',
             name: 'Mason',
-            slogan: '力拔气夕',
+            slogan: 'jmp 0x7c00',
         },
 
         // 社交图标 (显示于博主信息栏和页脚栏。内置图标：https://doc.xugaoyi.com/pages/a20ce8/#social)
@@ -181,7 +181,7 @@ export default defineConfig4CustomTheme<VdoingThemeConfig>({
                 },
                 {
                     iconClass: 'icon-youjian',
-                    title: '发邮件',
+                    title: 'Email',
                     link: 'mailto:ab300819@hotmail.com',
                 },
             ],
@@ -209,14 +209,14 @@ export default defineConfig4CustomTheme<VdoingThemeConfig>({
     // 注入到页面<head>中的标签，格式[tagName, { attrName: attrValue }, innerHTML?]
     head: [
         ['link', {rel: 'icon', href: '/img/favicon.ico'}], //favicons，资源放在public文件夹
-        [
-            'meta',
-            {
-                name: 'keywords',
-                content: '前端博客,个人技术博客,前端,前端开发,前端框架,web前端,前端面试题,技术文档,学习,面试,JavaScript,js,ES6,TypeScript,vue,python,css3,html5,Node,git,github,markdown',
-            },
-        ],
-        ['meta', {name: 'baidu-site-verification', content: '7F55weZDDc'}], // 百度统计的站长验证（你可以去掉）
+        // [
+        //     'meta',
+        //     {
+        //         name: 'keywords',
+        //         content: '前端博客,个人技术博客,前端,前端开发,前端框架,web前端,前端面试题,技术文档,学习,面试,JavaScript,js,ES6,TypeScript,vue,python,css3,html5,Node,git,github,markdown',
+        //     },
+        // ],
+        // ['meta', {name: 'baidu-site-verification', content: '7F55weZDDc'}], // 百度统计的站长验证（你可以去掉）
         ['meta', {name: 'theme-color', content: '#11a8cd'}], // 移动浏览器主题颜色
         // [
         //   'script',
@@ -234,7 +234,7 @@ export default defineConfig4CustomTheme<VdoingThemeConfig>({
         [
             "sitemap", // 网站地图
             {
-                hostname: WEB_SITE,
+                // hostname: WEB_SITE,
             },
         ],
 
@@ -271,11 +271,7 @@ export default defineConfig4CustomTheme<VdoingThemeConfig>({
                     {
                         title: '在Bing中搜索',
                         frontUrl: 'https://cn.bing.com/search?q=',
-                    },
-                    {
-                        title: '通过百度搜索本站的',
-                        frontUrl: `https://www.baidu.com/s?wd=site%3A${DOMAIN_NAME}%20`,
-                    },
+                    }
                 ],
             }
         ],
@@ -312,26 +308,26 @@ export default defineConfig4CustomTheme<VdoingThemeConfig>({
                 },
             },
         ],
-        [
-            'vuepress-plugin-comment', // 评论
-            {
-                choosen: 'gitalk',
-                options: {
-                    clientID: 'a6e1355287947096b88b',
-                    clientSecret: 'f0e77d070fabfcd5af95bebb82b2d574d7248d71',
-                    repo: 'blog-gitalk-comment', // GitHub 仓库
-                    owner: 'xugaoyi', // GitHub仓库所有者
-                    admin: ['xugaoyi'], // 对仓库有写权限的人
-                    // distractionFreeMode: true,
-                    pagerDirection: 'last', // 'first'正序 | 'last'倒序
-                    id: '<%- (frontmatter.permalink || frontmatter.to.path).slice(-16) %>', //  页面的唯一标识,长度不能超过50
-                    title: '「评论」<%- frontmatter.title %>', // GitHub issue 的标题
-                    labels: ['Gitalk', 'Comment'], // GitHub issue 的标签
-                    body:
-                        '页面：<%- window.location.origin + (frontmatter.to.path || window.location.pathname) %>', // GitHub issue 的内容
-                },
-            },
-        ],
+        // [
+        //     'vuepress-plugin-comment', // 评论
+        //     {
+        //         choosen: 'gitalk',
+        //         options: {
+        //             clientID: 'a6e1355287947096b88b',
+        //             clientSecret: 'f0e77d070fabfcd5af95bebb82b2d574d7248d71',
+        //             repo: 'blog-gitalk-comment', // GitHub 仓库
+        //             owner: 'xugaoyi', // GitHub仓库所有者
+        //             admin: ['xugaoyi'], // 对仓库有写权限的人
+        //             // distractionFreeMode: true,
+        //             pagerDirection: 'last', // 'first'正序 | 'last'倒序
+        //             id: '<%- (frontmatter.permalink || frontmatter.to.path).slice(-16) %>', //  页面的唯一标识,长度不能超过50
+        //             title: '「评论」<%- frontmatter.title %>', // GitHub issue 的标题
+        //             labels: ['Gitalk', 'Comment'], // GitHub issue 的标签
+        //             body:
+        //                 '页面：<%- window.location.origin + (frontmatter.to.path || window.location.pathname) %>', // GitHub issue 的内容
+        //         },
+        //     },
+        // ],
         [
             '@vuepress/last-updated', // "上次更新"时间格式
             {
