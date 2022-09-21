@@ -22,7 +22,7 @@ jobs:
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@main
         with:
-          folder: docs/.vuepress/dist # The folder the action should deploy.
+          folder: web/.vuepress/dist # The folder the action should deploy.
           token: ${{ secrets.ACCESS_TOKEN }}
           repository-name: ab300819/ab300819.github.io
           branch: master
