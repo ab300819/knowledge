@@ -1,5 +1,10 @@
+.idea/
 .vscode/
+node_modules/
+web/.vuepress/.cache/
+web/.vuepress/.temp/
+web/.vuepress/dist/
 _book
 .DS_Store
-node_modules/
 package-lock.json
+yarn.lock
